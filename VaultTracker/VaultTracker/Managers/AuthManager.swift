@@ -30,11 +30,21 @@ final class AuthManager: ObservableObject {
     init() {
         setupSubscribers()
     }
-    
+
     private func setupSubscribers() {
         Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.user = user
             self?.authenticationState = user == nil ? .unauthenticated : .authenticated
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: .authenticationRequired,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                try? self?.signOut()
+            }
         }
     }
     

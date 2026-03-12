@@ -266,13 +266,69 @@ This will be superseded by `APIError.swift` (Phase 1.5) which adds user-facing m
 
 ## 5. Phase 1.4: Authentication Integration
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-### Approach
+### Design Decisions
 
-1. Create `AuthTokenProvider` to retrieve Firebase JWT token
-2. Inject token into all API requests via `Authorization: Bearer <token>` header
-3. Handle 401 responses with token refresh or logout
+- **`AuthTokenProvider` is an `actor`:** Multiple concurrent async tasks can request a token simultaneously; the actor serializes access automatically.
+- **Auth in `APIService`, not `NetworkService`:** The TODO originally called for modifying `NetworkService`, but since `APIService` bypasses `NetworkService` entirely, auth injection was placed directly in `APIService.makeRequest`.
+- **401 retry with force-refresh:** Firebase tokens are valid for 1 hour. A 401 usually means the token just expired. The service automatically force-refreshes and retries once before giving up.
+- **Auto-logout via Notification:** `APIService` doesn't hold a reference to `AuthManager` (avoids coupling). Instead it posts `.authenticationRequired`. `AuthManager` observes this notification and calls `signOut()`.
+
+### File: `AuthTokenProvider.swift`
+
+```swift
+actor AuthTokenProvider {
+    static let shared = AuthTokenProvider()
+
+    func getToken(forceRefresh: Bool = false) async throws -> String {
+        guard let user = Auth.auth().currentUser else {
+            throw AuthTokenError.notAuthenticated
+        }
+        return try await user.getIDTokenForcingRefresh(forceRefresh)
+    }
+}
+```
+
+`getIDTokenForcingRefresh(false)` returns the cached token if valid (<1 hour old), making normal-path requests zero-overhead.
+
+### Auth Flow in `APIService`
+
+| Step | Action |
+|------|--------|
+| 1 | `makeRequest` calls `AuthTokenProvider.shared.getToken()` |
+| 2 | Token set as `Authorization: Bearer <token>` header |
+| 3 | Request executed via `URLSession` |
+| 4 | If response is 401 → `retryWithRefreshedToken` called |
+| 5 | `getToken(forceRefresh: true)` forces Firebase to fetch a new token |
+| 6 | Request retried with fresh token |
+| 7 | If retry also 401 → post `.authenticationRequired` notification + throw `.unauthorized` |
+
+### `AuthManager` Changes
+
+Added a `NotificationCenter` observer in `setupSubscribers()`:
+
+```swift
+NotificationCenter.default.addObserver(
+    forName: .authenticationRequired,
+    object: nil,
+    queue: .main
+) { [weak self] _ in
+    Task { @MainActor in
+        try? self?.signOut()
+    }
+}
+```
+
+### `Notification.Name` Extension
+
+```swift
+extension Notification.Name {
+    static let authenticationRequired = Notification.Name("authenticationRequired")
+}
+```
+
+Defined in `APIService.swift` so the notification name is owned by the layer that posts it.
 
 ---
 
@@ -307,5 +363,7 @@ enum APIError: Error {
 | `API/Models/APINetWorthHistoryResponse.swift` | ✅ | History response + snapshot + period enum |
 | `API/Models/APIErrorResponse.swift` | ✅ | Standard + validation error formats |
 | `API/APIServiceProtocol.swift` | ✅ | Full protocol with all 12 async/throws methods |
-| `API/APIService.swift` | ✅ | URLSession-based impl; auth stub for Phase 1.4 |
+| `API/APIService.swift` | ✅ | URLSession-based impl; auth injection + 401 retry |
+| `API/AuthTokenProvider.swift` | ✅ | Actor wrapping Firebase getIDTokenForcingRefresh |
+| `Managers/AuthManager.swift` | ✅ (modified) | Added observer for .authenticationRequired notification |
 | `API/Errors/APIError.swift` | ⏳ | |

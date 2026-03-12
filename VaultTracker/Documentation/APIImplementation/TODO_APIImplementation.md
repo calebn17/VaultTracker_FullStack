@@ -30,15 +30,15 @@
 - [x] Implement transaction CRUD methods
 - [x] Implement net worth history fetch method
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 1.4 Authentication Integration
-- [ ] Create `AuthTokenProvider.swift` to retrieve Firebase JWT token
-- [ ] Modify `NetworkService` to accept dynamic authorization headers
-- [ ] Implement token refresh on 401 responses
-- [ ] Add auto-logout on persistent authentication failures
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Create `AuthTokenProvider.swift` to retrieve Firebase JWT token
+- [x] Modify `NetworkService` to accept dynamic authorization headers
+- [x] Implement token refresh on 401 responses
+- [x] Add auto-logout on persistent authentication failures
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
