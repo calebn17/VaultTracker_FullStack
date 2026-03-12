@@ -27,8 +27,8 @@ VaultTracker/
 └── VaultTracker/
     └── API/
         ├── APIConfiguration.swift      ✅ Implemented
-        ├── APIService.swift            ⏳ Pending
-        ├── APIServiceProtocol.swift    ⏳ Pending
+        ├── APIService.swift            ✅ Implemented
+        ├── APIServiceProtocol.swift    ✅ Implemented
         ├── Models/
         │   ├── APIDashboardResponse.swift       ✅ Implemented
         │   ├── APIAccountModels.swift           ✅ Implemented
@@ -200,18 +200,67 @@ All snake_case API fields are mapped to camelCase Swift properties:
 
 ## 4. Phase 1.3: APIService Implementation
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-### Planned Interface
+### Design Decisions
+
+- **Bypass existing `NetworkService`:** `NetworkService.body` is typed as `[String: String]?`, which cannot encode typed `Codable` request structs. `APIService` uses `URLSession` directly with `JSONEncoder`/`JSONDecoder`.
+- **Auth stub:** A `TODO` comment marks the exact line where `Authorization: Bearer <token>` will be injected in Phase 1.4.
+- **Singleton:** `APIService.shared` follows the same pattern as `NetworkService.sharedInstance`.
+- **Temporary error type:** `APIServiceError` is defined inline for Phase 1.3. It will be replaced/extended by `APIError.swift` in Phase 1.5.
+
+### File: `APIServiceProtocol.swift`
+
+Defines every API operation as `async throws`. Grouping by resource:
+
+| Method | Signature | HTTP |
+|--------|-----------|------|
+| `fetchDashboard` | `() -> APIDashboardResponse` | GET `/dashboard` |
+| `fetchAccounts` | `() -> [APIAccountResponse]` | GET `/accounts` |
+| `createAccount` | `(APIAccountCreateRequest) -> APIAccountResponse` | POST `/accounts` |
+| `updateAccount` | `(id:, APIAccountUpdateRequest) -> APIAccountResponse` | PUT `/accounts/{id}` |
+| `deleteAccount` | `(id:)` | DELETE `/accounts/{id}` |
+| `fetchAssets` | `() -> [APIAssetResponse]` | GET `/assets` |
+| `fetchAsset` | `(id:) -> APIAssetResponse` | GET `/assets/{id}` |
+| `fetchTransactions` | `() -> [APITransactionResponse]` | GET `/transactions` |
+| `createTransaction` | `(APITransactionCreateRequest) -> APITransactionResponse` | POST `/transactions` |
+| `updateTransaction` | `(id:, APITransactionUpdateRequest) -> APITransactionResponse` | PUT `/transactions/{id}` |
+| `deleteTransaction` | `(id:)` | DELETE `/transactions/{id}` |
+| `fetchNetWorthHistory` | `(period: APINetWorthPeriod?) -> APINetWorthHistoryResponse` | GET `/networth/history` |
+
+### File: `APIService.swift`
+
+#### Private Helpers
+
+| Helper | Purpose |
+|--------|---------|
+| `makeRequest(endpoint:method:queryItems:)` | Builds `URLRequest` for GET/DELETE (no body) |
+| `makeRequest(endpoint:method:body:queryItems:)` | Builds `URLRequest` for POST/PUT with JSON-encoded `Encodable` body |
+| `perform<T: Decodable>(_ request:)` | Executes request, validates status, decodes response |
+| `performVoid(_ request:)` | Executes request, validates status, ignores body (used for DELETE) |
+| `validate(response:data:)` | Throws `APIServiceError.httpError` for non-2xx status codes |
+
+#### Decoder/Encoder Configuration
 
 ```swift
-protocol APIServiceProtocol {
-    func fetchDashboard() async throws -> APIDashboardResponse
-    func fetchAccounts() async throws -> [APIAccountResponse]
-    func createAccount(_ request: APIAccountRequest) async throws -> APIAccountResponse
-    // ... additional methods
+decoder.dateDecodingStrategy = .iso8601
+encoder.dateEncodingStrategy = .iso8601
+```
+
+ISO 8601 matches the FastAPI backend's default date serialization format.
+
+#### Temporary Error Type
+
+```swift
+enum APIServiceError: Error {
+    case invalidURL(String)
+    case invalidResponse
+    case httpError(Int)
+    case decodingError(Error)
 }
 ```
+
+This will be superseded by `APIError.swift` (Phase 1.5) which adds user-facing messages and specific HTTP status case mapping.
 
 ---
 
@@ -257,6 +306,6 @@ enum APIError: Error {
 | `API/Models/APITransactionModels.swift` | ✅ | Response, create, update + transaction type enum |
 | `API/Models/APINetWorthHistoryResponse.swift` | ✅ | History response + snapshot + period enum |
 | `API/Models/APIErrorResponse.swift` | ✅ | Standard + validation error formats |
-| `API/APIServiceProtocol.swift` | ⏳ | |
-| `API/APIService.swift` | ⏳ | |
+| `API/APIServiceProtocol.swift` | ✅ | Full protocol with all 12 async/throws methods |
+| `API/APIService.swift` | ✅ | URLSession-based impl; auth stub for Phase 1.4 |
 | `API/Errors/APIError.swift` | ⏳ | |

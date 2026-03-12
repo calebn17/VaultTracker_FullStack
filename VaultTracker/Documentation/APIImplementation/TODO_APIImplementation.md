@@ -7,7 +7,7 @@
 - [x] Add environment-based configuration (development/staging/production)
 - [x] Define API version constant (`/api/v1`)
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
+- [x] Commit changes with comments
 - [x] Update `TODO_APIImplementation.md`
 
 ### 1.2 API Response Models
@@ -18,18 +18,18 @@
 - [x] Create `APINetWorthHistoryResponse.swift`
 - [x] Create `APIErrorResponse.swift` for error handling
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
+- [x] Commit changes with comments
 - [x] Update `TODO_APIImplementation.md`
 
 ### 1.3 APIService Implementation
-- [ ] Create `APIServiceProtocol.swift` defining all API operations
-- [ ] Create `APIService.swift` implementing the protocol
-- [ ] Implement dashboard fetch method
-- [ ] Implement account CRUD methods
-- [ ] Implement asset fetch methods
-- [ ] Implement transaction CRUD methods
-- [ ] Implement net worth history fetch method
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Create `APIServiceProtocol.swift` defining all API operations
+- [x] Create `APIService.swift` implementing the protocol
+- [x] Implement dashboard fetch method
+- [x] Implement account CRUD methods
+- [x] Implement asset fetch methods
+- [x] Implement transaction CRUD methods
+- [x] Implement net worth history fetch method
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
