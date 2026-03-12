@@ -47,30 +47,30 @@
 - [x] Implement error mapping from HTTP status codes
 - [x] Add user-friendly error message generation
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ---
 
 ## Phase 2: Model Mapping Layer
 
 ### 2.1 Domain Model Updates
-- [ ] Review existing `Asset` model for API compatibility
-- [ ] Review existing `Account` model for API compatibility
-- [ ] Review existing `Transaction` model for API compatibility
-- [ ] Add `id` property mapping to existing models (UUID handling)
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Review existing `Asset` model for API compatibility
+- [x] Review existing `Account` model for API compatibility
+- [x] Review existing `Transaction` model for API compatibility
+- [x] Add `id` property mapping to existing models (UUID handling)
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 2.2 Mappers
-- [ ] Create `DashboardMapper.swift` to convert API response to `HomeViewState`
-- [ ] Create `AccountMapper.swift` for Account conversions
-- [ ] Create `AssetMapper.swift` for Asset conversions
-- [ ] Create `TransactionMapper.swift` for Transaction conversions
-- [ ] Handle date format conversions (ISO8601)
-- [ ] Handle category/type enum mappings
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Create `DashboardMapper.swift` to convert API response to `HomeViewState`
+- [x] Create `AccountMapper.swift` for Account conversions
+- [x] Create `AssetMapper.swift` for Asset conversions
+- [x] Create `TransactionMapper.swift` for Transaction conversions
+- [x] Handle date format conversions (ISO8601)
+- [x] Handle category/type enum mappings
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 

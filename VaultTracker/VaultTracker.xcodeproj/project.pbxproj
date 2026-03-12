@@ -41,6 +41,21 @@
 		AF66F46B2E29C0DE0096DCDA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */; };
 		AFBD43EF2E12365E0042F994 /* AddAssetModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD43EE2E12365E0042F994 /* AddAssetModalView.swift */; };
 		AFBD43F12E1831560042F994 /* AssetCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD43F02E1831560042F994 /* AssetCategoryView.swift */; };
+		AFEEE4682F62B371000A8ADD /* APIAccountModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */; };
+		AFEEE4692F62B371000A8ADD /* APIDashboardResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */; };
+		AFEEE46A2F62B371000A8ADD /* AssetMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4582F62B371000A8ADD /* AssetMapper.swift */; };
+		AFEEE46B2F62B371000A8ADD /* APIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */; };
+		AFEEE46C2F62B371000A8ADD /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4552F62B371000A8ADD /* APIError.swift */; };
+		AFEEE46D2F62B371000A8ADD /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4642F62B371000A8ADD /* APIService.swift */; };
+		AFEEE46E2F62B371000A8ADD /* AuthTokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */; };
+		AFEEE46F2F62B371000A8ADD /* APITransactionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */; };
+		AFEEE4702F62B371000A8ADD /* DashboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */; };
+		AFEEE4712F62B371000A8ADD /* APINetWorthHistoryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */; };
+		AFEEE4722F62B371000A8ADD /* AccountMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4572F62B371000A8ADD /* AccountMapper.swift */; };
+		AFEEE4732F62B371000A8ADD /* APIAssetModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */; };
+		AFEEE4742F62B371000A8ADD /* APIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */; };
+		AFEEE4752F62B371000A8ADD /* TransactionMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */; };
+		AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +112,21 @@
 		AF66F46C2E29C1700096DCDA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AFBD43EE2E12365E0042F994 /* AddAssetModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetModalView.swift; sourceTree = "<group>"; };
 		AFBD43F02E1831560042F994 /* AssetCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCategoryView.swift; sourceTree = "<group>"; };
+		AFEEE4552F62B371000A8ADD /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		AFEEE4572F62B371000A8ADD /* AccountMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMapper.swift; sourceTree = "<group>"; };
+		AFEEE4582F62B371000A8ADD /* AssetMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetMapper.swift; sourceTree = "<group>"; };
+		AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMapper.swift; sourceTree = "<group>"; };
+		AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMapper.swift; sourceTree = "<group>"; };
+		AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAccountModels.swift; sourceTree = "<group>"; };
+		AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAssetModels.swift; sourceTree = "<group>"; };
+		AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDashboardResponse.swift; sourceTree = "<group>"; };
+		AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIErrorResponse.swift; sourceTree = "<group>"; };
+		AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APINetWorthHistoryResponse.swift; sourceTree = "<group>"; };
+		AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITransactionModels.swift; sourceTree = "<group>"; };
+		AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
+		AFEEE4642F62B371000A8ADD /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceProtocol.swift; sourceTree = "<group>"; };
+		AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,6 +198,7 @@
 		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
 			isa = PBXGroup;
 			children = (
+				AFEEE4672F62B371000A8ADD /* API */,
 				AF56EC362E2B200900253BE3 /* Loading */,
 				AF56EC332E29F71800253BE3 /* Profile */,
 				AF56EC302E29F59300253BE3 /* Login */,
@@ -286,6 +317,52 @@
 				AF56EC372E2B203500253BE3 /* LoadingView.swift */,
 			);
 			path = Loading;
+			sourceTree = "<group>";
+		};
+		AFEEE4562F62B371000A8ADD /* Errors */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4552F62B371000A8ADD /* APIError.swift */,
+			);
+			path = Errors;
+			sourceTree = "<group>";
+		};
+		AFEEE45B2F62B371000A8ADD /* Mappers */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4572F62B371000A8ADD /* AccountMapper.swift */,
+				AFEEE4582F62B371000A8ADD /* AssetMapper.swift */,
+				AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */,
+				AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */,
+			);
+			path = Mappers;
+			sourceTree = "<group>";
+		};
+		AFEEE4622F62B371000A8ADD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */,
+				AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */,
+				AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */,
+				AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */,
+				AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */,
+				AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AFEEE4672F62B371000A8ADD /* API */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4562F62B371000A8ADD /* Errors */,
+				AFEEE45B2F62B371000A8ADD /* Mappers */,
+				AFEEE4622F62B371000A8ADD /* Models */,
+				AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */,
+				AFEEE4642F62B371000A8ADD /* APIService.swift */,
+				AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */,
+				AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */,
+			);
+			path = API;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -437,6 +514,21 @@
 				AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */,
 				AFBD43F12E1831560042F994 /* AssetCategoryView.swift in Sources */,
 				AF4336992E0F9C4600AFC1A0 /* AssetManager.swift in Sources */,
+				AFEEE4682F62B371000A8ADD /* APIAccountModels.swift in Sources */,
+				AFEEE4692F62B371000A8ADD /* APIDashboardResponse.swift in Sources */,
+				AFEEE46A2F62B371000A8ADD /* AssetMapper.swift in Sources */,
+				AFEEE46B2F62B371000A8ADD /* APIServiceProtocol.swift in Sources */,
+				AFEEE46C2F62B371000A8ADD /* APIError.swift in Sources */,
+				AFEEE46D2F62B371000A8ADD /* APIService.swift in Sources */,
+				AFEEE46E2F62B371000A8ADD /* AuthTokenProvider.swift in Sources */,
+				AFEEE46F2F62B371000A8ADD /* APITransactionModels.swift in Sources */,
+				AFEEE4702F62B371000A8ADD /* DashboardMapper.swift in Sources */,
+				AFEEE4712F62B371000A8ADD /* APINetWorthHistoryResponse.swift in Sources */,
+				AFEEE4722F62B371000A8ADD /* AccountMapper.swift in Sources */,
+				AFEEE4732F62B371000A8ADD /* APIAssetModels.swift in Sources */,
+				AFEEE4742F62B371000A8ADD /* APIConfiguration.swift in Sources */,
+				AFEEE4752F62B371000A8ADD /* TransactionMapper.swift in Sources */,
+				AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */,
 				AF07A2212E1A3B71005FFB77 /* NetWorthChartView.swift in Sources */,
 				AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */,
 				AF07A2252E1B25A7005FFB77 /* AddAssetFormViewModel.swift in Sources */,

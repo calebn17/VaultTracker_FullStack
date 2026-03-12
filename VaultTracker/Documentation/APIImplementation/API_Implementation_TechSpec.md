@@ -38,7 +38,10 @@ VaultTracker/
         │   ├── APINetWorthHistoryResponse.swift ✅ Implemented
         │   └── APIErrorResponse.swift           ✅ Implemented
         ├── Mappers/
-        │   └── (to be added in Phase 2)
+        │   ├── AccountMapper.swift     ✅ Implemented
+        │   ├── AssetMapper.swift       ✅ Implemented
+        │   ├── TransactionMapper.swift ✅ Implemented
+        │   └── DashboardMapper.swift   ✅ Implemented
         └── Errors/
             └── APIError.swift          ✅ Implemented
 ```
@@ -384,6 +387,80 @@ For 422 responses, `parseValidationMessages` decodes `APIValidationErrorResponse
 - `execute(_:)` helper added: wraps `URLSession.data(for:)` and catches transport errors as `APIError.networkError`
 - `validate(response:data:)` now calls `APIError.from(statusCode:data:decoder:)` instead of throwing a raw code
 - `decodeResponse(_:from:)` helper added: wraps `JSONDecoder.decode` and rethrows as `APIError.decodingError`
+
+---
+
+## 7. Phase 2.1: Domain Model Review
+
+**Status:** ✅ Complete (review only — no model files modified)
+
+### Findings
+
+| Model | Compatibility | Notes |
+|-------|--------------|-------|
+| `Account` | ✅ Compatible | `id: UUID` vs API `id: String` — parse via `UUID(uuidString:)` in mapper |
+| `Asset` | ✅ Compatible | `symbol: String` (non-optional) vs API `symbol: String?` — fall back to name; `price` field derived as `currentValue/quantity` |
+| `Transaction` | ⚠️ Requires context | Embeds `name/symbol/category` inline; API only has `assetId` — mapper requires asset lookup dict |
+| `NetWorthSnapshot` | ✅ Compatible | Direct 1:1 with `APINetWorthSnapshot` |
+
+### AccountType Mapping Gap
+
+| App Case | API Equivalent |
+|----------|---------------|
+| `bank` | `bank` |
+| `brokerage` | `brokerage` |
+| `cryptoExchange` | `crypto_exchange` |
+| `physicalWallet` | ❌ No API equivalent |
+| `cryptoWallet` | ❌ No API equivalent |
+| `realEstate` | ❌ No API equivalent |
+| `other` | `other` |
+| ❌ Not in app | `retirement` → maps to `.other` |
+
+### GroupedAssetHolding Shape Mismatch
+
+- **App:** `[accountName: [assetIdentifier: AssetHolding]]`
+- **API:** `[category: [APIGroupedHolding]]`
+
+These are structurally different. `DashboardMapper` bridges this by using holding name as the outer key and symbol as the inner key. **Phase 4.2** will resolve this by restructuring `HomeViewState` to match the API shape.
+
+---
+
+## 8. Phase 2.2: Mappers
+
+**Status:** ✅ Complete
+
+All mappers live under `API/Mappers/` as caseless enums with static methods.
+
+### `AccountMapper.swift`
+
+`toDomain(_ response: APIAccountResponse) -> Account`
+
+- Parses `id: String` → `UUID` via `UUID(uuidString:) ?? UUID()`
+- Maps API account type strings (including `crypto_exchange` snake_case variant)
+- `retirement` API type maps to `.other` (closest local equivalent)
+
+### `AssetMapper.swift`
+
+`toDomain(_ response: APIAssetResponse) -> Asset`
+
+- `symbol: String?` → `String` falls back to `asset.name`
+- Derives `price` (purchase price) as `currentValue / quantity` — temporary bridge until domain model is simplified in Phase 4
+- `mapCategory(_:)` is `internal` (not private) so `DashboardMapper` can reuse it
+
+### `TransactionMapper.swift`
+
+`toDomain(_ response:, assetsByID:, accountsByID:) -> Transaction?`
+
+- Returns `nil` if asset or account cannot be resolved from the provided dictionaries — caller uses `compactMap`
+- Callers must build `[serverID: Asset]` and `[serverID: Account]` lookup dicts before calling
+
+### `DashboardMapper.swift`
+
+`toViewState(_ response: APIDashboardResponse) -> HomeViewState`
+
+- Maps all 5 category totals and `totalNetWorth` directly
+- Bridges `groupedHoldings` using holding name as outer key and symbol as inner key
+- Documents the shape mismatch with a comment pointing to Phase 4
 
 ---
 
