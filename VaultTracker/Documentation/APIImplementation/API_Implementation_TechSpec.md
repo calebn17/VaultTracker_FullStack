@@ -29,6 +29,7 @@ VaultTracker/
         ├── APIConfiguration.swift      ✅ Implemented
         ├── APIService.swift            ✅ Implemented
         ├── APIServiceProtocol.swift    ✅ Implemented
+        ├── AuthTokenProvider.swift     ✅ Implemented
         ├── Models/
         │   ├── APIDashboardResponse.swift       ✅ Implemented
         │   ├── APIAccountModels.swift           ✅ Implemented
@@ -39,7 +40,7 @@ VaultTracker/
         ├── Mappers/
         │   └── (to be added in Phase 2)
         └── Errors/
-            └── APIError.swift          ⏳ Pending
+            └── APIError.swift          ✅ Implemented
 ```
 
 ---
@@ -334,20 +335,55 @@ Defined in `APIService.swift` so the notification name is owned by the layer tha
 
 ## 6. Phase 1.5: Error Handling
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-### Planned Error Types
+### File: `API/Errors/APIError.swift`
+
+Replaces the temporary `APIServiceError` that lived inline in `APIService.swift`.
+
+#### Error Cases
+
+| Case | Trigger | User-Facing Message |
+|------|---------|---------------------|
+| `notAuthenticated` | No Firebase user signed in | "You are not signed in…" |
+| `unauthorized` | 401 after token refresh | "Your session has expired…" |
+| `forbidden` | 403 | "You don't have permission…" |
+| `notFound` | 404 | "The requested item could not be found." |
+| `validationError([String])` | 422 with FastAPI field errors | "Invalid data: \<fields\>." |
+| `serverError(Int)` | 5xx | "A server error occurred (code N)…" |
+| `networkError(Error)` | URLSession transport failure | "A network error occurred…" |
+| `decodingError(Error)` | JSON decode failure | "Received an unexpected response…" |
+| `unknown(Int)` | Any other status code | "An unexpected error occurred (code N)." |
+
+#### HTTP Status Mapping
+
+`APIError.from(statusCode:data:decoder:)` is called by `APIService.validate(response:data:)`:
 
 ```swift
-enum APIError: Error {
-    case unauthorized           // 401
-    case notFound               // 404
-    case validationError(String) // 422
-    case serverError            // 500
-    case networkError(Error)    // Connection issues
-    case decodingError(Error)   // JSON parsing failed
+static func from(statusCode: Int, data: Data, decoder: JSONDecoder) -> APIError {
+    switch statusCode {
+    case 401: return .unauthorized
+    case 403: return .forbidden
+    case 404: return .notFound
+    case 422: return .validationError(parseValidationMessages(from: data, decoder: decoder))
+    case 500...599: return .serverError(statusCode)
+    default: return .unknown(statusCode)
+    }
 }
 ```
+
+For 422 responses, `parseValidationMessages` decodes `APIValidationErrorResponse` (defined in Phase 1.2) and flattens each field error into `"<field>: <message>"` strings.
+
+#### `LocalizedError` Conformance
+
+`APIError` conforms to `LocalizedError` via `var errorDescription: String?`. SwiftUI's `.alert(error:)` and any catch block using `error.localizedDescription` will produce human-readable text automatically — no extra mapping needed in ViewModels.
+
+#### `APIService` Updates
+
+- `APIServiceError` enum removed — `APIError` is the single error type
+- `execute(_:)` helper added: wraps `URLSession.data(for:)` and catches transport errors as `APIError.networkError`
+- `validate(response:data:)` now calls `APIError.from(statusCode:data:decoder:)` instead of throwing a raw code
+- `decodeResponse(_:from:)` helper added: wraps `JSONDecoder.decode` and rethrows as `APIError.decodingError`
 
 ---
 
@@ -366,4 +402,4 @@ enum APIError: Error {
 | `API/APIService.swift` | ✅ | URLSession-based impl; auth injection + 401 retry |
 | `API/AuthTokenProvider.swift` | ✅ | Actor wrapping Firebase getIDTokenForcingRefresh |
 | `Managers/AuthManager.swift` | ✅ (modified) | Added observer for .authenticationRequired notification |
-| `API/Errors/APIError.swift` | ⏳ | |
+| `API/Errors/APIError.swift` | ✅ | LocalizedError + HTTP status mapping + 422 parsing |

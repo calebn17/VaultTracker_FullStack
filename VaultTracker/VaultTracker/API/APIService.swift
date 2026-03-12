@@ -13,6 +13,8 @@ import Foundation
 /// request bodies must be encoded from typed Codable structs, which NetworkService's
 /// [String: String] body parameter cannot support.
 ///
+/// All thrown errors are typed as `APIError` (see APIError.swift).
+///
 /// Auth flow: every request is sent with a Firebase JWT via AuthTokenProvider.
 /// On a 401 response, the token is force-refreshed and the request retried once.
 /// If authentication still fails after the retry, a `.authenticationRequired`
@@ -128,21 +130,25 @@ private extension APIService {
     ) async throws -> URLRequest {
         let urlString = APIConfiguration.url(for: endpoint)
         guard var components = URLComponents(string: urlString) else {
-            throw APIServiceError.invalidURL(urlString)
+            throw APIError.unknown(-1)
         }
         if let queryItems {
             components.queryItems = queryItems
         }
         guard let url = components.url else {
-            throw APIServiceError.invalidURL(urlString)
+            throw APIError.unknown(-1)
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        let token = try await AuthTokenProvider.shared.getToken()
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        do {
+            let token = try await AuthTokenProvider.shared.getToken()
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        } catch {
+            throw APIError.notAuthenticated
+        }
 
         return request
     }
@@ -163,73 +169,81 @@ private extension APIService {
     /// Execute a request and decode the response body into T.
     /// Retries once with a force-refreshed token on 401.
     func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await execute(request)
 
         if let http = response as? HTTPURLResponse, http.statusCode == 401 {
-            let retried = try await retryWithRefreshedToken(request)
-            return try decoder.decode(T.self, from: retried)
+            let retryData = try await retryWithRefreshedToken(request)
+            return try decodeResponse(T.self, from: retryData)
         }
 
-        try validate(response: response)
-        do {
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            throw APIServiceError.decodingError(error)
-        }
+        try validate(response: response, data: data)
+        return try decodeResponse(T.self, from: data)
     }
 
     /// Execute a request that returns no body (e.g. DELETE 204).
     /// Retries once with a force-refreshed token on 401.
     func performVoid(_ request: URLRequest) async throws {
-        let (_, response) = try await session.data(for: request)
+        let (data, response) = try await execute(request)
 
         if let http = response as? HTTPURLResponse, http.statusCode == 401 {
             _ = try await retryWithRefreshedToken(request)
             return
         }
 
-        try validate(response: response)
+        try validate(response: response, data: data)
+    }
+
+    /// Wraps URLSession.data catching transport errors as APIError.networkError.
+    func execute(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        do {
+            return try await session.data(for: request)
+        } catch {
+            throw APIError.networkError(error)
+        }
     }
 
     /// Force-refreshes the Firebase token, re-signs the request, and executes it.
     /// If the retry also returns 401, posts `.authenticationRequired` and throws `.unauthorized`.
     func retryWithRefreshedToken(_ original: URLRequest) async throws -> Data {
-        let freshToken = try await AuthTokenProvider.shared.getToken(forceRefresh: true)
+        let freshToken: String
+        do {
+            freshToken = try await AuthTokenProvider.shared.getToken(forceRefresh: true)
+        } catch {
+            throw APIError.notAuthenticated
+        }
+
         var retried = original
         retried.setValue("Bearer \(freshToken)", forHTTPHeaderField: "Authorization")
 
-        let (retryData, retryResponse) = try await session.data(for: retried)
+        let (retryData, retryResponse) = try await execute(retried)
 
         if let http = retryResponse as? HTTPURLResponse, http.statusCode == 401 {
             NotificationCenter.default.post(name: .authenticationRequired, object: nil)
-            throw APIServiceError.unauthorized
+            throw APIError.unauthorized
         }
 
-        try validate(response: retryResponse)
+        try validate(response: retryResponse, data: retryData)
         return retryData
     }
 
-    /// Validate HTTP status code, throwing a typed error on failure.
-    func validate(response: URLResponse) throws {
+    /// Validate HTTP status code, throwing a mapped APIError on failure.
+    func validate(response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else {
-            throw APIServiceError.invalidResponse
+            throw APIError.unknown(-1)
         }
         guard 200...299 ~= http.statusCode else {
-            throw APIServiceError.httpError(http.statusCode)
+            throw APIError.from(statusCode: http.statusCode, data: data, decoder: decoder)
         }
     }
-}
 
-// MARK: - APIServiceError
-
-/// Errors thrown by APIService.
-/// A full error type with user-facing messages will be added in Phase 1.5 (APIError.swift).
-enum APIServiceError: Error {
-    case invalidURL(String)
-    case invalidResponse
-    case unauthorized
-    case httpError(Int)
-    case decodingError(Error)
+    /// Decode response data, wrapping any decoding failure as APIError.decodingError.
+    func decodeResponse<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        do {
+            return try decoder.decode(type, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
 }
 
 // MARK: - Notification

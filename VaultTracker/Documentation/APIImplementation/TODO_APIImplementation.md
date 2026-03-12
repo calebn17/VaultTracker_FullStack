@@ -39,14 +39,14 @@
 - [x] Implement token refresh on 401 responses
 - [x] Add auto-logout on persistent authentication failures
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 1.5 Error Handling
-- [ ] Create `APIError.swift` with specific error cases
-- [ ] Implement error mapping from HTTP status codes
-- [ ] Add user-friendly error message generation
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Create `APIError.swift` with specific error cases
+- [x] Implement error mapping from HTTP status codes
+- [x] Add user-friendly error message generation
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
