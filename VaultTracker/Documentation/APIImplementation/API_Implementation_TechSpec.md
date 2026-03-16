@@ -547,6 +547,91 @@ HomeViewModel / AddAssetFormViewModel
 
 ---
 
+## Phase 4: ViewModel Simplification
+
+**Status:** ✅ Complete (4.1 – 4.4)
+
+### 4.2 HomeViewState Restructure
+
+`HomeViewModel.swift` (top of file) now defines:
+
+```swift
+typealias GroupedAssetHolding = [APIGroupedHolding]
+
+struct HomeViewState {
+    var selectedFilter: AssetCategory?
+    var filteredAssets: GroupedAssetHolding = []
+    var cryptoTotalValue / stocksTotalValue / cashTotalValue / retirementTotalValue / realEstateTotalValue / totalNetworthValue: Double
+    var cashGroupedAssetHoldings / stocksGroupedAssetHoldings / cryptoGroupedAssetHoldings / realEstateGroupedAssetHoldings / retirementGroupedAssetHoldings: GroupedAssetHolding = []
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
+}
+```
+
+**Removed:** `AssetHolding` struct, old `GroupedAssetHolding = [String: [String: AssetHolding]]` typealias.
+
+`GroupedAssetHolding` now directly mirrors the API's `[APIGroupedHolding]` — no bridge mapping needed.
+
+### 4.1 HomeViewModel Updates
+
+**`loadData()` (replaces `loadData(transactions:)`):**
+- Sets `isLoading = true`, clears `errorMessage`
+- Calls `dataService.fetchDashboard()` → `DashboardMapper.toViewState(_:)` in one step
+- Preserves `selectedFilter` across refresh, then re-applies via `selectFilter(category:)`
+- Calls `rebuildHistoricalSnapshots()` for chart data
+- Catches `APIError` and any other error → sets `errorMessage`
+
+**`onSave(transaction:)` simplified:**
+- Looks up existing asset by symbol or name in flattened `viewState.*GroupedAssetHoldings` instead of a separate `assets: [Asset]` cache
+- Falls back to `dataService.createAsset(_:)` for new assets
+- Posts `APITransactionCreateRequest`, then calls `await loadData()` to refresh the full dashboard
+
+**Removed methods:**
+- `loadAssets()`, `loadViewState(transactions:)`, `calculateAssetTotals()`, `updateGroupHoldingsForAllCategories()`, `updateGroupHoldingsFor(category:from:)`, `processGroupTransactions(transactions:category:storedGroupHoldings:)`
+
+**Removed properties:**
+- `assets: [Asset]`, `newTransactionToBeGroupedQueue`, `assetManager: AssetManagerProtocol`
+
+### 4.3 Filter Logic
+
+`selectFilter(category:)` now reads directly from `viewState.*GroupedAssetHoldings`:
+
+```swift
+viewState.filteredAssets = switch category {
+case .crypto:     viewState.cryptoGroupedAssetHoldings
+case .stocks:     viewState.stocksGroupedAssetHoldings
+case .cash:       viewState.cashGroupedAssetHoldings
+case .realEstate: viewState.realEstateGroupedAssetHoldings
+case .retirement: viewState.retirementGroupedAssetHoldings
+}
+```
+
+No local `[Asset]` filtering. Filter state is preserved across `loadData()` calls.
+
+### 4.4 Error Handling & UI
+
+**`HomeView.swift` changes:**
+
+- Removed `@Query private var transactions: [Transaction]` and `onChange(of: transactions)` — no more SwiftData query driving the view
+- `.task { await viewModel.loadData() }` (no transactions param)
+- `.refreshable { await viewModel.loadData() }` — pull-to-refresh
+- Loading overlay: `ProgressView` shown when `viewState.isLoading`
+- Error banner: shown at top of VStack when `viewState.errorMessage != nil`; dismissable with ✕ button
+
+**`expandedDetailView(for:)`** updated to iterate `[APIGroupedHolding]` directly:
+- Outer key was `accountName` — now each `APIGroupedHolding` is a row
+- Shows `holding.symbol ?? holding.name`, `currentValue`, and quantity string
+
+**`aggregatedAssetListView(holdings:)`** now takes `GroupedAssetHolding` instead of `[Asset]`:
+- Iterates `ForEach(holdings, id: \.id)`
+- Quantity unit derived from `viewState.selectedFilter`
+
+### DashboardMapper Simplification
+
+`DashboardMapper.toViewState(_:)` now assigns `[APIGroupedHolding]` arrays directly — the `makeGroupedHolding(from:)` bridge helper is removed.
+
+---
+
 ## Appendix: File Checklist
 
 | File | Status | Notes |

@@ -9,52 +9,62 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @Query private var transactions: [Transaction]
     @StateObject var viewModel: HomeViewModel
     @State private var expandedCategories: Set<AssetCategory> = []
-    
+
     init(modelContext: ModelContext) {
         _viewModel = StateObject(wrappedValue: HomeViewModel(context: modelContext))
     }
-    
+
     var body: some View {
         ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: 24) {
-                
+
+                if let errorMessage = viewModel.viewState.errorMessage {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.yellow)
+                        Text(errorMessage)
+                            .font(.subheadline)
+                        Spacer()
+                        Button {
+                            viewModel.viewState.errorMessage = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                        }
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(10)
+                }
+
                 filterBarView
                 NetWorthChartView(snapshots: viewModel.snapshots)
-                
+
                 Text("Net Worth")
                     .font(.title2).bold()
-                
+
                 Text(viewModel.viewState.totalNetworthValue.currencyFormat())
                     .font(.system(size: 40, weight: .bold))
-                
-                // Bar representing asset composition
+
                 if viewModel.viewState.totalNetworthValue > 0.0 {
                     assetBarView
                 }
-                
-                // List of assets by category
+
                 if viewModel.viewState.selectedFilter == nil {
                     assetListView
                 } else {
-                    aggregatedAssetListView(assets: viewModel.viewState.filteredAssets)
+                    aggregatedAssetListView(holdings: viewModel.viewState.filteredAssets)
                 }
             }
             .padding()
-            .onChange(of: transactions) { _, _ in
-                Task {
-                    await viewModel.loadData(transactions: transactions)
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Clear Data") {
                         Task { await viewModel.clearData() }
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         viewModel.presentAddSheet()
@@ -73,11 +83,21 @@ struct HomeView: View {
                 }
             }
             .task {
-                await viewModel.loadData(transactions: transactions)
+                await viewModel.loadData()
+            }
+        }
+        .refreshable {
+            await viewModel.loadData()
+        }
+        .overlay {
+            if viewModel.viewState.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.05))
             }
         }
     }
-    
+
     private var filterBarView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
@@ -107,7 +127,7 @@ struct HomeView: View {
             .padding(.horizontal)
         }
     }
-    
+
     private var assetBarView: some View {
         HStack(spacing: 2) {
             assetBarSection(assetCategory: .cash)
@@ -119,7 +139,7 @@ struct HomeView: View {
         .background(Color(.systemGray5))
         .cornerRadius(3)
     }
-    
+
     private var assetListView: some View {
         VStack(spacing: 8) {
             assetListSection(assetCategory: .cash)
@@ -129,41 +149,41 @@ struct HomeView: View {
             assetListSection(assetCategory: .retirement)
         }
     }
-    
+
     private func assetBarSection(assetCategory: AssetCategory) -> some View {
         let assetValue = getAssetValue(assetCategory: assetCategory)
         let width = barWidth(for: assetValue)
-        
+
         return Rectangle()
             .fill(getAssetColor(assetCategory: assetCategory))
             .frame(width: width, height: 12)
             .cornerRadius(3)
     }
-    
+
     private func assetListSection(assetCategory: AssetCategory) -> some View {
         let assetValue = getAssetValue(assetCategory: assetCategory)
         let isExpanded = expandedCategories.contains(assetCategory)
-        
+
         return VStack(spacing: 0) {
             HStack {
                 Circle()
                     .fill(getAssetColor(assetCategory: assetCategory))
                     .frame(width: 10, height: 10)
-                
+
                 Text(assetCategory.rawValue)
                     .font(.body)
-                
+
                 Spacer()
-                
+
                 if assetValue > 0.0 {
                     Text("\((assetValue / viewModel.viewState.totalNetworthValue * 100).twoDecimalString)%")
                         .foregroundStyle(.green)
                 }
-                
+
                 Text(assetValue.currencyFormat())
                     .font(.body)
                     .bold()
-                
+
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
             }
             .padding()
@@ -177,7 +197,7 @@ struct HomeView: View {
                     }
                 }
             }
-            
+
             if isExpanded {
                 Divider()
                 expandedDetailView(for: assetCategory)
@@ -186,7 +206,7 @@ struct HomeView: View {
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(10)
     }
-    
+
     private func getAssetColor(assetCategory: AssetCategory) -> Color {
         switch assetCategory {
         case .crypto: return .cyan
@@ -196,7 +216,7 @@ struct HomeView: View {
         case .retirement: return .purple
         }
     }
-    
+
     private func getAssetValue(assetCategory: AssetCategory) -> Double {
         switch assetCategory {
         case .crypto: return viewModel.viewState.cryptoTotalValue
@@ -206,83 +226,79 @@ struct HomeView: View {
         case .retirement: return viewModel.viewState.retirementTotalValue
         }
     }
-    
+
     private func barWidth(for amount: Double) -> CGFloat {
         let totalAmount = viewModel.viewState.totalNetworthValue
         guard totalAmount > 0 else { return 0 }
-        let totalWidth: CGFloat = UIScreen.main.bounds.width - 48 // account for padding
+        let totalWidth: CGFloat = UIScreen.main.bounds.width - 48
         return CGFloat(amount / totalAmount) * totalWidth
     }
-    
+
     @ViewBuilder
     private func expandedDetailView(for category: AssetCategory) -> some View {
-        let groupedData = switch category {
-        case .crypto: viewModel.viewState.cryptoGroupedAssetHoldings
-        case .stocks: viewModel.viewState.stocksGroupedAssetHoldings
+        let holdings: GroupedAssetHolding = switch category {
+        case .crypto:     viewModel.viewState.cryptoGroupedAssetHoldings
+        case .stocks:     viewModel.viewState.stocksGroupedAssetHoldings
         case .realEstate: viewModel.viewState.realEstateGroupedAssetHoldings
-        case .cash: viewModel.viewState.cashGroupedAssetHoldings
+        case .cash:       viewModel.viewState.cashGroupedAssetHoldings
         case .retirement: viewModel.viewState.retirementGroupedAssetHoldings
         }
-        
-        ForEach(groupedData.keys.sorted(), id: \.self) { accountName in
-            VStack(alignment: .leading, spacing: 4) {
-                Text(accountName)
-                    .font(.headline)
-                    .padding(.leading)
-                
-                if let accountHoldings = groupedData[accountName] {
-                    ForEach(accountHoldings.keys.sorted(), id: \.self) { assetIdentifier in
-                        if let holding = accountHoldings[assetIdentifier] {
-                            HStack {
-                                Text(assetIdentifier)
-                                    .font(.body)
-                                Spacer()
-                                VStack(alignment: .trailing) {
-                                    Text(holding.totalValue.currencyFormat())
-                                        .font(.body).bold()
-                                    
-                                    let holdingsString: String = switch category {
-                                    case .cash, .realEstate: ""
-                                    case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
-                                    case .crypto: "\(holding.quantity.twoDecimalString) coins"
-                                    }
-                                    
-                                    Text(holdingsString)
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
+
+        ForEach(holdings, id: \.id) { holding in
+            HStack {
+                Text(holding.symbol ?? holding.name)
+                    .font(.body)
+                Spacer()
+                VStack(alignment: .trailing) {
+                    Text(holding.currentValue.currencyFormat())
+                        .font(.body).bold()
+
+                    let quantityString: String = switch category {
+                    case .cash, .realEstate: ""
+                    case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
+                    case .crypto: "\(holding.quantity.twoDecimalString) coins"
                     }
+
+                    Text(quantityString)
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
             }
-            .padding(.vertical)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
         }
     }
 
     @ViewBuilder
-    private func aggregatedAssetListView(assets: [Asset]) -> some View {
+    private func aggregatedAssetListView(holdings: GroupedAssetHolding) -> some View {
         VStack(spacing: 8) {
-            ForEach(assets) { asset in
+            ForEach(holdings, id: \.id) { holding in
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(asset.name)
+                        Text(holding.name)
                             .font(.headline)
-                        Text(asset.symbol)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        
+                        if let symbol = holding.symbol {
+                            Text(symbol)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
                     }
                     Spacer()
                     VStack(alignment: .trailing) {
-                        Text(asset.currentValue.currencyFormat())
+                        Text(holding.currentValue.currencyFormat())
                             .font(.body).bold()
-                        let quantityString: String = switch asset.category {
-                        case .cash, .realEstate: ""
-                        case .stocks, .retirement: "\(asset.quantity.twoDecimalString) shares"
-                        case .crypto: "\(asset.quantity.twoDecimalString) coins"
+
+                        let quantityString: String
+                        if let filter = viewModel.viewState.selectedFilter {
+                            quantityString = switch filter {
+                            case .cash, .realEstate: ""
+                            case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
+                            case .crypto: "\(holding.quantity.twoDecimalString) coins"
+                            }
+                        } else {
+                            quantityString = ""
                         }
+
                         Text(quantityString)
                             .font(.caption)
                             .foregroundColor(.gray)
@@ -295,51 +311,3 @@ struct HomeView: View {
         }
     }
 }
-
-//#Preview {
-//        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-//        let schema = Schema([
-//            Transaction.self, Account.self, NetWorthSnapshot.self, Asset.self
-//        ])
-//        let container = try! ModelContainer(for: schema, configurations: [config])
-//
-//        // Create mock accounts
-//        let coinbase = Account(name: "Coinbase", accountType: .cryptoExchange)
-//        let fidelity = Account(name: "Fidelity", accountType: .brokerage)
-//        let chase = Account(name: "Chase", accountType: .bank)
-//        let house = Account(name: "123 Main St", accountType: .realEstate)
-//         
-//
-//        // Create mock transactions
-//        let btcTx = Transaction(transactionType: .buy, quantity: 1.5, pricePerUnit: 50000, date: .now, name: "Bitcoin", symbol: "BTC", category: .crypto, account: coinbase)
-//        let vooTx = Transaction(transactionType: .buy, quantity: 10, pricePerUnit: 500, date: .now, name: "Vanguard S&P 500", symbol: "VOO", category: .stocks, account: fidelity)
-//        let cashTx = Transaction(transactionType: .buy, quantity: 10000, pricePerUnit: 1, date: .now, name: "Savings", category: .cash, account: chase)
-//        let reTx = Transaction(transactionType: .buy, quantity: 1, pricePerUnit: 300_000, date: .now, name: "Main Property", category: .realEstate, account: house)
-//        let mockTransactions = [btcTx, vooTx, cashTx, reTx]
-//        
-//        // Create mock Assets
-////        let cryptoAssets = Asset(name: "Bitcoin", symbol: "BTC", value: 50_000)
-////        let stockAssets = Asset(name: "Vanguard S&P 500", symbol: "VOO", value: 5_000)
-////        let cashAssets = Asset(name: "Savings", value: 10_000)
-////        let realEstateAssets = Asset(name: "123 Main St", symbol: "RE", value: 300_000)
-////        let mockAssets: [Asset] = [cryptoAssets, stockAssets, realEstateAssets]
-//        
-//        // Insert mock data into the container
-//        for i in 0..<4 {
-//            container.mainContext.insert(mockTransactions[i])
-////            container.mainContext.insert(mockAssets[i])
-//        }
-//
-//        // Create the ViewModel with the mock context
-//        let viewModel = HomeViewModel(context: container.mainContext)
-//        
-//        // Manually set the ViewModel's state for a predictable preview
-//        Task {
-//            await viewModel.loadData(transactions: mockTransactions)
-//        }
-//
-//        NavigationView {
-//           HomeView(modelContext: container.mainContext)
-//        }
-//        .modelContainer(container)
-//}

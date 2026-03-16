@@ -135,40 +135,40 @@
 ## Phase 4: ViewModel Simplification
 
 ### 4.1 HomeViewModel Updates
-- [ ] Replace `loadData()` with single dashboard API call
-- [ ] Map `APIDashboardResponse` directly to `HomeViewState`
-- [ ] Simplify `onSave(transaction:)` to POST + refresh
-- [ ] Remove `calculateAssetTotals()` (backend provides totals)
-- [ ] Remove `updateGroupHoldingsForAllCategories()` (backend provides grouped data)
-- [ ] Remove `processGroupTransactions()` (no longer needed)
-- [ ] Update `rebuildHistoricalSnapshots()` to use API history endpoint
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Replace `loadData()` with single dashboard API call
+- [x] Map `APIDashboardResponse` directly to `HomeViewState`
+- [x] Simplify `onSave(transaction:)` to POST + refresh
+- [x] Remove `calculateAssetTotals()` (backend provides totals)
+- [x] Remove `updateGroupHoldingsForAllCategories()` (backend provides grouped data)
+- [x] Remove `processGroupTransactions()` (no longer needed)
+- [x] Update `rebuildHistoricalSnapshots()` to use API history endpoint
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 4.2 HomeViewState Updates
-- [ ] Review and simplify `HomeViewState` struct
-- [ ] Update `GroupedAssetHolding` type to match API response format
-- [ ] Add loading states for API calls
-- [ ] Add error state for API failures
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Review and simplify `HomeViewState` struct
+- [x] Update `GroupedAssetHolding` type to match API response format
+- [x] Add loading states for API calls
+- [x] Add error state for API failures
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 4.3 Filter Logic
-- [ ] Update `selectFilter()` to work with API data structure
-- [ ] Ensure `filteredAssets` populates correctly from API response
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Update `selectFilter()` to work with API data structure
+- [x] Ensure `filteredAssets` populates correctly from API response
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 4.4 Error Handling in UI
-- [ ] Add error banner/alert for API failures
-- [ ] Implement pull-to-refresh for dashboard
-- [ ] Add loading indicators during API calls
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Add error banner/alert for API failures
+- [x] Implement pull-to-refresh for dashboard
+- [x] Add loading indicators during API calls
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ---
 
