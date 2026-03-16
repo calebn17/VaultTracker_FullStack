@@ -83,8 +83,8 @@
 - [x] Create `DataServiceProtocol` if not exists
 - [x] Update `DataService` initializer
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 3.2 Transaction Operations
 - [x] Replace `addTransaction()` with API call + local update
@@ -92,8 +92,8 @@
 - [x] Replace `deleteTransaction()` with API call
 - [x] Remove `deleteAllTransactions()` or convert to API batch operation
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 3.3 Asset Operations
 - [x] Replace `fetchAllAssets()` with API call
@@ -101,8 +101,8 @@
 - [x] Remove `deleteAsset()` (managed by backend)
 - [x] Remove price fetching logic (handled by backend)
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 3.4 Account Operations
 - [x] Replace `addAccount()` with API call
@@ -110,16 +110,16 @@
 - [x] Add `updateAccount()` method
 - [x] Add `deleteAccount()` method
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 3.5 Net Worth Operations
 - [x] Replace `fetchAllNetworthSnapshots()` with API history endpoint
 - [x] Remove `addSnapshot()` (backend manages snapshots)
 - [x] Remove `rebuildHistoricalSnapshots()` logic
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 3.6 Remove Deprecated Code
 - [x] Remove `refreshAllPrices()` method
@@ -127,8 +127,8 @@
 - [x] Remove `assetPrices` dictionary cache
 - [x] Remove `isAssetPriceRefreshed` flag
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ---
 
