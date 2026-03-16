@@ -1,199 +1,126 @@
-import SwiftData
+//
+//  DataService.swift
+//  VaultTracker
+//
+
 import Foundation
 
-enum DataModelType {
-    case asset
-    case transaction
-    case snapshot
-}
+/// API-backed implementation of DataServiceProtocol.
+///
+/// Replaces the previous SwiftData-based implementation. All reads and writes
+/// go through APIService, with Phase 2 mapper functions converting API response
+/// types into the app's domain models.
+///
+/// Must run on the MainActor because Asset and NetWorthSnapshot are
+/// `@MainActor @Model` classes whose initialisers require the main thread.
+@MainActor
+final class DataService: DataServiceProtocol {
 
-/// A service responsible for all interactions with the SwiftData database.
-final class DataService {
-    
-    private var context: ModelContext
-    private var assetManager: AssetManagerProtocol
-    
-    var assetPrices: [String : Double] = [:]
-    var isAssetPriceRefreshed: Bool = false
+    // MARK: - Dependencies
 
-    init(context: ModelContext, assetManager: AssetManagerProtocol = AssetManager()) {
-        self.context = context
-        self.assetManager = assetManager
+    private let api: APIServiceProtocol
+
+    // MARK: - Init
+
+    init(api: APIServiceProtocol = APIService.shared) {
+        self.api = api
     }
 
-    // MARK: - Transaction C.R.U.D.
-    func addTransaction(_ transaction: Transaction) async throws {
-        try await insertModel(transaction)
+    // MARK: - Dashboard
+
+    func fetchDashboard() async throws -> APIDashboardResponse {
+        try await api.fetchDashboard()
     }
+
+    // MARK: - Transaction Operations (Phase 3.2)
 
     func fetchAllTransactions() async throws -> [Transaction] {
-        let descriptor = FetchDescriptor<Transaction>(
-            sortBy: [SortDescriptor(\.date, order: .reverse)]
-        )
-        return try context.fetch(descriptor)
+        // Fetch transactions, assets, and accounts in parallel — all three are
+        // needed to resolve the asset name/symbol/category and account reference
+        // that the domain Transaction model embeds inline.
+        async let txResponses     = api.fetchTransactions()
+        async let assetResponses  = api.fetchAssets()
+        async let accountResponses = api.fetchAccounts()
+
+        let (txs, assets, accounts) = try await (txResponses, assetResponses, accountResponses)
+
+        let domainAssets   = AssetMapper.toDomain(assets)
+        let domainAccounts = AccountMapper.toDomain(accounts)
+
+        let assetsByID   = Dictionary(uniqueKeysWithValues: zip(assets.map(\.id),   domainAssets))
+        let accountsByID = Dictionary(uniqueKeysWithValues: zip(accounts.map(\.id), domainAccounts))
+
+        return TransactionMapper.toDomain(txs, assetsByID: assetsByID, accountsByID: accountsByID)
     }
 
-    func fetchTransactions(after date: Date) async throws -> [Transaction] {
-        let predicate = #Predicate<Transaction> { transaction in
-            transaction.date > date
+    func createTransaction(_ request: APITransactionCreateRequest) async throws -> Transaction {
+        let response = try await api.createTransaction(request)
+
+        // Fetch the created asset and all accounts to resolve the domain model.
+        async let assetResponse    = api.fetchAsset(id: response.assetId)
+        async let accountResponses = api.fetchAccounts()
+
+        let (asset, accounts) = try await (assetResponse, accountResponses)
+        let domainAsset    = AssetMapper.toDomain(asset)
+        let domainAccounts = AccountMapper.toDomain(accounts)
+
+        let assetsByID   = [asset.id: domainAsset]
+        let accountsByID = Dictionary(uniqueKeysWithValues: zip(accounts.map(\.id), domainAccounts))
+
+        guard let tx = TransactionMapper.toDomain(response, assetsByID: assetsByID, accountsByID: accountsByID) else {
+            throw APIError.decodingError(
+                NSError(domain: "DataService", code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Could not map created transaction to domain model"])
+            )
         }
-        let descriptor = FetchDescriptor<Transaction>(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.date, order: .forward)]
-        )
-        return try context.fetch(descriptor)
+        return tx
     }
 
-    func deleteTransaction(_ transaction: Transaction) async throws {
-       try await deleteModel(transaction)
+    func deleteTransaction(id: String) async throws {
+        try await api.deleteTransaction(id: id)
     }
 
-    func deleteAllTransactions() async throws {
-        let transactions = try await fetchAllTransactions()
-        for transaction in transactions {
-            context.delete(transaction)
-        }
-        try await saveContext()
-    }
-    
-    // MARK: - Asset C.R.U.D.
-    func addAsset(_ asset: Asset) async throws {
-        try await insertModel(asset)
-    }
+    // MARK: - Asset Operations (Phase 3.3)
+    // Note: addAsset() is intentionally absent — assets are created by the
+    // backend as a side-effect of transaction creation.
 
     func fetchAllAssets() async throws -> [Asset] {
-        let descriptor = FetchDescriptor<Asset>(
-            sortBy: [SortDescriptor(\.lastUpdated, order: .reverse)]
-        )
-        return try context.fetch(descriptor)
-    }
-    
-    func deleteAsset(_ asset: Asset) async throws {
-        try await deleteModel(asset)
+        let responses = try await api.fetchAssets()
+        return AssetMapper.toDomain(responses)
     }
 
-    func deleteAllAssets() async throws {
-        let assets = try await fetchAllAssets()
-        for asset in assets {
-            context.delete(asset)
-        }
-        try await saveContext()
+    func createAsset(_ request: APIAssetCreateRequest) async throws -> Asset {
+        let response = try await api.createAsset(request)
+        return AssetMapper.toDomain(response)
     }
-    
-    enum AssetDataError: Error {
-        case missingSymbol
+
+    // MARK: - Account Operations (Phase 3.4)
+
+    func fetchAllAccounts() async throws -> [Account] {
+        let responses = try await api.fetchAccounts()
+        return AccountMapper.toDomain(responses)
     }
-    
-    func fetchLatestPrice(for asset: Asset) async throws -> Double? {
-        switch await asset.category {
-        case .crypto:
-            let response = try await assetManager.fetchCryptoAssetMarketData(symbol: asset.symbol, currency: .usd)
-            return Double(response.exchangeRate)
-            
-        case .stocks, .retirement:
-            let response = try await assetManager.fetchStocksAssetMarketData(symbol: asset.symbol)
-            return Double(response.price)
-            
-        case .realEstate:
-            // Add api call if I can find an API that has real estate data
-            // Otherwise this will just be data that's pulled from the local storage (manually entered data)
-            // Need to think about how to calculate equity
-            return await asset.currentValue
-        case .cash:
-            return await asset.currentValue
-        }
+
+    func createAccount(_ request: APIAccountCreateRequest) async throws -> Account {
+        let response = try await api.createAccount(request)
+        return AccountMapper.toDomain(response)
     }
-    
-    // MARK: - Refresh All Priced Assets Concurrently
-    @MainActor
-    func refreshAllPrices() async throws {
-        let fetchedAssets = try await fetchAllAssets()
-        
-        /// For crypto, stocks, and retirement
-        let pricedAssets = fetchedAssets.filter { $0.symbol != nil }
-        try await withThrowingTaskGroup(of: Void.self) { [weak self] group in
-            for asset in pricedAssets {
-                group.addTask {
-                    do {
-                        if let newPrice = try await self?.fetchLatestPrice(for: asset) {
-                            await MainActor.run {
-                                asset.currentValue = newPrice * asset.quantity
-                                self?.assetPrices[asset.symbol] = newPrice
-                            }
-                            
-                            try await self?.saveContext()
-                            self?.isAssetPriceRefreshed = true
-                        }
-                    } catch {
-                        // By catching the error here and NOT re-throwing it, we allow the
-                        // overall TaskGroup to continue even if one network call fails.
-                        // The asset's currentValue simply remains unchanged.
-                        print("DEBUG: Failed to refresh price for asset '\(await asset.name)'. Using stale value. Error: \(error.localizedDescription)")
-                        self?.isAssetPriceRefreshed = false
-                    }
-                }
-            }
-            try await group.waitForAll()
-        }
-        
-        /// For cash and real estate
-        let otherAssets = fetchedAssets.filter { $0.symbol == nil }
-        for asset in otherAssets {
-            asset.currentValue = asset.quantity * asset.price
-            try await saveContext()
-        }
+
+    func updateAccount(id: String, _ request: APIAccountUpdateRequest) async throws -> Account {
+        let response = try await api.updateAccount(id: id, request)
+        return AccountMapper.toDomain(response)
     }
-    
-    
-    // MARK: - Account C.R.U.D.
-    
-    func addAccount(_ account: Account) throws {
-        context.insert(account)
-        // Note: Intentionally not saving here.
-        // The save should be part of the larger transaction save operation.
+
+    func deleteAccount(id: String) async throws {
+        try await api.deleteAccount(id: id)
     }
-    
-    func fetchAccount(named name: String) throws -> Account? {
-        let predicate = #Predicate<Account> { $0.name == name }
-        let descriptor = FetchDescriptor(predicate: predicate)
-        return try context.fetch(descriptor).first
-    }
-    
-    // MARK: - Net Worth Snapshot C.R.U.D.
-    
-    func fetchAllNetworthSnapshots() async throws -> [NetWorthSnapshot] {
-        let descriptor = FetchDescriptor<NetWorthSnapshot>(
-            sortBy: [SortDescriptor(\.date, order: .forward)]
-        )
-        return try context.fetch(descriptor)
-    }
-    
-    func addSnapshot(_ snapshot: NetWorthSnapshot) async throws {
-        context.insert(snapshot)
-        try await saveContext()
-    }
-    
-    func deleteAllSnapshots() async throws {
-        let snapshots = try await fetchAllNetworthSnapshots()
-        for snapshot in snapshots {
-            context.delete(snapshot)
-        }
-        try await saveContext()
-    }
-    
-    // MARK: - Generic CRUD Operations
-    func saveContext() async throws {
-        try context.save()
-    }
-    
-    func insertModel(_ model: any PersistentModel, shouldSave: Bool = true) async throws {
-        context.insert(model)
-        
-        if shouldSave { try await saveContext() }
-    }
-    
-    func deleteModel(_ model: any PersistentModel, shouldSave: Bool = true) async throws {
-        context.delete(model)
-        if shouldSave { try await saveContext() }
+
+    // MARK: - Net Worth Operations (Phase 3.5)
+    // Note: addSnapshot() and rebuildHistoricalSnapshots() are removed —
+    // the backend manages net-worth history automatically.
+
+    func fetchNetWorthHistory(period: APINetWorthPeriod? = nil) async throws -> [NetWorthSnapshot] {
+        let response = try await api.fetchNetWorthHistory(period: period)
+        return response.snapshots.map { NetWorthSnapshot(date: $0.date, value: $0.value) }
     }
 }

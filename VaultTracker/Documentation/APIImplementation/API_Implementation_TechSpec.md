@@ -15,6 +15,7 @@ This document provides detailed technical specifications for the VaultTracker iO
 4. [Phase 1.3: APIService Implementation](#4-phase-13-apiservice-implementation)
 5. [Phase 1.4: Authentication Integration](#5-phase-14-authentication-integration)
 6. [Phase 1.5: Error Handling](#6-phase-15-error-handling)
+7. [Phase 3: DataService Refactoring](#7-phase-3-dataservice-refactoring)
 
 ---
 
@@ -464,6 +465,88 @@ All mappers live under `API/Mappers/` as caseless enums with static methods.
 
 ---
 
+---
+
+## 7. Phase 3: DataService Refactoring
+
+**Status:** ✅ Complete (3.1 – 3.6)
+
+### Overview
+
+Replaces the SwiftData-backed `DataService` with an API-driven implementation. All reads and writes now go through `APIService`, with Phase 2 mapper functions converting API response types into domain models.
+
+### New Files
+
+#### `Managers/DataServiceProtocol.swift`
+
+Defines the public data-access interface consumed by `HomeViewModel` and `AddAssetFormViewModel`. All methods are `async throws`.
+
+| Method | Returns | Notes |
+|--------|---------|-------|
+| `fetchDashboard()` | `APIDashboardResponse` | Passthrough to APIService |
+| `fetchAllTransactions()` | `[Transaction]` | Parallel fetch of txs + assets + accounts; mapped via TransactionMapper |
+| `createTransaction(_:)` | `Transaction` | Posts request; resolves asset + account for mapping |
+| `deleteTransaction(id:)` | `Void` | DELETE by server UUID string |
+| `fetchAllAssets()` | `[Asset]` | Mapped via AssetMapper |
+| `createAsset(_:)` | `Asset` | POST; mapped via AssetMapper |
+| `fetchAllAccounts()` | `[Account]` | Mapped via AccountMapper |
+| `createAccount(_:)` | `Account` | POST; mapped via AccountMapper |
+| `updateAccount(id:_:)` | `Account` | PUT; mapped via AccountMapper |
+| `deleteAccount(id:)` | `Void` | DELETE by server UUID string |
+| `fetchNetWorthHistory(period:)` | `[NetWorthSnapshot]` | Maps APINetWorthSnapshot → domain NetWorthSnapshot |
+
+### Updated Files
+
+#### `Managers/DataService.swift` — complete rewrite
+
+- Removed: `ModelContext`, `AssetManager`, `assetPrices`, `isAssetPriceRefreshed`
+- Added: `private let api: APIServiceProtocol` injected via `init(api:)` (defaults to `APIService.shared`)
+- Marked `@MainActor` because `Asset` and `NetWorthSnapshot` are `@MainActor @Model`
+- `fetchAllTransactions()` uses `async let` to fetch transactions, assets, and accounts in parallel before mapping
+- `createTransaction(_:)` fetches the created asset and all accounts after POST to resolve the domain model
+- `fetchNetWorthHistory(period:)` maps `APINetWorthSnapshot` directly to `NetWorthSnapshot(date:value:)` without inserting into SwiftData
+
+**Removed methods (Phase 3.2 – 3.6):**
+- `addTransaction(_:)`, `deleteAllTransactions()`, `fetchTransactions(after:)`
+- `addAsset(_:)`, `deleteAsset(_:)`, `deleteAllAssets()`, `fetchLatestPrice(_:)`, `refreshAllPrices()`
+- `addAccount(_:)`, `fetchAccount(named:)`
+- `addSnapshot(_:)`, `deleteAllSnapshots()`, `fetchAllNetworthSnapshots()`
+- `saveContext()`, `insertModel(_:)`, `deleteModel(_:)`
+
+#### `API/APIServiceProtocol.swift` + `API/APIService.swift`
+
+Added `createAsset(_ request: APIAssetCreateRequest) async throws -> APIAssetResponse` — needed so `DataService` and `HomeViewModel.onSave` can create assets on the backend before posting a transaction for a new holding.
+
+#### `AddAssetModal/AddAssetFormViewModel.swift`
+
+- `dataService` type changed to `DataServiceProtocol`
+- Init no longer passes `ModelContext` to `DataService`
+- `getOrCreateAccount()` now calls `dataService.fetchAllAccounts()` to look up by name, then `dataService.createAccount(_:)` if not found — ensuring the `Account` returned has a server-side UUID that `HomeViewModel.onSave` can use as `accountId`
+
+#### `Home/HomeViewModel.swift`
+
+- `dataService` type changed to `DataServiceProtocol`
+- `DataService()` no longer receives `ModelContext`
+- Removed: `refreshPrices()` method and its call in `loadData`
+- `clearData()` stubbed with print — no API equivalent; removed in Phase 6.1
+- `onSave(transaction:)` rewritten: looks up asset UUID in `self.assets` (server UUIDs), creates asset via API if new, then POSTs `APITransactionCreateRequest`, then calls `loadAssets()` to refresh quantities/values
+- `rebuildHistoricalSnapshots()` replaced with `dataService.fetchNetWorthHistory(period: nil)`
+- Removed: `updatePricesForGroupedAssetHoldings()` and its call in `processGroupTransactions`
+
+### Architecture After Phase 3
+
+```
+HomeViewModel / AddAssetFormViewModel
+        ↓  DataServiceProtocol
+    DataService  (@MainActor)
+        ↓  APIServiceProtocol
+    APIService  (URLSession + auth)
+        ↓  Phase 2 Mappers
+    Domain models (Asset, Account, Transaction, NetWorthSnapshot)
+```
+
+---
+
 ## Appendix: File Checklist
 
 | File | Status | Notes |
@@ -475,8 +558,17 @@ All mappers live under `API/Mappers/` as caseless enums with static methods.
 | `API/Models/APITransactionModels.swift` | ✅ | Response, create, update + transaction type enum |
 | `API/Models/APINetWorthHistoryResponse.swift` | ✅ | History response + snapshot + period enum |
 | `API/Models/APIErrorResponse.swift` | ✅ | Standard + validation error formats |
-| `API/APIServiceProtocol.swift` | ✅ | Full protocol with all 12 async/throws methods |
+| `API/APIServiceProtocol.swift` | ✅ | 13 async/throws methods (added createAsset in Phase 3) |
 | `API/APIService.swift` | ✅ | URLSession-based impl; auth injection + 401 retry |
 | `API/AuthTokenProvider.swift` | ✅ | Actor wrapping Firebase getIDTokenForcingRefresh |
-| `Managers/AuthManager.swift` | ✅ (modified) | Added observer for .authenticationRequired notification |
+| `API/Mappers/AccountMapper.swift` | ✅ | APIAccountResponse → Account |
+| `API/Mappers/AssetMapper.swift` | ✅ | APIAssetResponse → Asset |
+| `API/Mappers/TransactionMapper.swift` | ✅ | APITransactionResponse → Transaction (needs asset+account dicts) |
+| `API/Mappers/DashboardMapper.swift` | ✅ | APIDashboardResponse → HomeViewState |
+| `API/Errors/APIError.swift` | ✅ | LocalizedError enum + HTTP status mapping |
+| `Managers/AuthManager.swift` | ✅ (modified) | Observes .authenticationRequired for auto-logout |
+| `Managers/DataServiceProtocol.swift` | ✅ | New in Phase 3 — defines data-access interface |
+| `Managers/DataService.swift` | ✅ (rewritten) | API-backed; no SwiftData; @MainActor |
+| `AddAssetModal/AddAssetFormViewModel.swift` | ✅ (modified) | Uses DataServiceProtocol; API account lookup |
+| `Home/HomeViewModel.swift` | ✅ (modified) | Uses DataServiceProtocol; API-driven onSave + chart |
 | `API/Errors/APIError.swift` | ✅ | LocalizedError + HTTP status mapping + 422 parsing |

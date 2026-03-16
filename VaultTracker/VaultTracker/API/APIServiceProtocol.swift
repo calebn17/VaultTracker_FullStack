@@ -38,6 +38,9 @@ protocol APIServiceProtocol {
     /// Fetch a single asset by ID.
     func fetchAsset(id: String) async throws -> APIAssetResponse
 
+    /// Create a new asset.
+    func createAsset(_ request: APIAssetCreateRequest) async throws -> APIAssetResponse
+
     // MARK: - Transactions
 
     /// Fetch all transactions for the authenticated user.

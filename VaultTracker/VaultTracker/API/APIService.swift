@@ -84,6 +84,11 @@ final class APIService: APIServiceProtocol {
         return try await perform(request)
     }
 
+    func createAsset(_ body: APIAssetCreateRequest) async throws -> APIAssetResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.assets, method: "POST", body: body)
+        return try await perform(request)
+    }
+
     // MARK: - Transactions
 
     func fetchTransactions() async throws -> [APITransactionResponse] {

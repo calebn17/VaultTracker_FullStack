@@ -15,14 +15,14 @@ struct HomeViewState {
     /// Filtered views
     var selectedFilter: AssetCategory?
     var filteredAssets: [Asset] = []
-    
+
     var cryptoTotalValue: Double = 0.0
     var stocksTotalValue: Double = 0.0
     var cashTotalValue: Double = 0.0
     var retirementTotalValue: Double = 0.0
     var realEstateTotalValue: Double = 0.0
     var totalNetworthValue: Double = 0.0
-    
+
     /// For the expanded view
     var cashGroupedAssetHoldings: GroupedAssetHolding = [:]
     var stocksGroupedAssetHoldings: GroupedAssetHolding = [:]
@@ -37,65 +37,52 @@ final class HomeViewModel: ObservableObject {
     @Published var viewState = HomeViewState()
     @Published var shouldPresentSheet: Bool = false
     @Published var assets : [Asset] = []
-    
+
+    /// Kept for AddAssetModalView; removed in Phase 6.1 when SwiftData is fully removed.
     var context: ModelContext
-    
+
     /// Queue of recently saved Transactions that need to be processed and grouped by Account in `groupTransactionsFor`
     var newTransactionToBeGroupedQueue: [Transaction] = []
-    
-    private var dataService: DataService
+
+    private var dataService: DataServiceProtocol
     private var assetManager: AssetManagerProtocol
-    
+
     init(context: ModelContext, assetManager: AssetManagerProtocol = AssetManager()) {
         self.context = context
-        self.dataService = DataService(context: context)
+        self.dataService = DataService()  // No longer needs ModelContext (Phase 3.1)
         self.assetManager = assetManager
     }
-    
+
     func loadData(transactions: [Transaction]) async {
-        dataService.isAssetPriceRefreshed = false
-        await refreshPrices()
+        // Phase 3: prices come from the backend — no local refresh needed.
+        // transactions param still driven by @Query for now; replaced in Phase 4.
         await loadAssets()
         loadViewState(transactions: transactions)
         await rebuildHistoricalSnapshots()
     }
-    
+
+    /// Bulk delete is not supported via the API client.
+    /// Will be removed in Phase 6.1 when SwiftData is fully removed.
     func clearData() async {
-        do {
-            try await dataService.deleteAllTransactions()
-            try await dataService.deleteAllAssets()
-            try await dataService.deleteAllSnapshots()
-        } catch {
-            print("Failed to clear data: \(error)")
-        }
+        print("DEBUG: clearData() is not supported in API mode. Addressed in Phase 6.1.")
     }
-    
+
     // MARK: - Private: Data Aggregation & Refreshing
     private func loadAssets() async {
         do {
             let loadedAssets = try await dataService.fetchAllAssets()
-            await MainActor.run {
-                self.assets = loadedAssets
-            }
+            self.assets = loadedAssets
         } catch {
             print("Failed to load assets: \(error)")
         }
     }
-    
-    private func refreshPrices() async {
-        do {
-            try await dataService.refreshAllPrices()
-        } catch {
-            print("Failed to refresh prices: \(error.localizedDescription)")
-        }
-    }
-    
+
    @MainActor
     private func loadViewState(transactions: [Transaction]) {
         calculateAssetTotals()
         updateGroupHoldingsForAllCategories(transactions: transactions)
     }
-    
+
     @MainActor
     private func calculateAssetTotals() {
         var cryptoTotal: Double = 0
@@ -113,7 +100,7 @@ final class HomeViewModel: ObservableObject {
             case .realEstate: realEstateTotal += asset.currentValue
             }
         }
-        
+
         viewState.cryptoTotalValue = cryptoTotal
         viewState.stocksTotalValue = stocksTotal
         viewState.cashTotalValue = cashTotal
@@ -121,143 +108,110 @@ final class HomeViewModel: ObservableObject {
         viewState.realEstateTotalValue = realEstateTotal
         viewState.totalNetworthValue = cryptoTotal + stocksTotal + cashTotal + retirementTotal + realEstateTotal
     }
-    
+
     private func updateGroupHoldingsForAllCategories(transactions: [Transaction]) {
         for category in AssetCategory.allCases {
             updateGroupHoldingsFor(category: category, from: transactions)
         }
-        
+
         /// Clear queue
         newTransactionToBeGroupedQueue.removeAll()
     }
-    
+
     @MainActor
     func onSave(transaction: Transaction) async {
         do {
-            /// If the transaction involves an existing asset, then modify and update it
-            let asset: Asset?
+            // Find the matching asset in the local cache by symbol or name.
+            // After loadAssets(), cache entries have server-side UUIDs.
+            let matchingAsset: Asset?
             switch transaction.category {
             case .crypto, .stocks, .retirement:
-                asset = assets.filter({$0.symbol == transaction.symbol}).first
+                matchingAsset = assets.first(where: { $0.symbol == transaction.symbol })
             case .realEstate, .cash:
-                asset = assets.filter({ $0.name == transaction.name }).first
+                matchingAsset = assets.first(where: { $0.name == transaction.name })
             }
-            
-            if let asset {
-                switch transaction.category {
-                case .crypto, .stocks, .retirement:
-                    if transaction.transactionType == .buy {
-                        asset.quantity += transaction.quantity
-                    } else {
-                        asset.quantity -= transaction.quantity
-                    }
-                    
-                    /// For the price, compare the Asset.lastUpdated date with the Transaction date,
-                    /// choose the most up-to-date price.
-                    if (asset.lastUpdated < transaction.date) {
-                        asset.price = transaction.pricePerUnit
-                    }
-                case .realEstate, .cash:
-                    /// For these asset classes, need to update the "value" instead of the quantity
-                    if transaction.transactionType == .buy {
-                        asset.currentValue += transaction.pricePerUnit
-                    } else {
-                        asset.currentValue -= transaction.pricePerUnit
-                    }
-                }
-                
-                /// Updating the date for the Asset if needed
-                if (asset.lastUpdated < transaction.date) {
-                    asset.lastUpdated = transaction.date
-                }
-                
-                try await dataService.saveContext()
+
+            let assetId: String
+            if let existing = matchingAsset {
+                assetId = existing.id.uuidString
             } else {
-                /// Otherwise, create a new asset and save it
-                let newAsset = Asset(
+                // New asset — create it on the server to obtain a server-side ID.
+                let initialValue = transaction.pricePerUnit * transaction.quantity
+                let categoryString: String
+                switch transaction.category {
+                case .crypto:     categoryString = "crypto"
+                case .stocks:     categoryString = "stocks"
+                case .cash:       categoryString = "cash"
+                case .realEstate: categoryString = "real_estate"
+                case .retirement: categoryString = "retirement"
+                }
+                let symbol: String? = (transaction.category == .cash || transaction.category == .realEstate)
+                    ? nil : transaction.symbol
+                let assetRequest = APIAssetCreateRequest(
                     name: transaction.name,
-                    category: transaction.category,
-                    symbol: transaction.symbol,
+                    symbol: symbol,
+                    category: categoryString,
                     quantity: transaction.quantity,
-                    purchasePrice: transaction.pricePerUnit,
-                    currentValue: transaction.pricePerUnit * transaction.quantity,
-                    lastUpdated: transaction.date
+                    currentValue: initialValue
                 )
-                try await dataService.addAsset(newAsset)
+                let newAsset = try await dataService.createAsset(assetRequest)
                 assets.append(newAsset)
+                assetId = newAsset.id.uuidString
             }
-            try await dataService.addTransaction(transaction)
-            
-            /// A new transaction needs to be grouped
-            newTransactionToBeGroupedQueue.append(transaction)
+
+            // Post the transaction to the API.
+            let txRequest = APITransactionCreateRequest(
+                assetId: assetId,
+                accountId: transaction.account.id.uuidString,
+                transactionType: transaction.transactionType.rawValue.lowercased(),
+                quantity: transaction.quantity,
+                pricePerUnit: transaction.pricePerUnit,
+                date: transaction.date
+            )
+            let savedTransaction = try await dataService.createTransaction(txRequest)
+
+            // Refresh asset list so quantities/values reflect the backend update.
+            await loadAssets()
+            newTransactionToBeGroupedQueue.append(savedTransaction)
             calculateAssetTotals()
         } catch {
             print("Failed to save transaction: \(error)")
         }
     }
-    
+
     // MARK: - Private: Chart Logic
+
+    /// Phase 3.5: replaced SwiftData snapshot rebuild with a direct API history call.
     @MainActor
     private func rebuildHistoricalSnapshots() async {
         do {
-            let cachedSnapshots = try await dataService.fetchAllNetworthSnapshots().sorted(by: { $0.date < $1.date })
-            let lastSnapshotDate = cachedSnapshots.last?.date ?? .distantPast
-            
-            let newTransactions = try await dataService.fetchTransactions(after: lastSnapshotDate)
-            
-            guard !newTransactions.isEmpty else {
-                self.snapshots = cachedSnapshots
-                return
-            }
-            
-            var runningTotal = cachedSnapshots.last?.value ?? 0.0
-            var newSnapshots: [NetWorthSnapshot] = []
-            
-            for transaction in newTransactions {
-                let value = transaction.pricePerUnit * transaction.quantity
-                if transaction.transactionType == .buy {
-                    runningTotal += value
-                } else {
-                    runningTotal -= value
-                }
-                let newSnapshot = NetWorthSnapshot(date: transaction.date, value: runningTotal)
-                newSnapshots.append(newSnapshot)
-                try await dataService.addSnapshot(newSnapshot)
-            }
-            
-            let allSnapshots = cachedSnapshots + newSnapshots
-            
-            let dailySnapshots = Dictionary(grouping: allSnapshots, by: { Calendar.current.startOfDay(for: $0.date) })
-                .compactMap { $0.value.sorted(by: { $0.date < $1.date }).last } // Get the last snapshot of each day
-                .sorted(by: { $0.date < $1.date })
-            
-            self.snapshots = dailySnapshots
+            snapshots = try await dataService.fetchNetWorthHistory(period: nil)
         } catch {
-            print("Error fetching transactions for snapshots: \(error)")
-            self.snapshots = []
+            print("Error fetching net worth history: \(error)")
+            snapshots = []
         }
     }
-    
+
     // MARK: - Modal Presentation
-    
+
     func presentAddSheet() {
         shouldPresentSheet = true
     }
-    
+
     func dismissAddSheet() {
         shouldPresentSheet = false
     }
 
     func selectFilter(category: AssetCategory?) {
         viewState.selectedFilter = category
-        
+
         if let selectedCategory = category {
             viewState.filteredAssets = self.assets.filter { $0.category == selectedCategory }.sorted(by: { $0.currentValue > $1.currentValue })
         } else {
             viewState.filteredAssets = []
         }
     }
-    
+
     @MainActor
     func updateGroupHoldingsFor(category: AssetCategory, from transactions: [Transaction]) {
         let cachedGroupedHoldings = switch category {
@@ -267,20 +221,20 @@ final class HomeViewModel: ObservableObject {
         case .realEstate: viewState.realEstateGroupedAssetHoldings
         case .retirement: viewState.retirementGroupedAssetHoldings
         }
-        
+
         /// If no new transactions were added and the cache is not empty, then just use the cache
         if !cachedGroupedHoldings.isEmpty && newTransactionToBeGroupedQueue.isEmpty { return }
-        
-        /// If there are new transactions and  the cache is not empty,
+
+        /// If there are new transactions and the cache is not empty,
         /// then process the transactions and add it to the cache and return
         if !cachedGroupedHoldings.isEmpty && !newTransactionToBeGroupedQueue.isEmpty {
             processGroupTransactions(transactions: newTransactionToBeGroupedQueue, category: category, storedGroupHoldings: cachedGroupedHoldings)
             return
         }
-        
+
         processGroupTransactions(transactions: transactions, category: category)
     }
-    
+
     @MainActor
     private func processGroupTransactions(
         transactions: [Transaction],
@@ -290,25 +244,25 @@ final class HomeViewModel: ObservableObject {
         /// Grouping the new transactions by account name in a dictionary [accountName : Transaction]
         let filteredTransactions = transactions.filter { $0.category == category }
         let transactionsGroupedByAccount = Dictionary(grouping: filteredTransactions, by: { $0.account.name })
-        
+
         /// Starting off with the cached group holdings
         /// [accountName: [assetIdentifier : AssetHolding]]
         var result: [String: [String: AssetHolding]] = storedGroupHoldings
-        
+
         /// Organizing transactions per account name
         for (accountName, accountTransactions) in transactionsGroupedByAccount {
             let groupedByAsset = Dictionary(grouping: accountTransactions, by: { $0.symbol })
-            
+
             /// [assetIdentifier : AssetHolding]
             var identifierAssetHoldings: [String: AssetHolding] = [:]
-            
-            /// Grouping  transactions by symbol per each account
+
+            /// Grouping transactions by symbol per each account
             for (assetIdentifier, assetTransactions) in groupedByAsset {
                 let totalQuantity = assetTransactions.reduce(0) { $0 + ($1.transactionType == .buy ? $1.quantity : -$1.quantity) }
                 let totalValue = assetTransactions.reduce(0) { $0 + ($1.transactionType == .buy ? ($1.quantity * $1.pricePerUnit) : -($1.quantity * $1.pricePerUnit)) }
                 identifierAssetHoldings[assetIdentifier] = AssetHolding(quantity: totalQuantity, totalValue: totalValue)
             }
-            
+
             /// if a result[accountName] already exists then update it with data from the new `identifierAssetHoldings`
             if let old = result[accountName] {
                 result[accountName] = old.merging(identifierAssetHoldings, uniquingKeysWith: { old, new in
@@ -318,39 +272,16 @@ final class HomeViewModel: ObservableObject {
                 result[accountName] = identifierAssetHoldings
             }
         }
-    
-        let updatedResult = updatePricesForGroupedAssetHoldings(groupedAssetHoldings: result)
-        
+
+        // Phase 3.6: local price refresh removed — prices come from the backend.
+
         /// Cache the results
         switch category {
-        case .cash: viewState.cashGroupedAssetHoldings = updatedResult
-        case .stocks: viewState.stocksGroupedAssetHoldings = updatedResult
-        case .crypto: viewState.cryptoGroupedAssetHoldings = updatedResult
-        case .realEstate: viewState.realEstateGroupedAssetHoldings = updatedResult
-        case .retirement: viewState.retirementGroupedAssetHoldings = updatedResult
+        case .cash: viewState.cashGroupedAssetHoldings = result
+        case .stocks: viewState.stocksGroupedAssetHoldings = result
+        case .crypto: viewState.cryptoGroupedAssetHoldings = result
+        case .realEstate: viewState.realEstateGroupedAssetHoldings = result
+        case .retirement: viewState.retirementGroupedAssetHoldings = result
         }
-    }
-    
-    @MainActor
-    private func updatePricesForGroupedAssetHoldings(groupedAssetHoldings: GroupedAssetHolding) -> GroupedAssetHolding {
-        // Need to update prices for the GroupedAssetHoldings with the latest prices for Crypto, Stocks, and Retirement categories
-        var updatedGroupedAssetHolding = groupedAssetHoldings
-        
-        guard dataService.isAssetPriceRefreshed else { return updatedGroupedAssetHolding }
-        
-        for (accountName, assetIdentifierHoldings) in groupedAssetHoldings {
-            for (assetIdentifier, holding) in assetIdentifierHoldings {
-                guard let latestPrice = dataService.assetPrices[assetIdentifier] else { continue }
-                
-                let updatedValue = holding.quantity * latestPrice
-                let updatedHolding = AssetHolding(
-                    quantity: holding.quantity,
-                    totalValue: updatedValue
-                )
-                
-                updatedGroupedAssetHolding[accountName]?[assetIdentifier] = updatedHolding
-            }
-        }
-        return updatedGroupedAssetHolding
     }
 }

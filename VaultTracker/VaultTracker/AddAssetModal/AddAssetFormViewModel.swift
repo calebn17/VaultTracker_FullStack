@@ -22,8 +22,8 @@ final class AddAssetFormViewModel: ObservableObject {
     @Published var shouldShowAlert: Bool = false
     var alertMessage: String = ""
     
-    private var context: ModelContext
-    private var dataService: DataService
+    private var context: ModelContext        // Kept for Phase 6.1 cleanup
+    private var dataService: DataServiceProtocol
 
     // MARK: - Computed Properties
     var isFormValid: Bool {
@@ -79,7 +79,7 @@ final class AddAssetFormViewModel: ObservableObject {
     // MARK: - Init
     init(context: ModelContext) {
         self.context = context
-        self.dataService = DataService(context: context)
+        self.dataService = DataService()
     }
     
     // MARK: - Public Methods
@@ -134,15 +134,24 @@ final class AddAssetFormViewModel: ObservableObject {
     
     private func getOrCreateAccount() async throws -> Account {
         let trimmedName = accountName.trimmingCharacters(in: .whitespaces)
-        let existingAccount = try dataService.fetchAccount(named: trimmedName)
-        
-        if let account = existingAccount {
-            return account
-        } else {
-            let newAccount = Account(name: trimmedName, accountType: accountType)
-            try dataService.addAccount(newAccount)
-            return newAccount
+
+        // Look up existing server accounts first so we reuse the server-side UUID.
+        let allAccounts = try await dataService.fetchAllAccounts()
+        if let existing = allAccounts.first(where: { $0.name == trimmedName }) {
+            return existing
         }
+
+        // Map local AccountType to the API's snake_case string.
+        let accountTypeString: String
+        switch accountType {
+        case .bank:           accountTypeString = "bank"
+        case .brokerage:      accountTypeString = "brokerage"
+        case .cryptoExchange: accountTypeString = "crypto_exchange"
+        default:              accountTypeString = "other"
+        }
+
+        let request = APIAccountCreateRequest(name: trimmedName, accountType: accountTypeString)
+        return try await dataService.createAccount(request)
     }
     
     private func isValidNonNegativeNumber(_ string: String) -> Bool {

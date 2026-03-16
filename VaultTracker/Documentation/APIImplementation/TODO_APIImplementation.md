@@ -60,8 +60,8 @@
 - [x] Review existing `Transaction` model for API compatibility
 - [x] Add `id` property mapping to existing models (UUID handling)
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 2.2 Mappers
 - [x] Create `DashboardMapper.swift` to convert API response to `HomeViewState`
@@ -71,62 +71,62 @@
 - [x] Handle date format conversions (ISO8601)
 - [x] Handle category/type enum mappings
 - [x] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ---
 
 ## Phase 3: DataService Refactoring
 
 ### 3.1 Dependency Injection
-- [ ] Add `APIService` as dependency in `DataService`
-- [ ] Create `DataServiceProtocol` if not exists
-- [ ] Update `DataService` initializer
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Add `APIService` as dependency in `DataService`
+- [x] Create `DataServiceProtocol` if not exists
+- [x] Update `DataService` initializer
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 3.2 Transaction Operations
-- [ ] Replace `addTransaction()` with API call + local update
-- [ ] Replace `fetchAllTransactions()` with API call
-- [ ] Replace `deleteTransaction()` with API call
-- [ ] Remove `deleteAllTransactions()` or convert to API batch operation
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Replace `addTransaction()` with API call + local update
+- [x] Replace `fetchAllTransactions()` with API call
+- [x] Replace `deleteTransaction()` with API call
+- [x] Remove `deleteAllTransactions()` or convert to API batch operation
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 3.3 Asset Operations
-- [ ] Replace `fetchAllAssets()` with API call
-- [ ] Remove `addAsset()` (assets created via transactions)
-- [ ] Remove `deleteAsset()` (managed by backend)
-- [ ] Remove price fetching logic (handled by backend)
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Replace `fetchAllAssets()` with API call
+- [x] Remove `addAsset()` (assets created via transactions)
+- [x] Remove `deleteAsset()` (managed by backend)
+- [x] Remove price fetching logic (handled by backend)
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 3.4 Account Operations
-- [ ] Replace `addAccount()` with API call
-- [ ] Add `fetchAllAccounts()` method
-- [ ] Add `updateAccount()` method
-- [ ] Add `deleteAccount()` method
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Replace `addAccount()` with API call
+- [x] Add `fetchAllAccounts()` method
+- [x] Add `updateAccount()` method
+- [x] Add `deleteAccount()` method
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 3.5 Net Worth Operations
-- [ ] Replace `fetchAllNetworthSnapshots()` with API history endpoint
-- [ ] Remove `addSnapshot()` (backend manages snapshots)
-- [ ] Remove `rebuildHistoricalSnapshots()` logic
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Replace `fetchAllNetworthSnapshots()` with API history endpoint
+- [x] Remove `addSnapshot()` (backend manages snapshots)
+- [x] Remove `rebuildHistoricalSnapshots()` logic
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 
 ### 3.6 Remove Deprecated Code
-- [ ] Remove `refreshAllPrices()` method
-- [ ] Remove `fetchLatestPrice()` method
-- [ ] Remove `assetPrices` dictionary cache
-- [ ] Remove `isAssetPriceRefreshed` flag
-- [ ] Update `API_Implementation_TechSpec.md`
+- [x] Remove `refreshAllPrices()` method
+- [x] Remove `fetchLatestPrice()` method
+- [x] Remove `assetPrices` dictionary cache
+- [x] Remove `isAssetPriceRefreshed` flag
+- [x] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`
 

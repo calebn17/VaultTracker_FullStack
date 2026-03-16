@@ -14,6 +14,7 @@
 		AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22B2E1E23FD005FFB77 /* Account.swift */; };
 		AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22D2E1E24AB005FFB77 /* Transaction.swift */; };
 		AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2312E1E25EF005FFB77 /* DataService.swift */; };
+		AF38E5E92F67E95700C0FC5D /* DataServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */; };
 		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
 		AF4336602E0CDFE700AFC1A0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */; };
 		AF4336622E0CDFE700AFC1A0 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336612E0CDFE700AFC1A0 /* Item.swift */; };
@@ -83,6 +84,7 @@
 		AF07A22B2E1E23FD005FFB77 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		AF07A22D2E1E24AB005FFB77 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		AF07A2312E1E25EF005FFB77 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
+		AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataServiceProtocol.swift; sourceTree = "<group>"; };
 		AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaultTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerApp.swift; sourceTree = "<group>"; };
 		AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
 			isa = PBXGroup;
 			children = (
+				AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */,
 				AFEEE4672F62B371000A8ADD /* API */,
 				AF56EC362E2B200900253BE3 /* Loading */,
 				AF56EC332E29F71800253BE3 /* Profile */,
@@ -539,6 +542,7 @@
 				AF43369E2E1029B600AFC1A0 /* AssetResponse.swift in Sources */,
 				AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */,
 				AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */,
+				AF38E5E92F67E95700C0FC5D /* DataServiceProtocol.swift in Sources */,
 				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
 				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
 			);
