@@ -37,7 +37,29 @@ final class APIService: APIServiceProtocol {
         self.session = session
 
         self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .iso8601
+        self.decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let raw = try container.decode(String.self)
+
+            // Try with timezone (e.g. "2026-03-17T10:30:00+00:00" or "...Z")
+            let withTZ = ISO8601DateFormatter()
+            withTZ.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = withTZ.date(from: raw) { return date }
+
+            withTZ.formatOptions = [.withInternetDateTime]
+            if let date = withTZ.date(from: raw) { return date }
+
+            // Fallback: naive datetime from older rows — assume UTC
+            let noTZ = ISO8601DateFormatter()
+            noTZ.formatOptions = [.withFullDate, .withTime, .withColonSeparatorInTime]
+            noTZ.timeZone = TimeZone(abbreviation: "UTC")
+            if let date = noTZ.date(from: raw) { return date }
+
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Cannot decode date string: \(raw)"
+            )
+        }
 
         self.encoder = JSONEncoder()
         self.encoder.dateEncodingStrategy = .iso8601
@@ -108,6 +130,13 @@ final class APIService: APIServiceProtocol {
 
     func deleteTransaction(id: String) async throws {
         let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.transaction(id: id), method: "DELETE")
+        try await performVoid(request)
+    }
+
+    // MARK: - User Data
+
+    func clearAllData() async throws {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.clearUserData, method: "DELETE")
         try await performVoid(request)
     }
 

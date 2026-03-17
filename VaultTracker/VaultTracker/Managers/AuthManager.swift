@@ -70,7 +70,24 @@ final class AuthManager: ObservableObject {
     }
     
     func signOut() throws {
+#if DEBUG
+        if AuthTokenProvider.isDebugSession {
+            AuthTokenProvider.isDebugSession = false
+            authenticationState = .unauthenticated
+            return
+        }
+#endif
         try Auth.auth().signOut()
         authenticationState = .unauthenticated
     }
+
+#if DEBUG
+    /// Bypasses Firebase and marks the session as authenticated using a
+    /// well-known debug token.  Only available in DEBUG builds; requires
+    /// DEBUG_AUTH_ENABLED=true in the backend .env.
+    func signInDebug() {
+        AuthTokenProvider.isDebugSession = true
+        authenticationState = .authenticated
+    }
+#endif
 }

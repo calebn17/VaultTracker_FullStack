@@ -36,7 +36,7 @@ final class HomeViewModel: ObservableObject {
 
     private var dataService: DataServiceProtocol
 
-    init(context: ModelContext, dataService: DataServiceProtocol = DataService()) {
+    init(context: ModelContext, dataService: DataServiceProtocol = DataService.shared) {
         self.context = context
         self.dataService = dataService
     }
@@ -59,7 +59,18 @@ final class HomeViewModel: ObservableObject {
     }
 
     func clearData() async {
-        print("DEBUG: clearData() is not supported in API mode. Addressed in Phase 6.1.")
+        viewState.isLoading = true
+        viewState.errorMessage = nil
+        do {
+            try await dataService.clearAllData()
+            viewState = HomeViewState()
+            snapshots = []
+        } catch let error as APIError {
+            viewState.errorMessage = error.errorDescription
+        } catch {
+            viewState.errorMessage = error.localizedDescription
+        }
+        viewState.isLoading = false
     }
 
     @MainActor
@@ -88,7 +99,7 @@ final class HomeViewModel: ObservableObject {
                 case .crypto:     categoryString = "crypto"
                 case .stocks:     categoryString = "stocks"
                 case .cash:       categoryString = "cash"
-                case .realEstate: categoryString = "real_estate"
+                case .realEstate: categoryString = "realEstate"
                 case .retirement: categoryString = "retirement"
                 }
                 let symbol: String? = (transaction.category == .cash || transaction.category == .realEstate)
@@ -97,16 +108,16 @@ final class HomeViewModel: ObservableObject {
                     name: transaction.name,
                     symbol: symbol,
                     category: categoryString,
-                    quantity: transaction.quantity,
-                    currentValue: transaction.pricePerUnit * transaction.quantity
+                    quantity: 0,
+                    currentValue: 0
                 )
                 let newAsset = try await dataService.createAsset(assetRequest)
-                assetId = newAsset.id.uuidString
+                assetId = newAsset.id.uuidString.lowercased()
             }
 
             let txRequest = APITransactionCreateRequest(
                 assetId: assetId,
-                accountId: transaction.account.id.uuidString,
+                accountId: transaction.account.id.uuidString.lowercased(),
                 transactionType: transaction.transactionType.rawValue.lowercased(),
                 quantity: transaction.quantity,
                 pricePerUnit: transaction.pricePerUnit,

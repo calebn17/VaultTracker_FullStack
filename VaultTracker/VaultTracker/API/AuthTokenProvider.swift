@@ -16,6 +16,13 @@ actor AuthTokenProvider {
 
     static let shared = AuthTokenProvider()
 
+#if DEBUG
+    /// Set to `true` by `AuthManager.signInDebug()` to enable the debug bypass.
+    /// Must match the token expected by the backend (`_DEBUG_AUTH_TOKEN` in dependencies.py).
+    nonisolated(unsafe) static var isDebugSession = false
+    static let debugToken = "vaulttracker-debug-user"
+#endif
+
     private init() {}
 
     /// Returns the current user's ID token.
@@ -23,6 +30,11 @@ actor AuthTokenProvider {
     ///   token from the server (used after a 401 response). Pass `false` to
     ///   use the cached token if it hasn't expired yet (< 1 hour old).
     func getToken(forceRefresh: Bool = false) async throws -> String {
+#if DEBUG
+        if AuthTokenProvider.isDebugSession {
+            return AuthTokenProvider.debugToken
+        }
+#endif
         guard let user = Auth.auth().currentUser else {
             throw AuthTokenError.notAuthenticated
         }

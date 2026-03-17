@@ -79,7 +79,7 @@ final class AddAssetFormViewModel: ObservableObject {
     // MARK: - Init
     init(context: ModelContext) {
         self.context = context
-        self.dataService = DataService()
+        self.dataService = DataService.shared
     }
     
     // MARK: - Public Methods
@@ -96,27 +96,37 @@ final class AddAssetFormViewModel: ObservableObject {
             return nil
         }
         
-        guard let quantityValue: Double = switch selectedCategory {
-        case .cash, .realEstate: 1.0
-        default: Double(quantity)
-        } else {
-            shouldShowAlert = true
-            alertMessage = "Quantity must be a valid number"
-            return nil
-        }
-        
         guard let priceValue = Double(pricePerUnit) else {
             shouldShowAlert = true
             alertMessage = "Price per unit must be a valid number"
             return nil
         }
-        
+
+        // For cash and real estate the user enters a dollar amount, not a unit count.
+        // We encode that as quantity=dollarAmount, pricePerUnit=1 so the backend
+        // formula (current_value = quantity * price_per_unit) tracks the running
+        // balance correctly across buy and sell transactions.
+        let (finalQuantity, finalPricePerUnit): (Double, Double)
+        switch selectedCategory {
+        case .cash, .realEstate:
+            finalQuantity = priceValue
+            finalPricePerUnit = 1.0
+        default:
+            guard let q = Double(quantity) else {
+                shouldShowAlert = true
+                alertMessage = "Quantity must be a valid number"
+                return nil
+            }
+            finalQuantity = q
+            finalPricePerUnit = priceValue
+        }
+
         do {
             let account = try await getOrCreateAccount()
             return Transaction(
                 transactionType: transactionType,
-                quantity: quantityValue,
-                pricePerUnit: priceValue,
+                quantity: finalQuantity,
+                pricePerUnit: finalPricePerUnit,
                 date: date,
                 name: name,
                 symbol: shouldShowSymbolField ? symbol : name,

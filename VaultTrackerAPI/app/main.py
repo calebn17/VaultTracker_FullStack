@@ -11,6 +11,7 @@ from app.routers import (
     assets_router,
     transactions_router,
     networth_router,
+    users_router,
 )
 
 
@@ -42,6 +43,7 @@ app.include_router(accounts_router, prefix="/api/v1")
 app.include_router(assets_router, prefix="/api/v1")
 app.include_router(transactions_router, prefix="/api/v1")
 app.include_router(networth_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 
 @app.get("/")

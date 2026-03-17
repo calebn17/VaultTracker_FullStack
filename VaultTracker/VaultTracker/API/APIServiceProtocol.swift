@@ -60,4 +60,9 @@ protocol APIServiceProtocol {
     /// Fetch historical net worth snapshots.
     /// - Parameter period: Optional granularity (daily/weekly/monthly). Defaults to backend default when nil.
     func fetchNetWorthHistory(period: APINetWorthPeriod?) async throws -> APINetWorthHistoryResponse
+
+    // MARK: - User Data
+
+    /// Delete all financial data for the current user (accounts, assets, transactions, snapshots).
+    func clearAllData() async throws
 }

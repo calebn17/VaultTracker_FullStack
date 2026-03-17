@@ -35,4 +35,8 @@ protocol DataServiceProtocol: AnyObject {
     // MARK: - Net Worth
 
     func fetchNetWorthHistory(period: APINetWorthPeriod?) async throws -> [NetWorthSnapshot]
+
+    // MARK: - User Data
+
+    func clearAllData() async throws
 }

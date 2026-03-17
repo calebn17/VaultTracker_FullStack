@@ -69,6 +69,24 @@ struct LoginView: View {
             .padding(.top, 10)
             
             Spacer()
+
+#if DEBUG
+            Button(action: {
+                authManager.signInDebug()
+            }) {
+                HStack {
+                    Image(systemName: "ladybug.fill")
+                    Text("Debug Login")
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.yellow.opacity(0.85))
+                .foregroundColor(.black)
+                .cornerRadius(10)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 30)
+#endif
         }
         .background(
             LinearGradient(

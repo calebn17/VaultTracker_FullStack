@@ -16,7 +16,12 @@ enum APIEnvironment {
     var baseURL: String {
         switch self {
         case .development:
-            return "http://localhost:8000"
+            // Reads API_HOST from the Xcode scheme's environment variables so you
+            // can switch between localhost (Simulator) and your Mac's LAN IP
+            // (physical device) without touching source code.
+            // Set API_HOST = 192.168.x.x:8000 in Edit Scheme → Run → Environment Variables.
+            let host = ProcessInfo.processInfo.environment["API_HOST"] ?? "localhost:8000"
+            return "http://\(host)"
         case .staging:
             // TODO: Update with staging URL when available
             return "http://localhost:8000"
@@ -100,6 +105,11 @@ enum APIConfiguration {
 
         /// GET /api/v1/networth/history - Historical net worth snapshots
         static let networthHistory = "\(apiVersion)/networth/history"
+
+        // MARK: Users
+
+        /// DELETE /api/v1/users/me/data - Clear all financial data for the current user
+        static let clearUserData = "\(apiVersion)/users/me/data"
     }
 
     // MARK: - Full URL Builders

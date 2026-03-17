@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, String, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
@@ -17,7 +17,7 @@ class Transaction(Base):
     transaction_type = Column(String, nullable=False)  # buy, sell
     quantity = Column(Float, nullable=False)
     price_per_unit = Column(Float, nullable=False)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="transactions")
     asset = relationship("Asset", back_populates="transactions")

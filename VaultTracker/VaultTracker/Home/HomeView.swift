@@ -11,6 +11,7 @@ import SwiftData
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
     @State private var expandedCategories: Set<AssetCategory> = []
+    @State private var showClearConfirmation = false
 
     init(modelContext: ModelContext) {
         _viewModel = StateObject(wrappedValue: HomeViewModel(context: modelContext))
@@ -60,8 +61,8 @@ struct HomeView: View {
             .padding()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Clear Data") {
-                        Task { await viewModel.clearData() }
+                    Button("Clear Data", role: .destructive) {
+                        showClearConfirmation = true
                     }
                 }
 
@@ -88,6 +89,18 @@ struct HomeView: View {
         }
         .refreshable {
             await viewModel.loadData()
+        }
+        .confirmationDialog(
+            "Clear all data?",
+            isPresented: $showClearConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Clear All Data", role: .destructive) {
+                Task { await viewModel.clearData() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete all your accounts, assets, and transactions.")
         }
         .overlay {
             if viewModel.viewState.isLoading {

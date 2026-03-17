@@ -18,11 +18,13 @@ final class DataService: DataServiceProtocol {
 
     // MARK: - Dependencies
 
+    static let shared = DataService()
+
     private let api: APIServiceProtocol
 
     // MARK: - Init
 
-    init(api: APIServiceProtocol = APIService.shared) {
+    private init(api: APIServiceProtocol = APIService.shared) {
         self.api = api
     }
 
@@ -122,5 +124,11 @@ final class DataService: DataServiceProtocol {
     func fetchNetWorthHistory(period: APINetWorthPeriod? = nil) async throws -> [NetWorthSnapshot] {
         let response = try await api.fetchNetWorthHistory(period: period)
         return response.snapshots.map { NetWorthSnapshot(date: $0.date, value: $0.value) }
+    }
+
+    // MARK: - User Data
+
+    func clearAllData() async throws {
+        try await api.clearAllData()
     }
 }

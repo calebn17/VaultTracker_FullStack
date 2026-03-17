@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, String, DateTime, Float, ForeignKey
 from sqlalchemy.orm import relationship
@@ -17,7 +17,7 @@ class Asset(Base):
     category = Column(String, nullable=False)  # crypto, stocks, cash, realEstate, retirement
     quantity = Column(Float, default=0.0)
     current_value = Column(Float, default=0.0)
-    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_updated = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="assets")
     transactions = relationship("Transaction", back_populates="asset", cascade="all, delete-orphan")
