@@ -1,3 +1,11 @@
+# FastAPI application entry point for VaultTracker API.
+#
+# Routers included (all prefixed /api/v1):
+#   dashboard, accounts, assets, transactions, networth, users
+#
+# Database tables are created on startup via SQLAlchemy's create_all.
+# CORS is open for all origins during development; restrict for production.
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI

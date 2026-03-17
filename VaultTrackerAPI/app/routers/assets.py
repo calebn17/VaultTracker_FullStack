@@ -1,3 +1,13 @@
+"""
+Assets router (/api/v1/assets).
+
+Manages the asset records (crypto, stocks, cash, realEstate, retirement) that
+transactions are posted against. Assets are typically created ahead of the first
+transaction via POST /assets; subsequent transactions update quantity and
+current_value in place rather than creating new rows. Supports optional category
+filtering via query parameter.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 

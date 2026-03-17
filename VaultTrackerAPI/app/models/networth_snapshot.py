@@ -1,3 +1,11 @@
+"""
+SQLAlchemy model for a historical net worth data point.
+
+Snapshots are written by the backend to capture total portfolio value at a point
+in time, enabling the net-worth history chart in the iOS app. The iOS client no
+longer writes snapshots directly; all snapshot management is server-side.
+"""
+
 import uuid
 from datetime import datetime, timezone
 

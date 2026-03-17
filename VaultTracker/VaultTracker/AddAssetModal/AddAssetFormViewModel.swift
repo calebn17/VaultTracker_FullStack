@@ -1,3 +1,11 @@
+// AddAssetFormViewModel.swift — drives the "Add Asset / Transaction" form.
+//
+// On save, the VM resolves or creates an account, then returns a `Transaction`
+// value to the caller (HomeViewModel.onSave) which posts it to the API.
+// For cash and realEstate assets, `quantity` is set to the dollar amount and
+// `pricePerUnit` is set to 1 so the backend formula
+// `current_value = quantity * price_per_unit` tracks a running dollar balance
+// rather than a unit count, matching the UX where users enter a total dollar value.
 
 import Foundation
 import SwiftUI

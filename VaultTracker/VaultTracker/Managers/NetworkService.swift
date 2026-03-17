@@ -5,6 +5,11 @@
 //  Created by Caleb Ngai on 6/25/25.
 //
 
+// Low-level HTTP client used for simple [String: String] request bodies.
+// Note: all VaultTracker API calls now go through APIService, which uses
+// URLSession directly to support typed Codable request bodies. NetworkService
+// remains available for any auxiliary HTTP calls that don't require typed bodies.
+
 import Foundation
 
 enum HTTPMethod: String {

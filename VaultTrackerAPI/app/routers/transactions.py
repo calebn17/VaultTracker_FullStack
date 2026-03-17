@@ -1,3 +1,13 @@
+"""
+Transaction CRUD router (/api/v1/transactions).
+
+Every write operation (create, update, delete) calls `update_asset_from_transaction`
+to keep the parent asset in sync. Asset value is tracked mark-to-market:
+    current_value = quantity * latest_price_per_unit
+This is not a cost-basis sum — the most recent price_per_unit supplied by the
+client is used to revalue the entire position each time a transaction is recorded.
+"""
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -22,7 +32,13 @@ def update_asset_from_transaction(
     price_per_unit: float,
     is_reversal: bool = False
 ):
-    """Update asset quantity and value based on a transaction."""
+    """
+    Adjust an asset's quantity and recompute its current_value after a transaction.
+
+    Pass `is_reversal=True` to undo the effect of an existing transaction (used
+    during updates and deletes). After adjusting quantity, current_value is set to
+    `quantity * price_per_unit` — mark-to-market, not a running cost-basis sum.
+    """
     if is_reversal:
         # Reverse the effect of the transaction
         if transaction_type == "buy":

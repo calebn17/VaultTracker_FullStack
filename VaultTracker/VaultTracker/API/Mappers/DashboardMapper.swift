@@ -5,6 +5,13 @@
 //  Created by Claude on 3/12/26.
 //
 
+// Converts an APIDashboardResponse into a HomeViewState ready for the UI.
+// Maps the API's groupedHoldings dictionary (keys: "crypto", "stocks", "cash",
+// "realEstate", "retirement") to the corresponding holdings arrays on the view state.
+// Both "real_estate" and "realEstate" are accepted to guard against future backend
+// key changes, but the canonical form that must match the iOS category strings is
+// camelCase "realEstate".
+
 import Foundation
 
 enum DashboardMapper {

@@ -1,3 +1,13 @@
+"""
+SQLAlchemy model for a financial asset.
+
+Represents a single holding (e.g. "Bitcoin", "AAPL", "Checking Account").
+`quantity` and `current_value` are kept current by `update_asset_from_transaction`
+whenever a transaction is created, updated, or deleted. `symbol` is nullable
+because cash and real-estate assets have no ticker.
+Category must be one of: crypto, stocks, cash, realEstate, retirement.
+"""
+
 import uuid
 from datetime import datetime, timezone
 

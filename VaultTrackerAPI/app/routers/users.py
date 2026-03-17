@@ -1,3 +1,12 @@
+"""
+Users router (/api/v1/users).
+
+Currently exposes a single endpoint: DELETE /users/me/data, which wipes all
+financial data for the authenticated user in FK dependency order —
+transactions → snapshots → assets → accounts — while preserving the user row
+itself. This endpoint is used by integration tests to reset state between runs.
+"""
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 

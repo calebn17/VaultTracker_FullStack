@@ -128,6 +128,9 @@ final class DataService: DataServiceProtocol {
 
     // MARK: - User Data
 
+    /// Wipes all financial data for the current user (transactions, snapshots, assets,
+    /// accounts) via `DELETE /users/me/data`. Used by integration tests to reset state
+    /// between runs; the user account itself is preserved.
     func clearAllData() async throws {
         try await api.clearAllData()
     }

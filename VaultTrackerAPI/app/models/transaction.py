@@ -1,3 +1,11 @@
+"""
+SQLAlchemy model for a financial transaction.
+
+Records a single buy or sell event for an asset in a specific account.
+Creating, updating, or deleting a transaction also updates the parent
+asset's quantity and current_value via `update_asset_from_transaction`.
+"""
+
 import uuid
 from datetime import datetime, timezone
 

@@ -1,3 +1,11 @@
+"""
+SQLAlchemy model for a financial account (e.g. brokerage, bank, crypto exchange).
+
+Transactions are always posted to a specific account so the user can track which
+institution holds each asset. `account_type` uses snake_case strings that map to
+the iOS `AccountType` enum via `AccountMapper.mapAccountType`.
+"""
+
 import uuid
 from datetime import datetime, timezone
 

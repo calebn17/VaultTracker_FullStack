@@ -1,3 +1,11 @@
+"""
+Accounts CRUD router (/api/v1/accounts).
+
+Manages the brokerage, bank, crypto exchange, and other account records that
+transactions are posted against. All operations are scoped to the authenticated
+user; attempts to access another user's accounts return 404.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 

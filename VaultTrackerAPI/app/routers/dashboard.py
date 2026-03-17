@@ -1,3 +1,13 @@
+"""
+Dashboard router (/api/v1/dashboard).
+
+Aggregates all assets for the authenticated user into five category buckets:
+crypto, stocks, cash, realEstate, retirement. The category key names are camelCase
+and must stay in sync with what iOS DashboardMapper expects when parsing the
+`groupedHoldings` dictionary. Totals per category and overall net worth are
+computed server-side to avoid redundant client calculations.
+"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

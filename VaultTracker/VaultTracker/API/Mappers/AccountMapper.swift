@@ -5,6 +5,11 @@
 //  Created by Claude on 3/12/26.
 //
 
+// Converts APIAccountResponse values into domain Account models.
+// Server UUIDs are parsed from strings and fall back to a new UUID on failure.
+// API account type strings (e.g. "crypto_exchange") are mapped to the app's
+// AccountType enum; types with no direct equivalent default to .other.
+
 import Foundation
 
 enum AccountMapper {

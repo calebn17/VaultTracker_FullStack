@@ -1,3 +1,12 @@
+"""
+SQLAlchemy model for an application user.
+
+The primary key `id` is an internal UUID. `firebase_id` is the stable identifier
+issued by Firebase Auth and is used as the lookup key in `get_current_user`. New
+users are auto-provisioned on first authenticated request; no separate sign-up
+endpoint is needed.
+"""
+
 import uuid
 from datetime import datetime, timezone
 

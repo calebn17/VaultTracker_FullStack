@@ -1,3 +1,10 @@
+"""
+Application settings loaded from the `.env` file via pydantic-settings.
+
+`debug_auth_enabled` bypasses Firebase JWT verification for local development and
+integration testing. It must be False in any non-local environment.
+"""
+
 from pydantic_settings import BaseSettings
 
 

@@ -5,6 +5,13 @@
 //  Created by Claude on 3/12/26.
 //
 
+// Converts APIAssetResponse values into domain Asset models.
+// Cash and realEstate assets have no ticker symbol in the API; the asset name is
+// substituted to satisfy the non-optional `symbol` field on the domain model.
+// A synthetic `purchasePrice` is derived as `currentValue / quantity` because the
+// legacy domain model requires it — this approximation will be removed when the
+// domain model is simplified in a future phase.
+
 import Foundation
 
 enum AssetMapper {

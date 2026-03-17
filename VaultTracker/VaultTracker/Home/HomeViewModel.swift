@@ -1,3 +1,10 @@
+// HomeViewModel.swift — drives HomeView.
+//
+// A single `loadData()` call fetches the full dashboard from the API and maps
+// it directly into `HomeViewState` via `DashboardMapper`. `onSave(transaction:)`
+// resolves or creates the asset record for the new transaction, posts the
+// transaction to the API, then refreshes the dashboard.
+
 import Foundation
 
 /// Flat list of holdings for a single asset category, sourced directly from the API.
@@ -78,6 +85,10 @@ final class HomeViewModel: ObservableObject {
                 + viewState.retirementGroupedAssetHoldings
 
             let assetId: String
+            // Asset ID resolution: reuse an existing server-side asset if possible so
+            // transactions accumulate on the same record. Crypto/stocks/retirement are
+            // matched by ticker symbol; cash/realEstate (which have no symbol) are
+            // matched by name. If no match is found, a new asset record is created first.
             let matchingHolding: APIGroupedHolding?
             switch transaction.category {
             case .crypto, .stocks, .retirement:
@@ -89,6 +100,9 @@ final class HomeViewModel: ObservableObject {
             if let existing = matchingHolding {
                 assetId = existing.id
             } else {
+                // Category strings are camelCase to match the backend's dashboard key
+                // names ("realEstate", not "real_estate") which DashboardMapper also
+                // expects when parsing the groupedHoldings dictionary.
                 let categoryString: String
                 switch transaction.category {
                 case .crypto:     categoryString = "crypto"

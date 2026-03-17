@@ -5,6 +5,12 @@
 //  Created by Caleb Ngai on 7/17/25.
 //
 
+// Manages Firebase authentication state and publishes it to the UI via
+// `authenticationState`. Also observes the `.authenticationRequired` notification
+// posted by APIService when a 401 persists after token refresh, triggering auto sign-out.
+// In DEBUG builds, `signInDebug()` sets `AuthTokenProvider.isDebugSession = true` for
+// passwordless local testing — no Firebase account required.
+
 import Foundation
 import FirebaseAuth
 import GoogleSignIn

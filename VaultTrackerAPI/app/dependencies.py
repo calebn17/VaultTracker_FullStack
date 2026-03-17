@@ -1,3 +1,17 @@
+"""
+FastAPI dependency for extracting the authenticated user from a Bearer token.
+
+Every protected route injects `get_current_user` via `Depends(get_current_user)`.
+It strips the Bearer prefix, resolves a firebase_id, then looks up or auto-creates
+the corresponding User row so new Firebase users are provisioned transparently.
+
+Debug bypass: when `DEBUG_AUTH_ENABLED=true` in `.env` and the token equals the
+well-known value `"vaulttracker-debug-user"`, `firebase_id` is set to `"debug-user"`
+(the `_DEBUG_FIREBASE_ID` constant) without any real Firebase verification. This
+matches the `AuthTokenProvider.debugToken` constant in the iOS client and allows
+local development without a Firebase account.
+"""
+
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 

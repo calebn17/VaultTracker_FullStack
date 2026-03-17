@@ -5,6 +5,12 @@
 //  Created by Claude on 3/12/26.
 //
 
+// Converts APITransactionResponse values into domain Transaction models.
+// Because the Transaction domain model embeds asset name/symbol/category and an
+// Account reference inline, callers must supply pre-built lookup dictionaries
+// keyed by server ID. Transactions whose asset or account ID cannot be resolved
+// are silently dropped via compactMap, so the UI always shows a consistent set.
+
 import Foundation
 
 enum TransactionMapper {
