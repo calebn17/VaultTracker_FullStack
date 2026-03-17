@@ -4,7 +4,6 @@
 //
 
 import Testing
-import SwiftData
 import Foundation
 @testable import VaultTracker
 
@@ -17,11 +16,7 @@ struct HomeViewModelTests {
 
     init() throws {
         mockService = MockDataService()
-        let container = try ModelContainer(
-            for: Schema([Transaction.self, Account.self, Asset.self, NetWorthSnapshot.self]),
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-        viewModel = HomeViewModel(context: container.mainContext, dataService: mockService)
+        viewModel = HomeViewModel(dataService: mockService)
     }
 
     // MARK: - loadData() Happy Path

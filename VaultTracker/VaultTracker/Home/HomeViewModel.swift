@@ -1,5 +1,4 @@
 import Foundation
-import SwiftData
 
 /// Flat list of holdings for a single asset category, sourced directly from the API.
 typealias GroupedAssetHolding = [APIGroupedHolding]
@@ -31,13 +30,9 @@ final class HomeViewModel: ObservableObject {
     @Published var viewState = HomeViewState()
     @Published var shouldPresentSheet: Bool = false
 
-    /// Kept for AddAssetModalView; removed in Phase 6.1 when SwiftData is fully removed.
-    var context: ModelContext
-
     private var dataService: DataServiceProtocol
 
-    init(context: ModelContext, dataService: DataServiceProtocol = DataService.shared) {
-        self.context = context
+    init(dataService: DataServiceProtocol = DataService.shared) {
         self.dataService = dataService
     }
 

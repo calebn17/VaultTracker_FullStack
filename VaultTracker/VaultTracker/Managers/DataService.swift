@@ -5,14 +5,14 @@
 
 import Foundation
 
-/// API-backed implementation of DataServiceProtocol.
+/// Application-layer service that satisfies `DataServiceProtocol` by delegating
+/// every data operation to `APIService`. ViewModels depend on the protocol, not the
+/// concrete class, so they can be tested with lightweight mock implementations.
 ///
 /// Replaces the previous SwiftData-based implementation. All reads and writes
 /// go through APIService, with Phase 2 mapper functions converting API response
 /// types into the app's domain models.
 ///
-/// Must run on the MainActor because Asset and NetWorthSnapshot are
-/// `@MainActor @Model` classes whose initialisers require the main thread.
 @MainActor
 final class DataService: DataServiceProtocol {
 

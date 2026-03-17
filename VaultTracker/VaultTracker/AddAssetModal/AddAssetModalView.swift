@@ -6,19 +6,18 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct AddAssetModalView: View {
-    
+
     @StateObject private var formViewModel: AddAssetFormViewModel
     @Environment(\.dismiss) private var dismiss
     private var onSave: (Transaction) -> Void
-    
-    init(context: ModelContext, onSave: @escaping (Transaction) -> Void) {
+
+    init(onSave: @escaping (Transaction) -> Void) {
         self.onSave = onSave
-        _formViewModel = StateObject(wrappedValue: AddAssetFormViewModel(context: context))
+        _formViewModel = StateObject(wrappedValue: AddAssetFormViewModel())
     }
-    
+
     var body: some View {
         VStack {
             Form {
@@ -45,7 +44,7 @@ struct AddAssetModalView: View {
             Text(formViewModel.alertMessage)
         }
     }
-    
+
     var transactionTypeSection: some View {
         Picker("Transaction Type", selection: $formViewModel.transactionType) {
             ForEach(TransactionType.allCases, id: \.self) { type in
@@ -55,14 +54,14 @@ struct AddAssetModalView: View {
         .pickerStyle(.segmented)
         .listRowInsets(EdgeInsets())
     }
-    
+
     var accountSection: some View {
         Section("Account") {
             TextField(
                 formViewModel.selectedCategory != .realEstate ? "Account Name (e.g. Robinhood)" : "Property Address",
                 text: $formViewModel.accountName
             )
-            
+
             Picker(
                 formViewModel.selectedCategory != .realEstate ? "Account Type" : "Property Type",
                 selection: $formViewModel.accountType
@@ -73,7 +72,7 @@ struct AddAssetModalView: View {
             }
         }
     }
-    
+
     var assetDetailsSection: some View {
         Section(header: Text("Asset Details")) {
             Picker("Category", selection: $formViewModel.selectedCategory) {
@@ -81,29 +80,29 @@ struct AddAssetModalView: View {
                     Text(category.rawValue.capitalized)
                 }
             }
-            
+
             TextField(formViewModel.selectedCategory != .realEstate ? "Name" : "Property Name", text: $formViewModel.name)
-            
+
             if formViewModel.shouldShowSymbolField {
                 TextField(
                     "Symbol (e.g. BTC, VOO, etc)",
                     text: $formViewModel.symbol
                 )
                     .textInputAutocapitalization(.characters)
-                
+
                 TextField("Quantity", text: formViewModel.quantityBinding)
                     .keyboardType(.decimalPad)
-                
+
                 TextField("Price Per Unit", text: $formViewModel.pricePerUnit)
                     .keyboardType(.decimalPad)
             } else {
                 TextField(formViewModel.selectedCategory == .cash ? "Amount" : "Equity", text: $formViewModel.pricePerUnit)
             }
-            
+
             DatePicker("Date", selection: $formViewModel.date)
         }
     }
-    
+
     var saveButtonSection: some View {
         Section {
             CustomButton(label: "Save", labelColor: .white, backgroundColor: formViewModel.isFormValid ? .blue : .gray) {
@@ -122,28 +121,7 @@ struct AddAssetModalView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let schema = Schema([
-        Transaction.self, Account.self, NetWorthSnapshot.self, Asset.self
-    ])
-    let container = try! ModelContainer(for: schema, configurations: [config])
-    
-    let transaction = Transaction(
-        transactionType: .buy,
-        quantity: 1.0,
-        pricePerUnit: 100,
-        date: Date(),
-        name: "Test",
-        symbol: "SOL",
-        category: .cash,
-        account: Account(
-            name: "TestAccount",
-            accountType: .other
-        )
-    )
-    
     NavigationView {
-        AddAssetModalView(context: container.mainContext, onSave: {transaction in })
+        AddAssetModalView(onSave: { _ in })
     }
-    .modelContainer(container)
 }

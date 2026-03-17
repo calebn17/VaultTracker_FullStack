@@ -8,17 +8,19 @@
 import Foundation
 import FirebaseAuth
 
-/// Thread-safe provider for the current user's Firebase JWT token.
+/// Thread-safe actor that retrieves the current user's Firebase JWT for API authentication.
 ///
-/// Declared as an `actor` so concurrent async callers cannot race when
-/// requesting or refreshing the token.
+/// In DEBUG builds, `AuthManager.signInDebug()` sets `isDebugSession = true`, which
+/// causes `getToken()` to return a hardcoded token (`"vaulttracker-debug-user"`). The
+/// backend maps that token to a fixed `"debug-user"` row when `DEBUG_AUTH_ENABLED=true`
+/// in its `.env`, eliminating the need for a real Firebase account during local testing.
 actor AuthTokenProvider {
 
     static let shared = AuthTokenProvider()
 
 #if DEBUG
-    /// Set to `true` by `AuthManager.signInDebug()` to enable the debug bypass.
-    /// Must match the token expected by the backend (`_DEBUG_AUTH_TOKEN` in dependencies.py).
+    /// Toggled by `AuthManager.signInDebug()`. When `true`, all API calls skip Firebase
+    /// and use the well-known debug token that the backend's dependency.py recognises.
     nonisolated(unsafe) static var isDebugSession = false
     static let debugToken = "vaulttracker-debug-user"
 #endif

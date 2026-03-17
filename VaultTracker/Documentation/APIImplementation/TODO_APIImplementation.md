@@ -190,9 +190,9 @@
 - [x] Test net worth history loading
 - [x] Test HomeViewModel state management against live backend
 - [x] Test AddAssetFormViewModel save flow against live backend
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 5.3 Manual Testing
 - [ ] Verify dashboard loads correctly
@@ -210,22 +210,22 @@
 ## Phase 6: Cleanup & Documentation
 
 ### 6.1 Remove SwiftData Dependencies
-- [ ] Remove SwiftData model files or mark as deprecated
-- [ ] Remove `ModelContext` usage from ViewModels
-- [ ] Remove `@Query` property wrappers from Views
-- [ ] Update `VaultTrackerApp` container setup
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Remove SwiftData model files or mark as deprecated
+- [x] Remove `ModelContext` usage from ViewModels
+- [x] Remove `@Query` property wrappers from Views
+- [x] Update `VaultTrackerApp` container setup
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 6.2 Code Cleanup
-- [ ] Remove unused imports
-- [ ] Remove commented-out code
-- [ ] Update code comments and documentation
-- [ ] Run linter and fix warnings
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Remove unused imports
+- [x] Remove commented-out code
+- [x] Update code comments and documentation
+- [x] Run linter and fix warnings
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 6.3 Documentation Updates
 - [ ] Update PROJECT_ROADMAP.md to mark Phase 3 complete

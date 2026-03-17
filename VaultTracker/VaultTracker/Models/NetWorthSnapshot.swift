@@ -7,13 +7,11 @@
 //
 
 import Foundation
-import SwiftData
 
-@MainActor @Model
-final class NetWorthSnapshot: Sendable {
+struct NetWorthSnapshot: Sendable {
     var date: Date
     var value: Double
-    
+
     init(date: Date, value: Double) {
         self.date = date
         self.value = value

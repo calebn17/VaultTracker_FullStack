@@ -6,15 +6,14 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
     @State private var expandedCategories: Set<AssetCategory> = []
     @State private var showClearConfirmation = false
 
-    init(modelContext: ModelContext) {
-        _viewModel = StateObject(wrappedValue: HomeViewModel(context: modelContext))
+    init() {
+        _viewModel = StateObject(wrappedValue: HomeViewModel())
     }
 
     var body: some View {
@@ -76,7 +75,7 @@ struct HomeView: View {
             }
             .sheet(isPresented: $viewModel.shouldPresentSheet) {
                 NavigationView {
-                    AddAssetModalView(context: viewModel.context) { transaction in
+                    AddAssetModalView { transaction in
                         Task {
                             await viewModel.onSave(transaction: transaction)
                         }

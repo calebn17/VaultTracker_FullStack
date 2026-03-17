@@ -7,6 +7,12 @@
 
 import Foundation
 
+/// Centralises base URL config and all endpoint path constants for the VaultTracker API.
+///
+/// The `development` environment reads `API_HOST` from the Xcode scheme's environment
+/// variables so physical-device builds can point at the Mac's LAN IP without touching
+/// source code. Simulator builds fall back to `localhost:8000` automatically.
+
 /// Defines the available API environments
 enum APIEnvironment {
     case development

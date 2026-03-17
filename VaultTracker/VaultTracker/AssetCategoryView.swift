@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct AssetCategoryView: View {
     private var assets: [Asset]

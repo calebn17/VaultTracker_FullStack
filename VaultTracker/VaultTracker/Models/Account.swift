@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 /// Enum defining the different types of financial accounts a user can track.
 enum AccountType: String, Codable, CaseIterable, Hashable {
@@ -19,13 +18,12 @@ enum AccountType: String, Codable, CaseIterable, Hashable {
     case other = "Other"
 }
 
-@Model
-final class Account: @unchecked Sendable {
-    @Attribute(.unique) var id: UUID
+struct Account: Sendable, Identifiable {
+    var id: UUID
     var name: String
     var accountType: AccountType
     var creationDate: Date
-    
+
     init(id: UUID = UUID(), name: String, accountType: AccountType, creationDate: Date = Date()) {
         self.id = id
         self.name = name

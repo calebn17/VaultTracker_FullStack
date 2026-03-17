@@ -1,7 +1,6 @@
 
 import Foundation
 import SwiftUI
-import SwiftData
 
 /// A view model that manages the state and logic for the Add Transaction form.
 @MainActor
@@ -22,7 +21,6 @@ final class AddAssetFormViewModel: ObservableObject {
     @Published var shouldShowAlert: Bool = false
     var alertMessage: String = ""
     
-    private var context: ModelContext        // Kept for Phase 6.1 cleanup
     private var dataService: DataServiceProtocol
 
     // MARK: - Computed Properties
@@ -77,9 +75,8 @@ final class AddAssetFormViewModel: ObservableObject {
     }
     
     // MARK: - Init
-    init(context: ModelContext) {
-        self.context = context
-        self.dataService = DataService.shared
+    init(dataService: DataServiceProtocol = DataService.shared) {
+        self.dataService = dataService
     }
     
     // MARK: - Public Methods

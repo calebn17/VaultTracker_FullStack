@@ -8,7 +8,6 @@
 //
 
 import Testing
-import SwiftData
 import Foundation
 @testable import VaultTracker
 
@@ -17,18 +16,13 @@ import Foundation
 struct HomeViewModelIntegrationTests {
 
     let viewModel: HomeViewModel
-    let container: ModelContainer
     let api = APIService.shared
 
     init() async throws {
         AuthTokenProvider.isDebugSession = true
         try await DataService.shared.clearAllData()
 
-        container = try ModelContainer(
-            for: Schema([Transaction.self, Account.self, Asset.self, NetWorthSnapshot.self]),
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-        viewModel = HomeViewModel(context: container.mainContext)
+        viewModel = HomeViewModel()
     }
 
     // MARK: - loadData()

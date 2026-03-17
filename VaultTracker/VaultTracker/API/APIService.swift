@@ -7,18 +7,16 @@
 
 import Foundation
 
-/// Concrete implementation of APIServiceProtocol.
+/// Singleton that wraps URLSession and implements `APIServiceProtocol` for all
+/// backend API operations. Every outbound request is authenticated via
+/// `AuthTokenProvider`; a 401 triggers a token force-refresh and a single retry
+/// before the caller receives an error.
 ///
-/// Uses URLSession directly (rather than the existing NetworkService) because
-/// request bodies must be encoded from typed Codable structs, which NetworkService's
-/// [String: String] body parameter cannot support.
+/// Uses URLSession directly rather than the legacy `NetworkService` because
+/// request bodies must be encoded from typed `Codable` structs, which
+/// `NetworkService`'s `[String: String]` body parameter cannot support.
 ///
 /// All thrown errors are typed as `APIError` (see APIError.swift).
-///
-/// Auth flow: every request is sent with a Firebase JWT via AuthTokenProvider.
-/// On a 401 response, the token is force-refreshed and the request retried once.
-/// If authentication still fails after the retry, a `.authenticationRequired`
-/// notification is posted so AuthManager can sign the user out.
 final class APIService: APIServiceProtocol {
 
     // MARK: - Singleton
@@ -37,6 +35,10 @@ final class APIService: APIServiceProtocol {
         self.session = session
 
         self.decoder = JSONDecoder()
+        // Custom date strategy to handle the two formats the backend can return:
+        //   1. ISO 8601 with timezone ("2026-03-17T10:30:00+00:00" or "...Z") — preferred.
+        //   2. Naive datetime without timezone (legacy rows stored before timezone
+        //      support was added); treated as UTC to avoid silent mis-parsing.
         self.decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let raw = try container.decode(String.self)

@@ -7,8 +7,6 @@
 
 import Foundation
 
-import SwiftData
-
 public enum AssetCategory: String, Codable, CaseIterable {
     case crypto = "Crypto"
     case stocks = "Stocks/ETFs"
@@ -17,8 +15,7 @@ public enum AssetCategory: String, Codable, CaseIterable {
     case retirement = "Retirement"
 }
 
-@MainActor @Model
-final class Asset: Sendable {
+struct Asset: Sendable, Identifiable {
     var id: UUID
     var name: String
     var category: AssetCategory

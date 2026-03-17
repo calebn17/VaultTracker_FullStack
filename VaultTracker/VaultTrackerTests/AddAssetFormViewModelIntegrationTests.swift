@@ -8,7 +8,6 @@
 //
 
 import Testing
-import SwiftData
 import Foundation
 @testable import VaultTracker
 
@@ -17,18 +16,13 @@ import Foundation
 struct AddAssetFormViewModelIntegrationTests {
 
     let formVM: AddAssetFormViewModel
-    let container: ModelContainer
     let api = APIService.shared
 
     init() async throws {
         AuthTokenProvider.isDebugSession = true
         try await DataService.shared.clearAllData()
 
-        container = try ModelContainer(
-            for: Schema([Transaction.self, Account.self, Asset.self, NetWorthSnapshot.self]),
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
-        formVM = AddAssetFormViewModel(context: container.mainContext)
+        formVM = AddAssetFormViewModel()
     }
 
     // MARK: - Helpers

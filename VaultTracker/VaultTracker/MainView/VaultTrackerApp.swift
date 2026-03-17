@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 import Firebase
 
 @main
@@ -50,6 +49,5 @@ struct VaultTrackerApp: App {
             }
         }
         .environmentObject(authManager)
-        .modelContainer(for: [Transaction.self, NetWorthSnapshot.self, Account.self, Asset.self])
     }
 }

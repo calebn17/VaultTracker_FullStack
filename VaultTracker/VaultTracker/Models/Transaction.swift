@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 /// The type of transaction.
 enum TransactionType: String, Codable, Hashable, CaseIterable {
@@ -14,24 +13,23 @@ enum TransactionType: String, Codable, Hashable, CaseIterable {
     case sell = "Sell"
 }
 
-@Model
-final class Transaction: Sendable {
-    @Attribute(.unique) var id: UUID
-    
+struct Transaction: Sendable, Identifiable {
+    var id: UUID
+
     // Transaction Details
     var transactionType: TransactionType
     var quantity: Double
     var pricePerUnit: Double
     var date: Date
-    
+
     // Asset Details
     var name: String
     var symbol: String // Symbol for cash and real estate is the `name`
     var category: AssetCategory
-    
+
     // Relationship
     var account: Account
-    
+
     init(
         id: UUID = UUID(),
         transactionType: TransactionType,
