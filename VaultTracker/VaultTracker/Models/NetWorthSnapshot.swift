@@ -8,7 +8,8 @@
 
 import Foundation
 
-struct NetWorthSnapshot: Sendable {
+struct NetWorthSnapshot: Identifiable, Sendable {
+    var id: UUID = UUID()
     var date: Date
     var value: Double
 

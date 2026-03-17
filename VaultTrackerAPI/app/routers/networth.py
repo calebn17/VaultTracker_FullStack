@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import asc
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -26,7 +26,7 @@ async def get_networth_history(
     snapshots = (
         db.query(NetWorthSnapshot)
         .filter(NetWorthSnapshot.user_id == current_user.id)
-        .order_by(desc(NetWorthSnapshot.date))
+        .order_by(asc(NetWorthSnapshot.date))
         .all()
     )
 

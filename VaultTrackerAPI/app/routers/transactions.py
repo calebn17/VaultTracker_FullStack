@@ -19,9 +19,21 @@ from app.models.user import User
 from app.models.asset import Asset
 from app.models.account import Account
 from app.models.transaction import Transaction
+from app.models.networth_snapshot import NetWorthSnapshot
 from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
+
+
+def record_networth_snapshot(db: Session, user_id: str):
+    """
+    Sum current_value across all user assets and save a NetWorthSnapshot.
+    Called after every transaction write so the chart always has fresh data.
+    """
+    total = db.query(Asset).filter(Asset.user_id == user_id).all()
+    net_worth = sum(a.current_value or 0.0 for a in total)
+    snapshot = NetWorthSnapshot(user_id=user_id, value=net_worth)
+    db.add(snapshot)
 
 
 def update_asset_from_transaction(
@@ -120,6 +132,7 @@ async def create_transaction(
         transaction.price_per_unit
     )
 
+    record_networth_snapshot(db, current_user.id)
     db.commit()
     db.refresh(db_transaction)
     return db_transaction
@@ -189,6 +202,7 @@ async def update_transaction(
         transaction.price_per_unit
     )
 
+    record_networth_snapshot(db, current_user.id)
     db.commit()
     db.refresh(transaction)
     return transaction
@@ -224,4 +238,5 @@ async def delete_transaction(
         )
 
     db.delete(transaction)
+    record_networth_snapshot(db, current_user.id)
     db.commit()
