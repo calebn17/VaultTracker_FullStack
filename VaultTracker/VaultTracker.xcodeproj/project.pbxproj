@@ -15,8 +15,6 @@
 		AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22D2E1E24AB005FFB77 /* Transaction.swift */; };
 		AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2312E1E25EF005FFB77 /* DataService.swift */; };
 		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
-		AF4336602E0CDFE700AFC1A0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */; };
-		AF4336622E0CDFE700AFC1A0 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336612E0CDFE700AFC1A0 /* Item.swift */; };
 		AF4336642E0CDFE800AFC1A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */; };
 		AF4336672E0CDFE800AFC1A0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */; };
 		AF43367B2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */; };
@@ -26,9 +24,7 @@
 		AF4336922E0CE32000AFC1A0 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336912E0CE32000AFC1A0 /* HomeView.swift */; };
 		AF4336952E0E272100AFC1A0 /* CustomButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */; };
 		AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */; };
-		AF4336992E0F9C4600AFC1A0 /* AssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */; };
 		AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */; };
-		AF43369E2E1029B600AFC1A0 /* AssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43369D2E1029B600AFC1A0 /* AssetResponse.swift */; };
 		AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */; };
 		AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */; };
 		AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */; };
@@ -94,8 +90,6 @@
 		AF07A2312E1E25EF005FFB77 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
 		AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaultTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerApp.swift; sourceTree = "<group>"; };
-		AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AF4336612E0CDFE700AFC1A0 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AF43366C2E0CDFE900AFC1A0 /* VaultTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,9 +101,7 @@
 		AF4336912E0CE32000AFC1A0 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButtonView.swift; sourceTree = "<group>"; };
 		AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
-		AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManager.swift; sourceTree = "<group>"; };
 		AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetModel.swift; sourceTree = "<group>"; };
-		AF43369D2E1029B600AFC1A0 /* AssetResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetResponse.swift; sourceTree = "<group>"; };
 		AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMapperTests.swift; sourceTree = "<group>"; };
 		AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIErrorTests.swift; sourceTree = "<group>"; };
 		AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetMapperTests.swift; sourceTree = "<group>"; };
@@ -177,8 +169,6 @@
 		AF07A2262E1B2661005FFB77 /* MainView */ = {
 			isa = PBXGroup;
 			children = (
-				AF4336612E0CDFE700AFC1A0 /* Item.swift */,
-				AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */,
 				AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */,
 			);
 			path = MainView;
@@ -270,7 +260,6 @@
 				AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */,
 				AF07A2312E1E25EF005FFB77 /* DataService.swift */,
 				AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */,
-				AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */,
 				AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */,
 			);
 			path = Managers;
@@ -292,7 +281,6 @@
 				AF07A22B2E1E23FD005FFB77 /* Account.swift */,
 				AF07A21E2E1A3B58005FFB77 /* NetWorthSnapshot.swift */,
 				AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */,
-				AF43369D2E1029B600AFC1A0 /* AssetResponse.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -529,8 +517,6 @@
 			files = (
 				AF4336952E0E272100AFC1A0 /* CustomButtonView.swift in Sources */,
 				AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */,
-				AF4336602E0CDFE700AFC1A0 /* ContentView.swift in Sources */,
-				AF4336622E0CDFE700AFC1A0 /* Item.swift in Sources */,
 				AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */,
 				AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */,
 				AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */,
@@ -540,7 +526,6 @@
 				AF43368C2E0CE2BE00AFC1A0 /* HomeViewModel.swift in Sources */,
 				AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */,
 				AFBD43F12E1831560042F994 /* AssetCategoryView.swift in Sources */,
-				AF4336992E0F9C4600AFC1A0 /* AssetManager.swift in Sources */,
 				AFEEE4682F62B371000A8ADD /* APIAccountModels.swift in Sources */,
 				AFEEE4692F62B371000A8ADD /* APIDashboardResponse.swift in Sources */,
 				AFEEE46A2F62B371000A8ADD /* AssetMapper.swift in Sources */,
@@ -563,7 +548,6 @@
 				AF4D71FA2E1A1F7A00B925F5 /* Extensions.swift in Sources */,
 				AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */,
 				AF07A21F2E1A3B58005FFB77 /* NetWorthSnapshot.swift in Sources */,
-				AF43369E2E1029B600AFC1A0 /* AssetResponse.swift in Sources */,
 				AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */,
 				AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */,
 				AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */,
