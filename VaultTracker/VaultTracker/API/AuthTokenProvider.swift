@@ -26,7 +26,15 @@ actor AuthTokenProvider {
         guard let user = Auth.auth().currentUser else {
             throw AuthTokenError.notAuthenticated
         }
-        return try await user.getIDTokenForcingRefresh(forceRefresh)
+        return try await withCheckedThrowingContinuation { continuation in
+            user.getIDTokenForcingRefresh(forceRefresh) { token, error in
+                if let token = token {
+                    continuation.resume(returning: token)
+                } else {
+                    continuation.resume(throwing: error ?? AuthTokenError.notAuthenticated)
+                }
+            }
+        }
     }
 }
 

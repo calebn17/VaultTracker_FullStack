@@ -36,9 +36,9 @@ final class HomeViewModel: ObservableObject {
 
     private var dataService: DataServiceProtocol
 
-    init(context: ModelContext) {
+    init(context: ModelContext, dataService: DataServiceProtocol = DataService()) {
         self.context = context
-        self.dataService = DataService()
+        self.dataService = dataService
     }
 
     func loadData() async {

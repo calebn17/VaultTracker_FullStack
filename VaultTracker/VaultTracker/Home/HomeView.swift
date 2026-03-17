@@ -288,16 +288,13 @@ struct HomeView: View {
                         Text(holding.currentValue.currencyFormat())
                             .font(.body).bold()
 
-                        let quantityString: String
-                        if let filter = viewModel.viewState.selectedFilter {
-                            quantityString = switch filter {
-                            case .cash, .realEstate: ""
-                            case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
-                            case .crypto: "\(holding.quantity.twoDecimalString) coins"
+                        let quantityString = viewModel.viewState.selectedFilter.map { filter -> String in
+                            switch filter {
+                            case .cash, .realEstate: return ""
+                            case .stocks, .retirement: return "\(holding.quantity.twoDecimalString) shares"
+                            case .crypto: return "\(holding.quantity.twoDecimalString) coins"
                             }
-                        } else {
-                            quantityString = ""
-                        }
+                        } ?? ""
 
                         Text(quantityString)
                             .font(.caption)

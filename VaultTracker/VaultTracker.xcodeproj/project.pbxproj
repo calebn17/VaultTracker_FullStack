@@ -14,7 +14,6 @@
 		AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22B2E1E23FD005FFB77 /* Account.swift */; };
 		AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22D2E1E24AB005FFB77 /* Transaction.swift */; };
 		AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2312E1E25EF005FFB77 /* DataService.swift */; };
-		AF38E5E92F67E95700C0FC5D /* DataServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */; };
 		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
 		AF4336602E0CDFE700AFC1A0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */; };
 		AF4336622E0CDFE700AFC1A0 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336612E0CDFE700AFC1A0 /* Item.swift */; };
@@ -31,6 +30,7 @@
 		AF4336992E0F9C4600AFC1A0 /* AssetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */; };
 		AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */; };
 		AF43369E2E1029B600AFC1A0 /* AssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43369D2E1029B600AFC1A0 /* AssetResponse.swift */; };
+		AF4D44702F681FCB0055FF21 /* DataServiceProtocol 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D446F2F681FCB0055FF21 /* DataServiceProtocol 2.swift */; };
 		AF4D71FA2E1A1F7A00B925F5 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */; };
 		AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */; };
 		AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2E2E29CA9900253BE3 /* Utilities.swift */; };
@@ -84,7 +84,6 @@
 		AF07A22B2E1E23FD005FFB77 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		AF07A22D2E1E24AB005FFB77 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		AF07A2312E1E25EF005FFB77 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
-		AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataServiceProtocol.swift; sourceTree = "<group>"; };
 		AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaultTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerApp.swift; sourceTree = "<group>"; };
 		AF43365F2E0CDFE700AFC1A0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -104,6 +103,7 @@
 		AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManager.swift; sourceTree = "<group>"; };
 		AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetModel.swift; sourceTree = "<group>"; };
 		AF43369D2E1029B600AFC1A0 /* AssetResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetResponse.swift; sourceTree = "<group>"; };
+		AF4D446F2F681FCB0055FF21 /* DataServiceProtocol 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataServiceProtocol 2.swift"; sourceTree = "<group>"; };
 		AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		AF56EC2E2E29CA9900253BE3 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -200,7 +200,6 @@
 		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
 			isa = PBXGroup;
 			children = (
-				AF38E5E82F67E95700C0FC5D /* DataServiceProtocol.swift */,
 				AFEEE4672F62B371000A8ADD /* API */,
 				AF56EC362E2B200900253BE3 /* Loading */,
 				AF56EC332E29F71800253BE3 /* Profile */,
@@ -260,6 +259,7 @@
 		AF4336902E0CE2FC00AFC1A0 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				AF4D446F2F681FCB0055FF21 /* DataServiceProtocol 2.swift */,
 				AF07A2312E1E25EF005FFB77 /* DataService.swift */,
 				AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */,
 				AF4336982E0F9C4600AFC1A0 /* AssetManager.swift */,
@@ -507,6 +507,7 @@
 				AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */,
 				AF4336602E0CDFE700AFC1A0 /* ContentView.swift in Sources */,
 				AF4336622E0CDFE700AFC1A0 /* Item.swift in Sources */,
+				AF4D44702F681FCB0055FF21 /* DataServiceProtocol 2.swift in Sources */,
 				AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */,
 				AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */,
 				AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */,
@@ -542,7 +543,6 @@
 				AF43369E2E1029B600AFC1A0 /* AssetResponse.swift in Sources */,
 				AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */,
 				AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */,
-				AF38E5E92F67E95700C0FC5D /* DataServiceProtocol.swift in Sources */,
 				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
 				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
 			);

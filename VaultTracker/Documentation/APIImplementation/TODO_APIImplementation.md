@@ -175,13 +175,13 @@
 ## Phase 5: Testing & Validation
 
 ### 5.1 Unit Tests
-- [ ] Ensure all existing `HomeViewModelTests` pass
-- [ ] Add tests for `APIService` with mocked responses
-- [ ] Add tests for model mappers
-- [ ] Add tests for error handling
-- [ ] Update `API_Implementation_TechSpec.md`
-- [ ] Commit changes with comments
-- [ ] Update `TODO_APIImplementation.md`
+- [x] Ensure all existing `HomeViewModelTests` pass
+- [x] Add tests for `APIService` with mocked responses
+- [x] Add tests for model mappers
+- [x] Add tests for error handling
+- [x] Update `API_Implementation_TechSpec.md`
+- [x] Commit changes with comments
+- [x] Update `TODO_APIImplementation.md`
 
 ### 5.2 Integration Testing
 - [ ] Test authentication flow end-to-end
