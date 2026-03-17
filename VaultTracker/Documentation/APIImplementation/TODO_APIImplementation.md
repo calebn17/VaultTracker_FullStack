@@ -184,10 +184,12 @@
 - [x] Update `TODO_APIImplementation.md`
 
 ### 5.2 Integration Testing
-- [ ] Test authentication flow end-to-end
-- [ ] Test transaction creation and dashboard refresh
-- [ ] Test account management flow
-- [ ] Test net worth history loading
+- [x] Test authentication flow end-to-end
+- [x] Test transaction creation and dashboard refresh
+- [x] Test account management flow
+- [x] Test net worth history loading
+- [x] Test HomeViewModel state management against live backend
+- [x] Test AddAssetFormViewModel save flow against live backend
 - [ ] Update `API_Implementation_TechSpec.md`
 - [ ] Commit changes with comments
 - [ ] Update `TODO_APIImplementation.md`

@@ -65,6 +65,10 @@ final class MockDataService: DataServiceProtocol {
     }
 
     func deleteAccount(id: String) async throws {}
+
+    // MARK: - User Data
+
+    func clearAllData() async throws {}
 }
 
 enum MockError: Error, LocalizedError {
