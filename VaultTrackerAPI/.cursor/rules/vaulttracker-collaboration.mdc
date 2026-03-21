@@ -1,0 +1,23 @@
+---
+description: Teaching style for iOS-primary maintainers learning FastAPI/Python
+alwaysApply: true
+---
+
+# VaultTracker API — collaboration
+
+The maintainer is primarily an **iOS developer** and is learning this stack. When you change or review code:
+
+- Explain **what** (files + behavior), **why** (reason/spec), and walk **meaningful diffs** in order.
+- Tie concepts to **Swift/iOS** where it helps; flag **common pitfalls** (async/sync, DB sessions/commits, env vs Xcode, CORS).
+- They may ask for **deeper** or **faster** explanations — adapt.
+
+Canonical, full wording lives in **CLAUDE.md** under **Collaboration (learning mode)**. Backend 2.0 plan: `Documentation/VaultTracker_Backend_2.0_Spec.md`.
+
+## Implementation checklist (Backend 2.0)
+
+The spec’s **Implementation Todo List** (`VaultTracker_Backend_2.0_Spec.md`) is the source of truth for shipped work.
+
+- When you **finish a coded task** from that list, set its checkbox to `[x]` in the spec.
+- Leave `[ ]` for **human-only** steps (deploy, full Swagger pass, iOS verification, manual market/cache checks) until the user confirms; you may add a short italic note on the line, matching existing style.
+- After a meaningful batch of work, **sync the spec** so the next agent (or the user) sees accurate progress.
+- Prefer extending **`pytest tests/`** when adding behavior that would otherwise need repetitive Swagger checks; update the spec checklist when tests cover a formerly “manual” row.
