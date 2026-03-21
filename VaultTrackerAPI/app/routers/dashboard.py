@@ -16,6 +16,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.asset import Asset
 from app.schemas.dashboard import DashboardResponse, CategoryTotals, GroupedHolding
+from app.services.cache_service import cache
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -23,12 +24,17 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 @router.get("", response_model=DashboardResponse)
 async def get_dashboard(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get aggregated dashboard data including total net worth,
     category breakdowns, and grouped holdings.
     """
+    cache_key = f"dashboard:{current_user.id}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return DashboardResponse.model_validate(cached)
+
     assets = db.query(Asset).filter(Asset.user_id == current_user.id).all()
 
     # Calculate category totals
@@ -64,8 +70,10 @@ async def get_dashboard(
 
     total_net_worth = sum(category_totals.values())
 
-    return DashboardResponse(
+    result = DashboardResponse(
         totalNetWorth=total_net_worth,
         categoryTotals=CategoryTotals(**category_totals),
         groupedHoldings=grouped_holdings,
     )
+    cache.set(cache_key, result.model_dump(mode="python"))
+    return result

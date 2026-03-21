@@ -15,6 +15,15 @@ class Settings(BaseSettings):
     # Set DEBUG_AUTH_ENABLED=true in .env to allow the iOS debug bypass token.
     # Must be False in staging/production.
     debug_auth_enabled: bool = False
+    # Comma-separated browser origins for CORS (web app + /docs “Try it out”). Native iOS URLSession does not send Origin.
+    allowed_origins: str = (
+        "http://localhost:3000,http://127.0.0.1:3000,"
+        "http://localhost:8000,http://127.0.0.1:8000"
+    )
+    # Path to Firebase service account JSON. Empty = real JWT verification disabled unless you use debug bypass only.
+    firebase_credentials_path: str = ""
+    # Used by PriceService for stock quotes (GLOBAL_QUOTE).
+    alpha_vantage_api_key: str = ""
 
     class Config:
         env_file = ".env"

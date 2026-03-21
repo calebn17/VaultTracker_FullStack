@@ -1,10 +1,10 @@
 # FastAPI application entry point for VaultTracker API.
 #
 # Routers included (all prefixed /api/v1):
-#   dashboard, accounts, assets, transactions, networth, users
+#   dashboard, accounts, assets, transactions, networth, users, analytics, prices
 #
 # Database tables are created on startup via SQLAlchemy's create_all.
-# CORS is open for all origins during development; restrict for production.
+# CORS allowed origins come from settings (comma-separated). Tighten for production.
 
 from contextlib import asynccontextmanager
 
@@ -20,6 +20,8 @@ from app.routers import (
     transactions_router,
     networth_router,
     users_router,
+    analytics_router,
+    prices_router,
 )
 
 
@@ -36,10 +38,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware for iOS app
+# CORS: browsers (e.g. web client, Swagger UI) send an Origin header; native iOS URLSession does not.
+_origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,6 +55,8 @@ app.include_router(assets_router, prefix="/api/v1")
 app.include_router(transactions_router, prefix="/api/v1")
 app.include_router(networth_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1")
+app.include_router(prices_router, prefix="/api/v1")
 
 
 @app.get("/")

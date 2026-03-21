@@ -10,8 +10,19 @@ well-known value `"vaulttracker-debug-user"`, `firebase_id` is set to `"debug-us
 (the `_DEBUG_FIREBASE_ID` constant) without any real Firebase verification. This
 matches the `AuthTokenProvider.debugToken` constant in the iOS client and allows
 local development without a Firebase account.
+
+Production: set `FIREBASE_CREDENTIALS_PATH` to a service account JSON file.
+Non-debug Bearer tokens are verified with Firebase Admin and the uid becomes firebase_id.
 """
 
+from __future__ import annotations
+
+import os
+import threading
+
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from firebase_admin import credentials
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -24,10 +35,31 @@ _DEBUG_AUTH_TOKEN = "vaulttracker-debug-user"
 # Stable firebase_id used for the debug user row in the database.
 _DEBUG_FIREBASE_ID = "debug-user"
 
+_firebase_lock = threading.Lock()
+_firebase_initialized = False
+
+
+def _ensure_firebase_app() -> None:
+    """Initialize the default Firebase app once (thread-safe)."""
+    global _firebase_initialized
+    if _firebase_initialized:
+        return
+    path = (settings.firebase_credentials_path or "").strip()
+    if not path:
+        raise RuntimeError("FIREBASE_CREDENTIALS_PATH is not set")
+    if not os.path.isfile(path):
+        raise RuntimeError(f"Firebase credentials file not found: {path}")
+    with _firebase_lock:
+        if _firebase_initialized:
+            return
+        cred = credentials.Certificate(path)
+        firebase_admin.initialize_app(cred)
+        _firebase_initialized = True
+
 
 async def get_current_user(
     authorization: str = Header(..., description="Bearer token (Firebase JWT)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> User:
     """
     Authentication dependency.
@@ -42,7 +74,7 @@ async def get_current_user(
     if not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format. Expected 'Bearer <token>'"
+            detail="Invalid authorization header format. Expected 'Bearer <token>'",
         )
 
     token = authorization[7:]  # strip "Bearer "
@@ -50,18 +82,32 @@ async def get_current_user(
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No token provided"
+            detail="No token provided",
         )
 
-    # --- Debug bypass (local development only) ---
     if settings.debug_auth_enabled and token == _DEBUG_AUTH_TOKEN:
         firebase_id = _DEBUG_FIREBASE_ID
     else:
-        # TODO: verify Firebase JWT and extract uid
-        # For now the raw token string is used as the firebase_id.
-        firebase_id = token
+        try:
+            _ensure_firebase_app()
+        except RuntimeError as e:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    "Firebase is not configured on this server. "
+                    "Set FIREBASE_CREDENTIALS_PATH to your service account JSON, "
+                    "or enable DEBUG_AUTH_ENABLED and use the iOS debug token locally."
+                ),
+            ) from e
+        try:
+            decoded = firebase_auth.verify_id_token(token)
+            firebase_id = decoded["uid"]
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token",
+            ) from None
 
-    # Look up or auto-create user
     user = db.query(User).filter(User.firebase_id == firebase_id).first()
     if not user:
         user = User(firebase_id=firebase_id)

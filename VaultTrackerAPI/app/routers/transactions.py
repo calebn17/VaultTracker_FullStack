@@ -8,10 +8,11 @@ This is not a cost-basis sum — the most recent price_per_unit supplied by the
 client is used to revalue the entire position each time a transaction is recorded.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy import desc
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -19,100 +20,110 @@ from app.models.user import User
 from app.models.asset import Asset
 from app.models.account import Account
 from app.models.transaction import Transaction
-from app.models.networth_snapshot import NetWorthSnapshot
-from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
+from app.schemas.transaction import (
+    EnrichedTransactionResponse,
+    SmartTransactionCreate,
+    TransactionCreate,
+    TransactionUpdate,
+    TransactionResponse,
+    AssetSummary,
+    AccountSummary,
+)
+from app.services.asset_sync import record_networth_snapshot, update_asset_from_transaction
+from app.services.cache_service import cache
+from app.services.transaction_service import TransactionService
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
 
-def record_networth_snapshot(db: Session, user_id: str):
-    """
-    Sum current_value across all user assets and save a NetWorthSnapshot.
-    Called after every transaction write so the chart always has fresh data.
-    """
-    total = db.query(Asset).filter(Asset.user_id == user_id).all()
-    net_worth = sum(a.current_value or 0.0 for a in total)
-    snapshot = NetWorthSnapshot(user_id=user_id, value=net_worth)
-    db.add(snapshot)
+def _to_enriched(t: Transaction) -> EnrichedTransactionResponse:
+    a = t.asset
+    ac = t.account
+    return EnrichedTransactionResponse(
+        id=t.id,
+        user_id=t.user_id,
+        asset_id=t.asset_id,
+        account_id=t.account_id,
+        transaction_type=t.transaction_type,
+        quantity=t.quantity,
+        price_per_unit=t.price_per_unit,
+        total_value=t.quantity * t.price_per_unit,
+        date=t.date,
+        asset=AssetSummary(
+            id=a.id,
+            name=a.name,
+            symbol=a.symbol,
+            category=a.category,
+        ),
+        account=AccountSummary(
+            id=ac.id,
+            name=ac.name,
+            account_type=ac.account_type,
+        ),
+    )
 
 
-def update_asset_from_transaction(
-    db: Session,
-    asset: Asset,
-    transaction_type: str,
-    quantity: float,
-    price_per_unit: float,
-    is_reversal: bool = False
-):
-    """
-    Adjust an asset's quantity and recompute its current_value after a transaction.
-
-    Pass `is_reversal=True` to undo the effect of an existing transaction (used
-    during updates and deletes). After adjusting quantity, current_value is set to
-    `quantity * price_per_unit` — mark-to-market, not a running cost-basis sum.
-    """
-    if is_reversal:
-        # Reverse the effect of the transaction
-        if transaction_type == "buy":
-            asset.quantity -= quantity
-        else:  # sell
-            asset.quantity += quantity
-    else:
-        # Apply the transaction
-        if transaction_type == "buy":
-            asset.quantity += quantity
-        else:  # sell
-            asset.quantity -= quantity
-
-    # Update current value (quantity * latest price per unit)
-    asset.current_value = asset.quantity * price_per_unit
-    asset.last_updated = datetime.utcnow()
-
-
-@router.get("", response_model=list[TransactionResponse])
+@router.get("", response_model=list[EnrichedTransactionResponse])
 async def get_transactions(
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    """Get all transactions for the current user."""
-    return db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
+    """List transactions with nested asset and account summaries."""
+    rows = (
+        db.query(Transaction)
+        .options(joinedload(Transaction.asset), joinedload(Transaction.account))
+        .filter(Transaction.user_id == current_user.id)
+        .order_by(desc(Transaction.date))
+        .all()
+    )
+    return [_to_enriched(t) for t in rows]
+
+
+@router.post("/smart", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+async def create_smart_transaction(
+    body: SmartTransactionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Create account/asset if needed, then record one transaction (server-side resolution)."""
+    service = TransactionService()
+    tx = service.smart_create(body, current_user, db)
+    return tx
 
 
 @router.post("", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
     transaction: TransactionCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Create a new transaction.
     This will automatically update the related asset's quantity and value.
     """
-    # Verify asset exists and belongs to user
     asset = db.query(Asset).filter(
         Asset.id == transaction.asset_id,
-        Asset.user_id == current_user.id
+        Asset.user_id == current_user.id,
     ).first()
 
     if not asset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset not found"
+            detail="Asset not found",
         )
 
-    # Verify account exists and belongs to user
     account = db.query(Account).filter(
         Account.id == transaction.account_id,
-        Account.user_id == current_user.id
+        Account.user_id == current_user.id,
     ).first()
 
     if not account:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found"
+            detail="Account not found",
         )
 
-    # Create transaction
+    when = transaction.date if transaction.date is not None else datetime.now(timezone.utc)
     db_transaction = Transaction(
         user_id=current_user.id,
         asset_id=transaction.asset_id,
@@ -120,21 +131,22 @@ async def create_transaction(
         transaction_type=transaction.transaction_type,
         quantity=transaction.quantity,
         price_per_unit=transaction.price_per_unit,
-        date=transaction.date or datetime.utcnow(),
+        date=when,
     )
     db.add(db_transaction)
 
-    # Update the asset
     update_asset_from_transaction(
-        db, asset,
+        db,
+        asset,
         transaction.transaction_type,
         transaction.quantity,
-        transaction.price_per_unit
+        transaction.price_per_unit,
     )
 
     record_networth_snapshot(db, current_user.id)
     db.commit()
     db.refresh(db_transaction)
+    cache.invalidate_user(current_user.id)
     return db_transaction
 
 
@@ -142,18 +154,18 @@ async def create_transaction(
 async def get_transaction(
     transaction_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get a specific transaction by ID."""
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id
+        Transaction.user_id == current_user.id,
     ).first()
 
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
+            detail="Transaction not found",
         )
     return transaction
 
@@ -163,48 +175,47 @@ async def update_transaction(
     transaction_id: str,
     transaction_update: TransactionUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update an existing transaction."""
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id
+        Transaction.user_id == current_user.id,
     ).first()
 
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
+            detail="Transaction not found",
         )
 
-    # Get the associated asset
     asset = db.query(Asset).filter(Asset.id == transaction.asset_id).first()
 
-    # Reverse the old transaction effect
     update_asset_from_transaction(
-        db, asset,
+        db,
+        asset,
         transaction.transaction_type,
         transaction.quantity,
         transaction.price_per_unit,
-        is_reversal=True
+        is_reversal=True,
     )
 
-    # Apply updates
     update_data = transaction_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
-    # Apply the new transaction effect
     update_asset_from_transaction(
-        db, asset,
+        db,
+        asset,
         transaction.transaction_type,
         transaction.quantity,
-        transaction.price_per_unit
+        transaction.price_per_unit,
     )
 
     record_networth_snapshot(db, current_user.id)
     db.commit()
     db.refresh(transaction)
+    cache.invalidate_user(current_user.id)
     return transaction
 
 
@@ -212,31 +223,32 @@ async def update_transaction(
 async def delete_transaction(
     transaction_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Delete a transaction and reverse its effect on the asset."""
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id
+        Transaction.user_id == current_user.id,
     ).first()
 
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
+            detail="Transaction not found",
         )
 
-    # Get the associated asset and reverse the transaction effect
     asset = db.query(Asset).filter(Asset.id == transaction.asset_id).first()
     if asset:
         update_asset_from_transaction(
-            db, asset,
+            db,
+            asset,
             transaction.transaction_type,
             transaction.quantity,
             transaction.price_per_unit,
-            is_reversal=True
+            is_reversal=True,
         )
 
     db.delete(transaction)
     record_networth_snapshot(db, current_user.id)
     db.commit()
+    cache.invalidate_user(current_user.id)
