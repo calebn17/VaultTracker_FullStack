@@ -16,6 +16,10 @@ dist/
 # Claude
 .claude/
 
+# Web
+VaultTrackerWeb/*
+!VaultTrackerWeb/.gitkeep
+
 # macOS
 .DS_Store
 
