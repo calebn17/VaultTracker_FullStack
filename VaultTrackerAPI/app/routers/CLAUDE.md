@@ -48,4 +48,4 @@ return result
 
 ## sync vs async handlers
 
-Most routers use `def` (synchronous). Only routes that call `PriceService` use `async def` because the price service makes async HTTP calls with `httpx`. Mixing sync/async in FastAPI is fine — FastAPI runs sync handlers in a thread pool automatically.
+Most routers use `def` (synchronous). `prices.py` uses `async def` because `PriceService` makes async HTTP calls with `httpx`. `networth.py` also uses `async def`. Mixing sync/async in FastAPI is fine — FastAPI runs sync handlers in a thread pool automatically.

@@ -28,7 +28,7 @@ The singleton `cache` object (imported from `cache_service.py`) has three separa
 
 | Cache | TTL | Used for |
 |-------|-----|---------|
-| `_data` | 5 min | dashboard, analytics, networth results — keyed as `"<resource>:<user_id>"` |
+| `_data` | 5 min | dashboard, analytics, networth results — keys always contain `":<user_id>"` (e.g. `"analytics:<user_id>"`, `"networth:history:<user_id>:<period>"`) |
 | `_crypto_prices` | 15 min | CoinGecko prices keyed by uppercase symbol |
 | `_stock_prices` | 60 min | Alpha Vantage prices keyed by uppercase symbol |
 

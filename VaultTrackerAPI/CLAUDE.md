@@ -72,7 +72,7 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 
 ### The transaction → asset → snapshot chain
 
-The most important invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (see [app/routers/transactions.py](app/routers/transactions.py)):
+The most important invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (helpers in [app/services/asset_sync.py](app/services/asset_sync.py)):
 
 1. `update_asset_from_transaction` adjusts `asset.quantity` and resets `asset.current_value = quantity * price_per_unit` (mark-to-market, not cost-basis).
 2. `record_networth_snapshot` sums `current_value` across all user assets and writes a new `NetWorthSnapshot` row.
