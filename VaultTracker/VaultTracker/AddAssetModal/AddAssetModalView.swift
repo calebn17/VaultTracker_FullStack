@@ -34,6 +34,7 @@ struct AddAssetModalView: View {
                 }, label: {
                     Label("Close Button", systemImage: "x.circle.fill")
                 })
+                .accessibilityIdentifier("closeButton")
             }
         }
         .alert("Error", isPresented: $formViewModel.shouldShowAlert) {
@@ -53,6 +54,7 @@ struct AddAssetModalView: View {
         }
         .pickerStyle(.segmented)
         .listRowInsets(EdgeInsets())
+        .accessibilityIdentifier("transactionTypePicker")
     }
 
     var accountSection: some View {
@@ -61,6 +63,7 @@ struct AddAssetModalView: View {
                 formViewModel.selectedCategory != .realEstate ? "Account Name (e.g. Robinhood)" : "Property Address",
                 text: $formViewModel.accountName
             )
+            .accessibilityIdentifier("accountNameField")
 
             Picker(
                 formViewModel.selectedCategory != .realEstate ? "Account Type" : "Property Type",
@@ -70,6 +73,7 @@ struct AddAssetModalView: View {
                     Text(type.rawValue)
                 }
             }
+            .accessibilityIdentifier("accountTypePicker")
         }
     }
 
@@ -80,26 +84,33 @@ struct AddAssetModalView: View {
                     Text(category.rawValue.capitalized)
                 }
             }
+            .accessibilityIdentifier("categoryPicker")
 
             TextField(formViewModel.selectedCategory != .realEstate ? "Name" : "Property Name", text: $formViewModel.name)
+                .accessibilityIdentifier("assetNameField")
 
             if formViewModel.shouldShowSymbolField {
                 TextField(
                     "Symbol (e.g. BTC, VOO, etc)",
                     text: $formViewModel.symbol
                 )
-                    .textInputAutocapitalization(.characters)
+                .textInputAutocapitalization(.characters)
+                .accessibilityIdentifier("symbolField")
 
                 TextField("Quantity", text: formViewModel.quantityBinding)
                     .keyboardType(.decimalPad)
+                    .accessibilityIdentifier("quantityField")
 
                 TextField("Price Per Unit", text: $formViewModel.pricePerUnit)
                     .keyboardType(.decimalPad)
+                    .accessibilityIdentifier("pricePerUnitField")
             } else {
                 TextField(formViewModel.selectedCategory == .cash ? "Amount" : "Equity", text: $formViewModel.pricePerUnit)
+                    .accessibilityIdentifier("pricePerUnitField")
             }
 
             DatePicker("Date", selection: $formViewModel.date)
+                .accessibilityIdentifier("transactionDatePicker")
         }
     }
 
@@ -116,6 +127,7 @@ struct AddAssetModalView: View {
             .disabled(!formViewModel.isFormValid)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
+            .accessibilityIdentifier("saveButton")
         }
     }
 }

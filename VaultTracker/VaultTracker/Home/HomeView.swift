@@ -32,20 +32,25 @@ struct HomeView: View {
                         } label: {
                             Image(systemName: "xmark")
                         }
+                        .accessibilityIdentifier("dismissErrorButton")
                     }
                     .padding()
                     .background(Color.red.opacity(0.1))
                     .cornerRadius(10)
+                    .accessibilityIdentifier("errorBanner")
                 }
 
                 filterBarView
                 NetWorthChartView(snapshots: viewModel.snapshots)
+                    .accessibilityIdentifier("netWorthChart")
 
                 Text("Net Worth")
                     .font(.title2).bold()
+                    .accessibilityIdentifier("netWorthTitleText")
 
                 Text(viewModel.viewState.totalNetworthValue.currencyFormat())
                     .font(.system(size: 40, weight: .bold))
+                    .accessibilityIdentifier("netWorthValueText")
 
                 if viewModel.viewState.totalNetworthValue > 0.0 {
                     assetBarView
@@ -63,6 +68,7 @@ struct HomeView: View {
                     Button("Clear Data", role: .destructive) {
                         showClearConfirmation = true
                     }
+                    .accessibilityIdentifier("clearDataButton")
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -71,6 +77,7 @@ struct HomeView: View {
                     }, label: {
                         Label("Add Transaction", systemImage: "plus")
                     })
+                    .accessibilityIdentifier("addTransactionButton")
                 }
             }
             .sheet(isPresented: $viewModel.shouldPresentSheet) {
@@ -106,6 +113,7 @@ struct HomeView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.black.opacity(0.05))
+                    .accessibilityIdentifier("loadingOverlay")
             }
         }
     }
@@ -123,6 +131,7 @@ struct HomeView: View {
                         .foregroundColor(viewModel.viewState.selectedFilter == nil ? .white : .primary)
                         .cornerRadius(20)
                 }
+                .accessibilityIdentifier("filterAllButton")
                 ForEach(AssetCategory.allCases, id: \.self) { category in
                     Button(action: {
                         viewModel.selectFilter(category: category)
@@ -134,6 +143,7 @@ struct HomeView: View {
                             .foregroundColor(viewModel.viewState.selectedFilter == category ? .white : .primary)
                             .cornerRadius(20)
                     }
+                    .accessibilityIdentifier("filterButton_\(category.rawValue)")
                 }
             }
             .padding(.horizontal)
@@ -150,6 +160,7 @@ struct HomeView: View {
         }
         .background(Color(.systemGray5))
         .cornerRadius(3)
+        .accessibilityIdentifier("assetBreakdownBar")
     }
 
     private var assetListView: some View {
@@ -209,6 +220,7 @@ struct HomeView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("categorySection_\(assetCategory.rawValue)")
 
             if isExpanded {
                 Divider()

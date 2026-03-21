@@ -42,7 +42,8 @@ struct LoginView: View {
                 .cornerRadius(10)
             }
             .padding(.horizontal)
-            
+            .accessibilityIdentifier("googleSignInButton")
+
             // Apple Sign-In Button (Placeholder)
             Button(action: {
                 Task {
@@ -67,6 +68,7 @@ struct LoginView: View {
             }
             .padding(.horizontal)
             .padding(.top, 10)
+            .accessibilityIdentifier("appleSignInButton")
             
             Spacer()
 
@@ -86,6 +88,7 @@ struct LoginView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 30)
+            .accessibilityIdentifier("debugLoginButton")
 #endif
         }
         .background(

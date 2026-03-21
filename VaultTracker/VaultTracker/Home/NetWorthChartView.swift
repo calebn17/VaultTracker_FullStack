@@ -30,5 +30,6 @@ struct NetWorthChartView: View {
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .frame(height: 200)
+        .accessibilityIdentifier("netWorthChartContent")
     }
 }

@@ -32,6 +32,7 @@ struct ProfileView: View {
                     .cornerRadius(10)
             }
             .padding()
+            .accessibilityIdentifier("signOutButton")
             
             Spacer()
         }

@@ -17,6 +17,7 @@ struct LoadingView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("loadingView")
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [Color(red: 1.0, green: 0.5, blue: 0.0), Color(red: 0.4, green: 0.2, blue: 0.0)]),
