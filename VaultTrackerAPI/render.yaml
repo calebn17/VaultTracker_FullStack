@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: vaulttracker-api
+    runtime: python
+    rootDir: VaultTrackerAPI
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # paste your Neon connection string in the Render dashboard
+      - key: DEBUG_AUTH_ENABLED
+        value: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        value: /etc/secrets/firebase-credentials.json
+      - key: ALLOWED_ORIGINS
+        sync: false          # e.g. https://yourdomain.com
+      - key: ALPHA_VANTAGE_API_KEY
+        sync: false          # optional; leave blank to disable stock quotes
