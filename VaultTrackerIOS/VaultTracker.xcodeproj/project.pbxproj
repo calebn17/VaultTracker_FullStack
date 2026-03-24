@@ -1,0 +1,987 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AF07A21F2E1A3B58005FFB77 /* NetWorthSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A21E2E1A3B58005FFB77 /* NetWorthSnapshot.swift */; };
+		AF07A2212E1A3B71005FFB77 /* NetWorthChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2202E1A3B71005FFB77 /* NetWorthChartView.swift */; };
+		AF07A2252E1B25A7005FFB77 /* AddAssetFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2242E1B25A7005FFB77 /* AddAssetFormViewModel.swift */; };
+		AF07A2282E1CE0FA005FFB77 /* HomeViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2272E1CE0FA005FFB77 /* HomeViewWrapper.swift */; };
+		AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22B2E1E23FD005FFB77 /* Account.swift */; };
+		AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22D2E1E24AB005FFB77 /* Transaction.swift */; };
+		AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2312E1E25EF005FFB77 /* DataService.swift */; };
+		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
+		AF4336642E0CDFE800AFC1A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */; };
+		AF4336672E0CDFE800AFC1A0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */; };
+		AF43367B2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */; };
+		AF43367D2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */; };
+		C2E201302F8D0001001B0001 /* LoginPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012A2F8D0001001B0001 /* LoginPage.swift */; };
+		C2E201312F8D0001001B0001 /* HomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012B2F8D0001001B0001 /* HomePage.swift */; };
+		C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */; };
+		C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */; };
+		C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012E2F8D0001001B0001 /* ProfilePage.swift */; };
+		AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */; };
+		AF43368C2E0CE2BE00AFC1A0 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */; };
+		AF4336922E0CE32000AFC1A0 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336912E0CE32000AFC1A0 /* HomeView.swift */; };
+		AF4336952E0E272100AFC1A0 /* CustomButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */; };
+		AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */; };
+		AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */; };
+		AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */; };
+		AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */; };
+		AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */; };
+		AF4D447D2F694B6D0055FF21 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44762F694B6D0055FF21 /* MockDataService.swift */; };
+		AF4D447E2F694B6D0055FF21 /* AssetMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */; };
+		AF4D447F2F694B6D0055FF21 /* AccountMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */; };
+		AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */; };
+		AF4D71FA2E1A1F7A00B925F5 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */; };
+		AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */; };
+		AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2E2E29CA9900253BE3 /* Utilities.swift */; };
+		AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC312E29F5D100253BE3 /* LoginView.swift */; };
+		AF56EC352E29F72800253BE3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC342E29F72800253BE3 /* ProfileView.swift */; };
+		AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC372E2B203500253BE3 /* LoadingView.swift */; };
+		AF66F4662E29BF650096DCDA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AF66F4652E29BF650096DCDA /* FirebaseAuth */; };
+		AF66F4692E29BF9C0096DCDA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = AF66F4682E29BF9C0096DCDA /* GoogleSignIn */; };
+		AF66F46B2E29C0DE0096DCDA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */; };
+		AF7FFD192F69625B008F1008 /* APIIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7FFD182F69625B008F1008 /* APIIntegrationTests.swift */; };
+		AF7FFD1B2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7FFD1A2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift */; };
+		AF7FFD1D2F69651B008F1008 /* HomeViewModelIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */; };
+		C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */; };
+		C2E201032F8C0001001C0002 /* APIModelsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */; };
+		AFBD43EF2E12365E0042F994 /* AddAssetModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD43EE2E12365E0042F994 /* AddAssetModalView.swift */; };
+		AFBD43F12E1831560042F994 /* AssetCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD43F02E1831560042F994 /* AssetCategoryView.swift */; };
+		AFEEE4682F62B371000A8ADD /* APIAccountModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */; };
+		AFEEE4692F62B371000A8ADD /* APIDashboardResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */; };
+		AFEEE46A2F62B371000A8ADD /* AssetMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4582F62B371000A8ADD /* AssetMapper.swift */; };
+		AFEEE46B2F62B371000A8ADD /* APIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */; };
+		AFEEE46C2F62B371000A8ADD /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4552F62B371000A8ADD /* APIError.swift */; };
+		AFEEE46D2F62B371000A8ADD /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4642F62B371000A8ADD /* APIService.swift */; };
+		AFEEE46E2F62B371000A8ADD /* AuthTokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */; };
+		AFEEE46F2F62B371000A8ADD /* APITransactionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */; };
+		AFEEE4702F62B371000A8ADD /* DashboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */; };
+		AFEEE4712F62B371000A8ADD /* APINetWorthHistoryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */; };
+		AFEEE4722F62B371000A8ADD /* AccountMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4572F62B371000A8ADD /* AccountMapper.swift */; };
+		AFEEE4732F62B371000A8ADD /* APIAssetModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */; };
+		AFEEE4742F62B371000A8ADD /* APIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */; };
+		AFEEE4752F62B371000A8ADD /* TransactionMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */; };
+		AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */; };
+		B2E108012F8A0001001B0001 /* APIAnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */; };
+		B2E108032F8A0001001B0002 /* APIPriceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108022F8A0001001B0002 /* APIPriceModels.swift */; };
+		B2E108052F8A0001001B0003 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108042F8A0001001B0003 /* AnalyticsView.swift */; };
+		B2E108072F8A0001001B0004 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AF43366D2E0CDFE900AFC1A0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF4336522E0CDFE700AFC1A0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AF4336592E0CDFE700AFC1A0;
+			remoteInfo = VaultTracker;
+		};
+		AF4336772E0CDFE900AFC1A0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF4336522E0CDFE700AFC1A0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AF4336592E0CDFE700AFC1A0;
+			remoteInfo = VaultTracker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AF07A21E2E1A3B58005FFB77 /* NetWorthSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetWorthSnapshot.swift; sourceTree = "<group>"; };
+		AF07A2202E1A3B71005FFB77 /* NetWorthChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetWorthChartView.swift; sourceTree = "<group>"; };
+		AF07A2242E1B25A7005FFB77 /* AddAssetFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetFormViewModel.swift; sourceTree = "<group>"; };
+		AF07A2272E1CE0FA005FFB77 /* HomeViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewWrapper.swift; sourceTree = "<group>"; };
+		AF07A22B2E1E23FD005FFB77 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		AF07A22D2E1E24AB005FFB77 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		AF07A2312E1E25EF005FFB77 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
+		AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaultTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerApp.swift; sourceTree = "<group>"; };
+		AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AF43366C2E0CDFE900AFC1A0 /* VaultTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF4336762E0CDFE900AFC1A0 /* VaultTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerUITests.swift; sourceTree = "<group>"; };
+		AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C2E2012A2F8D0001001B0001 /* LoginPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginPage.swift; sourceTree = "<group>"; };
+		C2E2012B2F8D0001001B0001 /* HomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePage.swift; sourceTree = "<group>"; };
+		C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetPage.swift; sourceTree = "<group>"; };
+		C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsPage.swift; sourceTree = "<group>"; };
+		C2E2012E2F8D0001001B0001 /* ProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePage.swift; sourceTree = "<group>"; };
+		AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		AF4336912E0CE32000AFC1A0 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButtonView.swift; sourceTree = "<group>"; };
+		AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
+		AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetModel.swift; sourceTree = "<group>"; };
+		AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMapperTests.swift; sourceTree = "<group>"; };
+		AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIErrorTests.swift; sourceTree = "<group>"; };
+		AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetMapperTests.swift; sourceTree = "<group>"; };
+		AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMapperTests.swift; sourceTree = "<group>"; };
+		AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
+		AF4D44762F694B6D0055FF21 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
+		AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataServiceProtocol.swift; sourceTree = "<group>"; };
+		AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		AF56EC2E2E29CA9900253BE3 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		AF56EC312E29F5D100253BE3 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AF56EC342E29F72800253BE3 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		AF56EC372E2B203500253BE3 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AF66F46C2E29C1700096DCDA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AF7FFD182F69625B008F1008 /* APIIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIIntegrationTests.swift; sourceTree = "<group>"; };
+		AF7FFD1A2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetFormViewModelIntegrationTests.swift; sourceTree = "<group>"; };
+		AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelIntegrationTests.swift; sourceTree = "<group>"; };
+		C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMapperTests.swift; sourceTree = "<group>"; };
+		C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModelsCodableTests.swift; sourceTree = "<group>"; };
+		AFBD43EE2E12365E0042F994 /* AddAssetModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetModalView.swift; sourceTree = "<group>"; };
+		AFBD43F02E1831560042F994 /* AssetCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCategoryView.swift; sourceTree = "<group>"; };
+		AFEEE4552F62B371000A8ADD /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		AFEEE4572F62B371000A8ADD /* AccountMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMapper.swift; sourceTree = "<group>"; };
+		AFEEE4582F62B371000A8ADD /* AssetMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetMapper.swift; sourceTree = "<group>"; };
+		AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMapper.swift; sourceTree = "<group>"; };
+		AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMapper.swift; sourceTree = "<group>"; };
+		AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAccountModels.swift; sourceTree = "<group>"; };
+		AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAssetModels.swift; sourceTree = "<group>"; };
+		AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIDashboardResponse.swift; sourceTree = "<group>"; };
+		AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIErrorResponse.swift; sourceTree = "<group>"; };
+		AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APINetWorthHistoryResponse.swift; sourceTree = "<group>"; };
+		AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITransactionModels.swift; sourceTree = "<group>"; };
+		AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
+		AFEEE4642F62B371000A8ADD /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceProtocol.swift; sourceTree = "<group>"; };
+		AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenProvider.swift; sourceTree = "<group>"; };
+		B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAnalyticsModels.swift; sourceTree = "<group>"; };
+		B2E108022F8A0001001B0002 /* APIPriceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIPriceModels.swift; sourceTree = "<group>"; };
+		B2E108042F8A0001001B0003 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AF4336572E0CDFE700AFC1A0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF66F4662E29BF650096DCDA /* FirebaseAuth in Frameworks */,
+				AF66F4692E29BF9C0096DCDA /* GoogleSignIn in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF4336692E0CDFE900AFC1A0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF4336732E0CDFE900AFC1A0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AF07A2262E1B2661005FFB77 /* MainView */ = {
+			isa = PBXGroup;
+			children = (
+				AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */,
+			);
+			path = MainView;
+			sourceTree = "<group>";
+		};
+		AF07A2332E22B6C3005FFB77 /* AddAssetModal */ = {
+			isa = PBXGroup;
+			children = (
+				AFBD43EE2E12365E0042F994 /* AddAssetModalView.swift */,
+				AF07A2242E1B25A7005FFB77 /* AddAssetFormViewModel.swift */,
+			);
+			path = AddAssetModal;
+			sourceTree = "<group>";
+		};
+		AF4336512E0CDFE700AFC1A0 = {
+			isa = PBXGroup;
+			children = (
+				AF43365C2E0CDFE700AFC1A0 /* VaultTracker */,
+				AF4D44782F694B6D0055FF21 /* VaultTrackerTests */,
+				AF4336792E0CDFE900AFC1A0 /* VaultTrackerUITests */,
+				AF43365B2E0CDFE700AFC1A0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AF43365B2E0CDFE700AFC1A0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */,
+				AF43366C2E0CDFE900AFC1A0 /* VaultTrackerTests.xctest */,
+				AF4336762E0CDFE900AFC1A0 /* VaultTrackerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4672F62B371000A8ADD /* API */,
+				AF56EC362E2B200900253BE3 /* Loading */,
+				AF56EC332E29F71800253BE3 /* Profile */,
+				AF56EC302E29F59300253BE3 /* Login */,
+				AF56EC2D2E29CA8900253BE3 /* Utils */,
+				AF66F46C2E29C1700096DCDA /* Info.plist */,
+				AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */,
+				AF07A2332E22B6C3005FFB77 /* AddAssetModal */,
+				B2E108082F8A0001001B0005 /* Analytics */,
+				AF43369A2E0F9C6B00AFC1A0 /* Models */,
+				AF4336932E0E270300AFC1A0 /* Custom UI Components */,
+				AF07A2262E1B2661005FFB77 /* MainView */,
+				AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */,
+				AF4336652E0CDFE800AFC1A0 /* Preview Content */,
+				AF4336902E0CE2FC00AFC1A0 /* Managers */,
+				AF43368F2E0CE2E600AFC1A0 /* Home */,
+				AFBD43F02E1831560042F994 /* AssetCategoryView.swift */,
+			);
+			path = VaultTracker;
+			sourceTree = "<group>";
+		};
+		AF4336652E0CDFE800AFC1A0 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		AF4336792E0CDFE900AFC1A0 /* VaultTrackerUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C2E2012F2F8D0001001B0001 /* PageObjects */,
+				AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */,
+				AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */,
+			);
+			path = VaultTrackerUITests;
+			sourceTree = "<group>";
+		};
+		C2E2012F2F8D0001001B0001 /* PageObjects */ = {
+			isa = PBXGroup;
+			children = (
+				C2E2012A2F8D0001001B0001 /* LoginPage.swift */,
+				C2E2012B2F8D0001001B0001 /* HomePage.swift */,
+				C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */,
+				C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */,
+				C2E2012E2F8D0001001B0001 /* ProfilePage.swift */,
+			);
+			path = PageObjects;
+			sourceTree = "<group>";
+		};
+		AF43368F2E0CE2E600AFC1A0 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				AF07A2272E1CE0FA005FFB77 /* HomeViewWrapper.swift */,
+				AF07A2202E1A3B71005FFB77 /* NetWorthChartView.swift */,
+				AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */,
+				AF4336912E0CE32000AFC1A0 /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		AF4336902E0CE2FC00AFC1A0 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */,
+				AF07A2312E1E25EF005FFB77 /* DataService.swift */,
+				AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */,
+				AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		AF4336932E0E270300AFC1A0 /* Custom UI Components */ = {
+			isa = PBXGroup;
+			children = (
+				AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */,
+				AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */,
+			);
+			path = "Custom UI Components";
+			sourceTree = "<group>";
+		};
+		AF43369A2E0F9C6B00AFC1A0 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AF07A22D2E1E24AB005FFB77 /* Transaction.swift */,
+				AF07A22B2E1E23FD005FFB77 /* Account.swift */,
+				AF07A21E2E1A3B58005FFB77 /* NetWorthSnapshot.swift */,
+				AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AF4D44782F694B6D0055FF21 /* VaultTrackerTests */ = {
+			isa = PBXGroup;
+			children = (
+				AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */,
+				AF7FFD1A2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift */,
+				AF7FFD182F69625B008F1008 /* APIIntegrationTests.swift */,
+				AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */,
+				AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */,
+				AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */,
+				AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */,
+				AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */,
+				C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */,
+				C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */,
+				AF4D44762F694B6D0055FF21 /* MockDataService.swift */,
+			);
+			path = VaultTrackerTests;
+			sourceTree = "<group>";
+		};
+		AF56EC2D2E29CA8900253BE3 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				AF56EC2E2E29CA9900253BE3 /* Utilities.swift */,
+				AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		AF56EC302E29F59300253BE3 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				AF56EC312E29F5D100253BE3 /* LoginView.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		AF56EC332E29F71800253BE3 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				AF56EC342E29F72800253BE3 /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		AF56EC362E2B200900253BE3 /* Loading */ = {
+			isa = PBXGroup;
+			children = (
+				AF56EC372E2B203500253BE3 /* LoadingView.swift */,
+			);
+			path = Loading;
+			sourceTree = "<group>";
+		};
+		AFEEE4562F62B371000A8ADD /* Errors */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4552F62B371000A8ADD /* APIError.swift */,
+			);
+			path = Errors;
+			sourceTree = "<group>";
+		};
+		AFEEE45B2F62B371000A8ADD /* Mappers */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4572F62B371000A8ADD /* AccountMapper.swift */,
+				AFEEE4582F62B371000A8ADD /* AssetMapper.swift */,
+				AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */,
+				AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */,
+			);
+			path = Mappers;
+			sourceTree = "<group>";
+		};
+		AFEEE4622F62B371000A8ADD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE45C2F62B371000A8ADD /* APIAccountModels.swift */,
+				AFEEE45D2F62B371000A8ADD /* APIAssetModels.swift */,
+				AFEEE45E2F62B371000A8ADD /* APIDashboardResponse.swift */,
+				AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */,
+				AFEEE4602F62B371000A8ADD /* APINetWorthHistoryResponse.swift */,
+				AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */,
+				B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */,
+				B2E108022F8A0001001B0002 /* APIPriceModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AFEEE4672F62B371000A8ADD /* API */ = {
+			isa = PBXGroup;
+			children = (
+				AFEEE4562F62B371000A8ADD /* Errors */,
+				AFEEE45B2F62B371000A8ADD /* Mappers */,
+				AFEEE4622F62B371000A8ADD /* Models */,
+				AFEEE4632F62B371000A8ADD /* APIConfiguration.swift */,
+				AFEEE4642F62B371000A8ADD /* APIService.swift */,
+				AFEEE4652F62B371000A8ADD /* APIServiceProtocol.swift */,
+				AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		B2E108082F8A0001001B0005 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				B2E108042F8A0001001B0003 /* AnalyticsView.swift */,
+				B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AF4336592E0CDFE700AFC1A0 /* VaultTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF4336802E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTracker" */;
+			buildPhases = (
+				AF4336562E0CDFE700AFC1A0 /* Sources */,
+				AF4336572E0CDFE700AFC1A0 /* Frameworks */,
+				AF4336582E0CDFE700AFC1A0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VaultTracker;
+			productName = VaultTracker;
+			productReference = AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AF43366B2E0CDFE900AFC1A0 /* VaultTrackerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF4336832E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTrackerTests" */;
+			buildPhases = (
+				AF4336682E0CDFE900AFC1A0 /* Sources */,
+				AF4336692E0CDFE900AFC1A0 /* Frameworks */,
+				AF43366A2E0CDFE900AFC1A0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AF43366E2E0CDFE900AFC1A0 /* PBXTargetDependency */,
+			);
+			name = VaultTrackerTests;
+			productName = VaultTrackerTests;
+			productReference = AF43366C2E0CDFE900AFC1A0 /* VaultTrackerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AF4336752E0CDFE900AFC1A0 /* VaultTrackerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF4336862E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTrackerUITests" */;
+			buildPhases = (
+				AF4336722E0CDFE900AFC1A0 /* Sources */,
+				AF4336732E0CDFE900AFC1A0 /* Frameworks */,
+				AF4336742E0CDFE900AFC1A0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AF4336782E0CDFE900AFC1A0 /* PBXTargetDependency */,
+			);
+			name = VaultTrackerUITests;
+			productName = VaultTrackerUITests;
+			productReference = AF4336762E0CDFE900AFC1A0 /* VaultTrackerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AF4336522E0CDFE700AFC1A0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					AF4336592E0CDFE700AFC1A0 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+					AF43366B2E0CDFE900AFC1A0 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = AF4336592E0CDFE700AFC1A0;
+					};
+					AF4336752E0CDFE900AFC1A0 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = AF4336592E0CDFE700AFC1A0;
+					};
+				};
+			};
+			buildConfigurationList = AF4336552E0CDFE700AFC1A0 /* Build configuration list for PBXProject "VaultTracker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AF4336512E0CDFE700AFC1A0;
+			packageReferences = (
+				AF66F4642E29BF650096DCDA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				AF66F4672E29BF9C0096DCDA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
+			productRefGroup = AF43365B2E0CDFE700AFC1A0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AF4336592E0CDFE700AFC1A0 /* VaultTracker */,
+				AF43366B2E0CDFE900AFC1A0 /* VaultTrackerTests */,
+				AF4336752E0CDFE900AFC1A0 /* VaultTrackerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AF4336582E0CDFE700AFC1A0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF4336672E0CDFE800AFC1A0 /* Preview Assets.xcassets in Resources */,
+				AF66F46B2E29C0DE0096DCDA /* GoogleService-Info.plist in Resources */,
+				AF4336642E0CDFE800AFC1A0 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF43366A2E0CDFE900AFC1A0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF4336742E0CDFE900AFC1A0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AF4336562E0CDFE700AFC1A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF4336952E0E272100AFC1A0 /* CustomButtonView.swift in Sources */,
+				AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */,
+				AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */,
+				AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */,
+				AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */,
+				AF56EC352E29F72800253BE3 /* ProfileView.swift in Sources */,
+				AF4336922E0CE32000AFC1A0 /* HomeView.swift in Sources */,
+				AF07A2282E1CE0FA005FFB77 /* HomeViewWrapper.swift in Sources */,
+				AF43368C2E0CE2BE00AFC1A0 /* HomeViewModel.swift in Sources */,
+				AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */,
+				AFBD43F12E1831560042F994 /* AssetCategoryView.swift in Sources */,
+				AFEEE4682F62B371000A8ADD /* APIAccountModels.swift in Sources */,
+				AFEEE4692F62B371000A8ADD /* APIDashboardResponse.swift in Sources */,
+				AFEEE46A2F62B371000A8ADD /* AssetMapper.swift in Sources */,
+				AFEEE46B2F62B371000A8ADD /* APIServiceProtocol.swift in Sources */,
+				AFEEE46C2F62B371000A8ADD /* APIError.swift in Sources */,
+				AFEEE46D2F62B371000A8ADD /* APIService.swift in Sources */,
+				AFEEE46E2F62B371000A8ADD /* AuthTokenProvider.swift in Sources */,
+				AFEEE46F2F62B371000A8ADD /* APITransactionModels.swift in Sources */,
+				AFEEE4702F62B371000A8ADD /* DashboardMapper.swift in Sources */,
+				AFEEE4712F62B371000A8ADD /* APINetWorthHistoryResponse.swift in Sources */,
+				AFEEE4722F62B371000A8ADD /* AccountMapper.swift in Sources */,
+				AFEEE4732F62B371000A8ADD /* APIAssetModels.swift in Sources */,
+				AFEEE4742F62B371000A8ADD /* APIConfiguration.swift in Sources */,
+				AFEEE4752F62B371000A8ADD /* TransactionMapper.swift in Sources */,
+				AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */,
+				B2E108012F8A0001001B0001 /* APIAnalyticsModels.swift in Sources */,
+				B2E108032F8A0001001B0002 /* APIPriceModels.swift in Sources */,
+				B2E108052F8A0001001B0003 /* AnalyticsView.swift in Sources */,
+				B2E108072F8A0001001B0004 /* AnalyticsViewModel.swift in Sources */,
+				AF07A2212E1A3B71005FFB77 /* NetWorthChartView.swift in Sources */,
+				AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */,
+				AF07A2252E1B25A7005FFB77 /* AddAssetFormViewModel.swift in Sources */,
+				AFBD43EF2E12365E0042F994 /* AddAssetModalView.swift in Sources */,
+				AF4D71FA2E1A1F7A00B925F5 /* Extensions.swift in Sources */,
+				AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */,
+				AF07A21F2E1A3B58005FFB77 /* NetWorthSnapshot.swift in Sources */,
+				AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */,
+				AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */,
+				AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */,
+				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
+				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF4336682E0CDFE900AFC1A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */,
+				AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */,
+				AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */,
+				AF7FFD1D2F69651B008F1008 /* HomeViewModelIntegrationTests.swift in Sources */,
+				C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */,
+				C2E201032F8C0001001C0002 /* APIModelsCodableTests.swift in Sources */,
+				AF4D447D2F694B6D0055FF21 /* MockDataService.swift in Sources */,
+				AF7FFD192F69625B008F1008 /* APIIntegrationTests.swift in Sources */,
+				AF4D447E2F694B6D0055FF21 /* AssetMapperTests.swift in Sources */,
+				AF7FFD1B2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift in Sources */,
+				AF4D447F2F694B6D0055FF21 /* AccountMapperTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF4336722E0CDFE900AFC1A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF43367D2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift in Sources */,
+				AF43367B2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift in Sources */,
+				C2E201302F8D0001001B0001 /* LoginPage.swift in Sources */,
+				C2E201312F8D0001001B0001 /* HomePage.swift in Sources */,
+				C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */,
+				C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */,
+				C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AF43366E2E0CDFE900AFC1A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AF4336592E0CDFE700AFC1A0 /* VaultTracker */;
+			targetProxy = AF43366D2E0CDFE900AFC1A0 /* PBXContainerItemProxy */;
+		};
+		AF4336782E0CDFE900AFC1A0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AF4336592E0CDFE700AFC1A0 /* VaultTracker */;
+			targetProxy = AF4336772E0CDFE900AFC1A0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AF43367E2E0CDFE900AFC1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AF43367F2E0CDFE900AFC1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AF4336812E0CDFE900AFC1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"VaultTracker/Preview Content\"";
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VaultTracker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AF4336822E0CDFE900AFC1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"VaultTracker/Preview Content\"";
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VaultTracker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTracker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AF4336842E0CDFE900AFC1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VaultTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VaultTracker";
+			};
+			name = Debug;
+		};
+		AF4336852E0CDFE900AFC1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VaultTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VaultTracker";
+			};
+			name = Release;
+		};
+		AF4336872E0CDFE900AFC1A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTrackerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VaultTracker;
+			};
+			name = Debug;
+		};
+		AF4336882E0CDFE900AFC1A0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RRG4UPX9CR;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calebngai.VaultTrackerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VaultTracker;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AF4336552E0CDFE700AFC1A0 /* Build configuration list for PBXProject "VaultTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF43367E2E0CDFE900AFC1A0 /* Debug */,
+				AF43367F2E0CDFE900AFC1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF4336802E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF4336812E0CDFE900AFC1A0 /* Debug */,
+				AF4336822E0CDFE900AFC1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF4336832E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTrackerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF4336842E0CDFE900AFC1A0 /* Debug */,
+				AF4336852E0CDFE900AFC1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AF4336862E0CDFE900AFC1A0 /* Build configuration list for PBXNativeTarget "VaultTrackerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF4336872E0CDFE900AFC1A0 /* Debug */,
+				AF4336882E0CDFE900AFC1A0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AF66F4642E29BF650096DCDA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		AF66F4672E29BF9C0096DCDA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AF66F4652E29BF650096DCDA /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF66F4642E29BF650096DCDA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		AF66F4682E29BF9C0096DCDA /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF66F4672E29BF9C0096DCDA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AF4336522E0CDFE700AFC1A0 /* Project object */;
+}
