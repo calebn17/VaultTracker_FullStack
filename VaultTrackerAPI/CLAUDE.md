@@ -20,41 +20,37 @@ If they want less narration, they can ask for a **shorter** summary; if they wan
 
 ### Database options
 
-**SQLite (default — no setup required)**
+**PostgreSQL via Docker Compose (current default — matches production)**
 
-The `.env` file already points to SQLite:
+The `.env` already points at local Docker Postgres:
+```
+DATABASE_URL=postgresql://vaulttracker:vaulttracker_dev_password@localhost:5432/vaulttracker
+```
+
+```bash
+# Start container (data persists across stop/start)
+docker compose -f docker-compose.postgres.yml up -d
+
+# Check status / readiness
+docker compose -f docker-compose.postgres.yml ps
+docker exec vaulttracker-postgres pg_isready -U vaulttracker -d vaulttracker
+
+# Stop (keep data)
+docker compose -f docker-compose.postgres.yml down
+
+# Full reset (wipes data volume)
+docker compose -f docker-compose.postgres.yml down -v
+```
+
+Tables are created automatically on startup — no Alembic needed.
+
+**SQLite (no Docker required)**
+
+Swap `.env` if you want the zero-setup option:
 ```
 DATABASE_URL=sqlite:///./vaulttracker.db
 ```
-Tables are created automatically on first server start. The DB file lives at `VaultTrackerAPI/vaulttracker.db`. This is the recommended option for local dev.
-
-**PostgreSQL via Docker (matches production)**
-
-Only needed if you want to test Postgres-specific behaviour:
-```bash
-# Start container (data persists across stop/start)
-docker run -d \
-  --name vaulttracker-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=vaulttracker \
-  -p 5432:5432 \
-  postgres:16
-
-# Stop / resume without losing data
-docker stop vaulttracker-db
-docker start vaulttracker-db
-
-# Wipe and start fresh
-docker rm vaulttracker-db
-```
-
-Then update `.env`:
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vaulttracker
-```
-
-Tables are still created automatically — no Alembic needed.
+The DB file lives at `VaultTrackerAPI/vaulttracker.db`. Tables are still auto-created.
 
 ### iOS Simulator vs real device
 

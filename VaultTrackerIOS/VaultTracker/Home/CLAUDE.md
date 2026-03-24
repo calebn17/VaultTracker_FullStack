@@ -35,6 +35,14 @@ Additional `@Published` properties on the ViewModel:
 
 Pull-to-refresh calls `loadData()` again. The active filter is re-applied after each reload so the selected category chip survives a refresh.
 
+## Modal Presentation
+
+`shouldPresentSheet: Bool` controls whether the Add Transaction sheet is presented. `presentAddSheet()` sets it to `true`; `dismissAddSheet()` sets it back to `false`. `HomeView` binds `.sheet(isPresented:)` to this flag.
+
+## Clearing Data (`clearData`)
+
+`clearData()` calls `DataService.clearAllData()` → `DELETE /api/v1/users/me/data`, then resets `viewState` and `snapshots` to empty. Used by integration tests and the "Clear Data" debug button in the UI. Requires a confirmation step before calling from any user-visible control.
+
 ## Adding a Transaction (`onSave`)
 
 `onSave(smartRequest:)` takes an `APISmartTransactionCreateRequest` built by `AddAssetFormViewModel.save()`:

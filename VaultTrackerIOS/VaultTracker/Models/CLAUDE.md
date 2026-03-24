@@ -21,7 +21,11 @@ A buy or sell event for an asset within an account. Embeds a full `Account` valu
 `buy` / `sell`. Raw value is `"Buy"` / `"Sell"`. When serialised to the API, use `.rawValue.lowercased()`.
 
 ### `Account` (Account.swift)
-Represents a financial account (bank, brokerage, exchange, wallet, etc.). The `AccountType` enum maps to snake_case strings for API requests (e.g., `cryptoExchange` → `"crypto_exchange"`).
+Represents a financial account (bank, brokerage, exchange, wallet, etc.).
+
+`AccountType` has two serialization contexts:
+- **Sent to the API** (via `AddAssetFormViewModel.smartAPIAccountType()`): camelCase strings — `"bank"`, `"brokerage"`, `"cryptoExchange"`. Local-only types (`physicalWallet`, `cryptoWallet`, `realEstate`) fall back to `"other"` since the backend has no equivalent.
+- **Received from the API** (`AccountMapper.mapAccountType(_:)`): accepts both `"crypto_exchange"` and `"cryptoExchange"` to handle legacy rows. Server `"retirement"` has no direct local case and maps to `.other`.
 
 ### `NetWorthSnapshot` (NetWorthSnapshot.swift)
 `(date: Date, value: Double)` pair. Used exclusively by `NetWorthChartView`. Created from `APINetWorthHistoryResponse` in `DataService.fetchNetWorthHistory()`.

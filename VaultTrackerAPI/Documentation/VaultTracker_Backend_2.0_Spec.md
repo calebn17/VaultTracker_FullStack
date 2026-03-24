@@ -587,7 +587,7 @@ def get_dashboard(user: User = Depends(get_current_user), db: Session = Depends(
 - [x] **1.1** PostgreSQL migration — `database.py`, `requirements.txt`, `.env`
 - [x] **1.2** Firebase JWT verification — `dependencies.py`, `requirements.txt`, `config.py`
 - [x] **1.3** CORS tightening — `config.py`, `main.py`
-- [ ] **1.4** Deploy to Render + Neon — verify `/health` endpoint *(human / deploy)*
+- [x] **1.4** Deploy to Render + Neon — verify `/health` endpoint *(human / deploy)*
 
 ### Phase 2: Smart Endpoints
 
@@ -603,7 +603,7 @@ def get_dashboard(user: User = Depends(get_current_user), db: Session = Depends(
 - [x] **2.10** Add `GET /api/v1/analytics` route + mount in `main.py`
 - [x] **2.11** Implement `period` aggregation in `GET /api/v1/networth/history` — supports `daily` | `weekly` | `monthly` | `all`; unknown period returns full series
 - [x] **2.12** Exercise new endpoints — automated via `pytest tests/` (Swagger/curl still useful for ad hoc checks)
-- [ ] **2.13** Verify iOS app still works (backward compatibility) *(human — iOS build)*
+- [x] **2.13** Verify iOS app still works (backward compatibility) *(human — iOS build)*
 
 ### Phase 3: Price Service
 

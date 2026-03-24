@@ -37,6 +37,8 @@ Application-layer services that ViewModels depend on. No SwiftUI code lives here
 | `createAsset(_:)` | `api.createAsset(_:)` → `AssetMapper.toDomain(_:)` |
 | `fetchAllAccounts()` | `api.fetchAccounts()` → `AccountMapper.toDomain(_:)` |
 | `createAccount(_:)` | `api.createAccount(_:)` → `AccountMapper.toDomain(_:)` |
+| `updateAccount(id:_:)` | `api.updateAccount(id:_:)` → `AccountMapper.toDomain(_:)` |
+| `deleteAccount(id:)` | `api.deleteAccount(id:)` |
 | `fetchNetWorthHistory(period:)` | `api.fetchNetWorthHistory(period:)` → `[NetWorthSnapshot]` |
 | `clearAllData()` | `api.clearAllData()` |
 

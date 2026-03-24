@@ -71,6 +71,33 @@ No manual change needed before archiving — the switch is compile-time (`#if DE
 | Transactions (enriched) | `GET /api/v1/transactions` |
 | Net worth history | `GET /api/v1/networth/history?period=daily\|weekly\|monthly` |
 
+## Tests
+
+### Unit / Integration Tests (`VaultTrackerTests/`)
+
+- **Unit tests** use Swift Testing (`@Test`, `#expect`).
+- **Integration tests** (`APIIntegrationTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`) hit a real local API with debug auth — the API server must be running with `DEBUG_AUTH_ENABLED=true`.
+- `MockDataService.swift` is the test double for `DataServiceProtocol`; add stubs there when new protocol methods are declared.
+
+### UI Tests (`VaultTrackerUITests/`)
+
+Tests use a **page object pattern** — each screen has a `struct` in `PageObjects/`:
+
+| Page Object | Screen |
+|-------------|--------|
+| `LoginPage` | Login screen |
+| `HomePage` | Home tab |
+| `AddAssetPage` | Add transaction sheet |
+| `AnalyticsPage` | Analytics tab |
+| `ProfilePage` | Profile tab |
+
+- Tests follow BDD naming: `test_given<state>_when<action>_then<outcome>`.
+- Launch argument `-UI-Testing` signals debug auth mode; the app skips real Firebase and uses the debug token.
+- UI tests that create data (`seedCashHoldingViaUI`) require the local API server with `DEBUG_AUTH_ENABLED=true` and `DEBUG_AUTH_ENABLED=true`.
+- Accessibility identifiers (e.g. `homeScrollView`, `netWorthTitleText`, `addTransactionButton`) are the stable query targets — do not change them without updating the matching page object.
+
+Run UI tests via **Xcode → Product → Test** (select `VaultTrackerUITests` scheme). They do not run in CI without a live local backend.
+
 ## Key Files for New Features
 
 | Task | Start here |
@@ -80,6 +107,7 @@ No manual change needed before archiving — the switch is compile-time (`#if DE
 | New data operation | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock |
 | New domain type | `Models/` |
 | New API model | `API/Models/` |
+| New UI test | Add page object in `VaultTrackerUITests/PageObjects/`, add test in `VaultTrackerUITests.swift` |
 
 ## Refactor Plan Status
 
@@ -93,4 +121,4 @@ See `Documentation/Vault Tracker - iOS Refactor Plan.md` for the full spec.
 | 4 | Analytics tab | ✅ Done |
 | 5 | Price refresh | ✅ Done |
 | 6 | Period-aggregated net worth chart | ✅ Done |
-| 7 | Cleanup | Ongoing |
+| 7 | Cleanup | Done (dead API + mapper removed; integration tests use smart create) |

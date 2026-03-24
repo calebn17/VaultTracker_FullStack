@@ -25,7 +25,7 @@ App entry point and root navigation container.
 ```
 TabView
 ├── Home tab        (NavigationView → HomeViewWrapper → HomeView)
-├── Analytics tab   (NavigationView → AnalyticsView)             ← added
+├── Analytics tab   (NavigationView → AnalyticsView)
 └── Profile tab     (NavigationView → ProfileView)
 ```
 
