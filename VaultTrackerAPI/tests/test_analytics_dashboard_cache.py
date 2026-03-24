@@ -41,3 +41,19 @@ def test_dashboard_populates_cache_and_invalidates_on_transaction(client, test_u
     assert r2.status_code == 200
     assert r2.json()["totalNetWorth"] != 0.0
     assert cache.get(key) is not None
+
+
+def test_clear_user_data_invalidates_dashboard_cache(client, test_user, db_session):
+    """DELETE /users/me/data must drop cached dashboard so GET reflects an empty DB."""
+    key = f"dashboard:{test_user.id}"
+    r = client.get("/api/v1/dashboard")
+    assert r.status_code == 200
+    assert cache.get(key) is not None
+
+    r_del = client.delete("/api/v1/users/me/data")
+    assert r_del.status_code == 204
+    assert cache.get(key) is None
+
+    r2 = client.get("/api/v1/dashboard")
+    assert r2.status_code == 200
+    assert r2.json()["totalNetWorth"] == 0.0

@@ -16,24 +16,97 @@ If they want less narration, they can ask for a **shorter** summary; if they wan
 
 **Backend roadmap:** [Documentation/VaultTracker_Backend_2.0_Spec.md](Documentation/VaultTracker_Backend_2.0_Spec.md)
 
+## Local Development Setup
+
+### Database options
+
+**SQLite (default — no setup required)**
+
+The `.env` file already points to SQLite:
+```
+DATABASE_URL=sqlite:///./vaulttracker.db
+```
+Tables are created automatically on first server start. The DB file lives at `VaultTrackerAPI/vaulttracker.db`. This is the recommended option for local dev.
+
+**PostgreSQL via Docker (matches production)**
+
+Only needed if you want to test Postgres-specific behaviour:
+```bash
+# Start container (data persists across stop/start)
+docker run -d \
+  --name vaulttracker-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=vaulttracker \
+  -p 5432:5432 \
+  postgres:16
+
+# Stop / resume without losing data
+docker stop vaulttracker-db
+docker start vaulttracker-db
+
+# Wipe and start fresh
+docker rm vaulttracker-db
+```
+
+Then update `.env`:
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vaulttracker
+```
+
+Tables are still created automatically — no Alembic needed.
+
+### iOS Simulator vs real device
+
+The iOS app uses a compile-time flag to select the backend:
+
+| Launch method | Build config | Backend target |
+|---|---|---|
+| Simulator via Xcode | DEBUG | `localhost:8000` |
+| Real device via Xcode | DEBUG | `localhost:8000` (fails — see below) |
+| Archive → TestFlight/App Store | RELEASE | `https://vaulttracker-api.onrender.com` |
+
+**Real device fix:** `localhost` on a physical iPhone means the phone itself, not your Mac. Set `API_HOST` to your Mac's LAN IP in the Xcode scheme:
+
+Xcode → Edit Scheme → Run → Arguments → Environment Variables:
+```
+API_HOST = 192.168.x.x:8000
+```
+
+Find your Mac's LAN IP in System Settings → Wi-Fi → Details. Both devices must be on the same Wi-Fi network.
+
+### Production vs local `.env`
+
+Your local `.env` is never deployed. Render injects its own environment variables (including the Neon `DATABASE_URL`) at runtime via the Render dashboard. The two environments are fully independent.
+
 ## Commands
 
 ```bash
-# Install dependencies (activate venv first)
-source venv/bin/activate
-pip install -r requirements.txt
+# One-time: create venv and install deps (from VaultTrackerAPI/)
+python3 -m venv venv
+./venv/bin/pip install -r requirements.txt
 
-# Run dev server (auto-reload on changes)
-uvicorn app.main:app --reload
+# Optional: activate venv for a shell session (then pip/pytest work without a prefix)
+source venv/bin/activate
+
+# Run dev server (auto-reload on changes) — with venv activated, or:
+./venv/bin/uvicorn app.main:app --reload
 
 # Interactive API docs (while server is running)
 open http://localhost:8000/docs
 ```
 
-Run automated checks:
+Run automated checks (always use the venv interpreter — macOS `/usr/bin/python3` or Xcode’s Python often has **no pytest**):
 
 ```bash
-pytest tests/ -v
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/ -v
+```
+
+Single file:
+
+```bash
+./venv/bin/python -m pytest tests/test_analytics_dashboard_cache.py -q
 ```
 
 `tests/conftest.py` swaps in an in-memory SQLite DB and auth overrides so tests do not touch `vaulttracker.db` or Firebase. For exploratory checks, Swagger at `/docs` or curl with a Bearer token still work.
@@ -41,7 +114,7 @@ pytest tests/ -v
 **Falsification check** (prove failures surface when behavior is wrong):
 
 ```bash
-VT_BREAK_TESTS=1 pytest tests/ -q
+VT_BREAK_TESTS=1 ./venv/bin/python -m pytest tests/ -q
 ```
 
 Expect multiple failures. If the suite still passes, widen `_vt_inject_broken_behavior_for_falsification_checks` in `tests/conftest.py` or fix vacuous assertions. Omit `VT_BREAK_TESTS` for normal runs.
