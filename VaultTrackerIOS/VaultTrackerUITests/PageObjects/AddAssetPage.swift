@@ -9,7 +9,7 @@ struct AddAssetPage {
     var accountNameField: XCUIElement { app.textFields["accountNameField"] }
     /// SwiftUI `Picker` in `Form` is exposed as `otherElements`, not `XCUIElementTypePicker`.
     var accountTypePicker: XCUIElement { app.otherElements["accountTypePicker"] }
-    var categoryPicker: XCUIElement { app.otherElements["categoryPicker"] }
+    var categoryPicker: XCUIElement { app.buttons["categoryPicker"] }
     var assetNameField: XCUIElement { app.textFields["assetNameField"] }
     var symbolField: XCUIElement { app.textFields["symbolField"] }
     var quantityField: XCUIElement { app.textFields["quantityField"] }
@@ -63,10 +63,11 @@ struct AddAssetPage {
     }
 
     /// Selects a category by visible label (e.g. `Cash`, `Crypto`).
+    /// Form `Picker` options appear as **buttons** in XCTest, not `staticTexts` (labels exist but are not hittable for tap).
     @discardableResult
     func selectCategory(_ category: String) -> Self {
         categoryPicker.tap()
-        let option = app.staticTexts[category].firstMatch
+        let option = app.buttons[category].firstMatch
         XCTAssertTrue(option.waitForExistence(timeout: 10), "Category option \(category) should appear")
         option.tap()
         return self

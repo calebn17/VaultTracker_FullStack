@@ -3,25 +3,16 @@ import XCTest
 struct AnalyticsPage {
     let app: XCUIApplication
 
-    /// Prefer `Table` (SwiftUI `List`); fall back to `otherElements` if the runtime maps it differently.
-    var screen: XCUIElement {
-        let table = app.tables["analyticsScreen"]
-        if table.exists { return table }
-        return app.otherElements["analyticsScreen"]
-    }
+    var screen: XCUIElement { app.tables.firstMatch }
+    var title: XCUIElement { app.staticTexts["Analytics"] }
     var loadingOverlay: XCUIElement { app.otherElements["analyticsLoadingOverlay"] }
     var performanceSection: XCUIElement { app.otherElements["analyticsPerformanceSection"] }
-    var allocationSection: XCUIElement { app.otherElements["analyticsAllocationSection"] }
+    var allocationSection: XCUIElement { app.staticTexts["analyticsAllocationSection"].firstMatch }
     var errorRow: XCUIElement { app.staticTexts["analyticsErrorRow"] }
 
     @discardableResult
     func waitForScreen(timeout: TimeInterval = 5) -> Self {
-        let table = app.tables["analyticsScreen"]
-        let other = app.otherElements["analyticsScreen"]
-        if table.waitForExistence(timeout: timeout) {
-            return self
-        }
-        _ = other.waitForExistence(timeout: timeout)
+        XCTAssertTrue(title.waitForExistence(timeout: timeout))
         return self
     }
 

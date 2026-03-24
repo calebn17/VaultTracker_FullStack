@@ -24,7 +24,7 @@ struct HomePage {
     }
 
     func categorySection(for category: String) -> XCUIElement {
-        app.otherElements["categorySection_\(category)"]
+        app.staticTexts["categorySection_\(category)"]
     }
 
     /// Swipes up on the home scroll view until `element` is hittable (on-screen), or `maxSwipes` is reached.
@@ -100,7 +100,7 @@ struct HomePage {
 
     @discardableResult
     func tapCategorySection(category: String) -> Self {
-        let section = categorySection(for: category)
+        let section = categorySection(for: category).firstMatch
         _ = scrollUntilHittable(section)
         section.tap()
         return self

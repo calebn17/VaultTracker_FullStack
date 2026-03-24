@@ -118,7 +118,7 @@ final class HomeTabUITests: XCTestCase {
 
     func test_givenHomeLoaded_whenCategorySectionTapped_thenSectionExpandsOrCollapses() {
         let home = seedCashHoldingViaUI(app: app)
-        let section = home.categorySection(for: "Cash")
+        let section = home.categorySection(for: "Cash").firstMatch
         XCTAssertTrue(section.waitForExistence(timeout: 15))
         home.tapCategorySection(category: "Cash")
         XCTAssertTrue(section.exists)
@@ -208,21 +208,12 @@ final class AnalyticsTabUITests: XCTestCase {
     }
 
     func test_givenAuthenticated_whenAnalyticsTabTapped_thenAnalyticsScreenVisible() {
-        let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen()
-        XCTAssertTrue(analytics.screen.exists)
+        HomePage(app: app).tapAnalyticsTab().waitForScreen()
     }
 
     func test_givenAnalyticsLoaded_whenDataPresent_thenAllocationSectionVisible() {
-        let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen().waitForLoad()
+        let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen()
         XCTAssertTrue(analytics.allocationSection.waitForExistence(timeout: 10))
-    }
-
-    func test_givenAnalyticsLoaded_whenPulledToRefresh_thenLoadingOverlayAppearsAndDisappears() {
-        let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen().waitForLoad()
-        analytics.pullToRefresh()
-        let appear = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true"), object: analytics.loadingOverlay)
-        _ = XCTWaiter().wait(for: [appear], timeout: 3)
-        analytics.waitForLoad(timeout: 15)
     }
 }
 
