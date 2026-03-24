@@ -1,4 +1,6 @@
 # VaultTrackerAPI — Local Development Setup
+## Quick Links
+- Docker + PostgreSQL guide: [Documentation/Docker_Postgres_Setup.md](../Docker_Postgres_Setup.md)
 
 ## Prerequisites
 
