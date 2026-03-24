@@ -113,11 +113,6 @@ final class APIService: APIServiceProtocol {
         return try await perform(request)
     }
 
-    func fetchAsset(id: String) async throws -> APIAssetResponse {
-        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.asset(id: id))
-        return try await perform(request)
-    }
-
     func createAsset(_ body: APIAssetCreateRequest) async throws -> APIAssetResponse {
         let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.assets, method: "POST", body: body)
         return try await perform(request)
@@ -136,11 +131,6 @@ final class APIService: APIServiceProtocol {
             method: "POST",
             body: body
         )
-        return try await perform(request)
-    }
-
-    func createTransaction(_ body: APITransactionCreateRequest) async throws -> APITransactionResponse {
-        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.transactions, method: "POST", body: body)
         return try await perform(request)
     }
 

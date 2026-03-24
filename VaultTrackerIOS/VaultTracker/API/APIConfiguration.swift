@@ -96,11 +96,6 @@ enum APIConfiguration {
         /// Base path for assets: /api/v1/assets
         static let assets = "\(apiVersion)/assets"
 
-        /// Returns path for a specific asset: /api/v1/assets/{id}
-        static func asset(id: String) -> String {
-            "\(assets)/\(id)"
-        }
-
         // MARK: Transactions
 
         /// Base path for transactions: /api/v1/transactions

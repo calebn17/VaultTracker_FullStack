@@ -41,20 +41,16 @@ struct HomeViewModelIntegrationTests {
 
     @Test("loadData populates viewState from real API data")
     func loadDataPopulatesStateFromAPI() async throws {
-        // Seed data directly via API
-        let account = try await api.createAccount(
-            APIAccountCreateRequest(name: "Test Brokerage", accountType: "brokerage")
-        )
-        let asset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Apple", symbol: "AAPL", category: "stocks", quantity: 0, currentValue: 0)
-        )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: asset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "stocks",
+                assetName: "Apple",
+                symbol: "AAPL",
                 quantity: 10,
                 pricePerUnit: 150,
+                accountName: "Test Brokerage",
+                accountType: "brokerage",
                 date: Date()
             )
         )
@@ -75,20 +71,16 @@ struct HomeViewModelIntegrationTests {
 
     @Test("loadData re-applies active category filter with refreshed holdings")
     func loadDataPreservesActiveCategoryFilter() async throws {
-        // Seed initial crypto holding
-        let account = try await api.createAccount(
-            APIAccountCreateRequest(name: "Crypto Exchange", accountType: "crypto_exchange")
-        )
-        let asset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Bitcoin", symbol: "BTC", category: "crypto", quantity: 0, currentValue: 0)
-        )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: asset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "crypto",
+                assetName: "Bitcoin",
+                symbol: "BTC",
                 quantity: 1,
                 pricePerUnit: 50_000,
+                accountName: "Crypto Exchange",
+                accountType: "cryptoExchange",
                 date: Date()
             )
         )
@@ -100,14 +92,16 @@ struct HomeViewModelIntegrationTests {
         #expect(viewModel.viewState.selectedFilter == .crypto)
         #expect(viewModel.viewState.filteredAssets.count == 1)
 
-        // Add more to the same asset on the server
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: asset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "crypto",
+                assetName: "Bitcoin",
+                symbol: "BTC",
                 quantity: 1,
                 pricePerUnit: 55_000,
+                accountName: "Crypto Exchange",
+                accountType: "cryptoExchange",
                 date: Date()
             )
         )
@@ -151,20 +145,16 @@ struct HomeViewModelIntegrationTests {
 
     @Test("onSave on existing holding increases its value")
     func onSaveExistingAssetIncreasesValue() async throws {
-        // Seed an initial holding via API
-        let apiAccount = try await api.createAccount(
-            APIAccountCreateRequest(name: "My Brokerage", accountType: "brokerage")
-        )
-        let asset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Tesla", symbol: "TSLA", category: "stocks", quantity: 0, currentValue: 0)
-        )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: asset.id.lowercased(),
-                accountId: apiAccount.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "stocks",
+                assetName: "Tesla",
+                symbol: "TSLA",
                 quantity: 5,
                 pricePerUnit: 200,
+                accountName: "My Brokerage",
+                accountType: "brokerage",
                 date: Date()
             )
         )
@@ -195,20 +185,16 @@ struct HomeViewModelIntegrationTests {
 
     @Test("clearData wipes server data and resets viewState to zero")
     func clearDataResetsViewModelAndBackend() async throws {
-        // Seed data
-        let account = try await api.createAccount(
-            APIAccountCreateRequest(name: "Test Bank", accountType: "bank")
-        )
-        let asset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Savings", symbol: nil, category: "cash", quantity: 0, currentValue: 0)
-        )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: asset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "cash",
+                assetName: "Savings",
+                symbol: nil,
                 quantity: 1000,
                 pricePerUnit: 1,
+                accountName: "Test Bank",
+                accountType: "bank",
                 date: Date()
             )
         )
@@ -234,33 +220,29 @@ struct HomeViewModelIntegrationTests {
 
     @Test("selectFilter with real holdings shows only that category")
     func selectFilterWithRealHoldings() async throws {
-        // Seed both stocks and cash
-        let account = try await api.createAccount(
-            APIAccountCreateRequest(name: "Mixed Account", accountType: "brokerage")
-        )
-        let stockAsset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Apple", symbol: "AAPL", category: "stocks", quantity: 0, currentValue: 0)
-        )
-        let cashAsset = try await api.createAsset(
-            APIAssetCreateRequest(name: "Savings", symbol: nil, category: "cash", quantity: 0, currentValue: 0)
-        )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: stockAsset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "stocks",
+                assetName: "Apple",
+                symbol: "AAPL",
                 quantity: 10,
                 pricePerUnit: 100,
+                accountName: "Mixed Account",
+                accountType: "brokerage",
                 date: Date()
             )
         )
-        _ = try await api.createTransaction(
-            APITransactionCreateRequest(
-                assetId: cashAsset.id.lowercased(),
-                accountId: account.id.lowercased(),
+        _ = try await api.createSmartTransaction(
+            APISmartTransactionCreateRequest(
                 transactionType: "buy",
+                category: "cash",
+                assetName: "Savings",
+                symbol: nil,
                 quantity: 500,
                 pricePerUnit: 1,
+                accountName: "Mixed Account",
+                accountType: "brokerage",
                 date: Date()
             )
         )

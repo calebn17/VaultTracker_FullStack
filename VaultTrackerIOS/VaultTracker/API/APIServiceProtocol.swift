@@ -41,9 +41,6 @@ protocol APIServiceProtocol {
     /// Fetch all assets for the authenticated user.
     func fetchAssets() async throws -> [APIAssetResponse]
 
-    /// Fetch a single asset by ID.
-    func fetchAsset(id: String) async throws -> APIAssetResponse
-
     /// Create a new asset.
     func createAsset(_ request: APIAssetCreateRequest) async throws -> APIAssetResponse
 
@@ -54,9 +51,6 @@ protocol APIServiceProtocol {
 
     /// Create a transaction with server-side account + asset resolution.
     func createSmartTransaction(_ request: APISmartTransactionCreateRequest) async throws -> APITransactionResponse
-
-    /// Create a new transaction.
-    func createTransaction(_ request: APITransactionCreateRequest) async throws -> APITransactionResponse
 
     /// Update an existing transaction by ID.
     func updateTransaction(id: String, _ request: APITransactionUpdateRequest) async throws -> APITransactionResponse
