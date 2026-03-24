@@ -16,6 +16,11 @@ dist/
 # Claude
 .claude/
 
+# Cursor (local); shared rules live under .cursor/rules/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+
 # Web
 VaultTrackerWeb/*
 !VaultTrackerWeb/.gitkeep
