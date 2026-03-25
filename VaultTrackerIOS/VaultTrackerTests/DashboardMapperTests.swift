@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import VaultTracker
 
-@Suite("DashboardMapper")
+@Suite("DashboardMapper", .serialized)
 struct DashboardMapperTests {
 
     // MARK: - Totals

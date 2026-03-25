@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import VaultTracker
 
-@Suite("API models Codable")
+@Suite("API models Codable", .serialized)
 struct APIModelsCodableTests {
 
     @Test func smartTransactionRequestEncodesSnakeCaseKeys() throws {

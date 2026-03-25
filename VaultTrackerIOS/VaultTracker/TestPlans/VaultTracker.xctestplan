@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "7ED334E8-8AD6-4783-B2C5-071821476134",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:VaultTracker.xcodeproj",
+      "identifier" : "AF4336592E0CDFE700AFC1A0",
+      "name" : "VaultTracker"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:VaultTracker.xcodeproj",
+        "identifier" : "AF43366B2E0CDFE900AFC1A0",
+        "name" : "VaultTrackerTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:VaultTracker.xcodeproj",
+        "identifier" : "AF4336752E0CDFE900AFC1A0",
+        "name" : "VaultTrackerUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

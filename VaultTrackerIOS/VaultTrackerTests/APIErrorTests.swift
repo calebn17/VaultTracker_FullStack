@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import VaultTracker
 
-@Suite("APIError")
+@Suite("APIError", .serialized)
 struct APIErrorTests {
 
     private let decoder = JSONDecoder()

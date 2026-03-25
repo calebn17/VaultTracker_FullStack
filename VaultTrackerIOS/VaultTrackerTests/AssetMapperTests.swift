@@ -7,7 +7,7 @@ import Testing
 import Foundation
 @testable import VaultTracker
 
-@Suite("AssetMapper")
+@Suite("AssetMapper", .serialized)
 @MainActor
 struct AssetMapperTests {
 

@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "1",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testExecutionOrdering" : "alphabetical"
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:VaultTracker.xcodeproj",
+        "identifier" : "VaultTrackerTests",
+        "name" : "VaultTrackerTests"
+      }
+    }
+  ],
+  "version" : 1
+}
