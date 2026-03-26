@@ -21,9 +21,12 @@ dist/
 !.cursor/rules/
 !.cursor/rules/**
 
-# Web
-VaultTrackerWeb/*
-!VaultTrackerWeb/.gitkeep
+# Web (Next.js) — source is tracked; ignore deps and build output
+VaultTrackerWeb/node_modules/
+VaultTrackerWeb/.next/
+VaultTrackerWeb/out/
+VaultTrackerWeb/.vercel
+VaultTrackerWeb/*.tsbuildinfo
 
 # macOS
 .DS_Store
