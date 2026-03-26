@@ -9,11 +9,12 @@ export class ApiError extends Error {
   }
 
   static async fromResponse(res: Response): Promise<ApiError> {
+    const raw = await res.text();
     let body: unknown;
     try {
-      body = await res.json();
+      body = raw ? JSON.parse(raw) : undefined;
     } catch {
-      body = await res.text();
+      body = raw;
     }
     const msg =
       typeof body === "object" &&
