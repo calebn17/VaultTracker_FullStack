@@ -140,6 +140,18 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 
 **Debug bypass:** Set `DEBUG_AUTH_ENABLED=true` in `.env` and send `Authorization: Bearer vaulttracker-debug-user`. This maps to the fixed `firebase_id` `"debug-user"` so the same DB row is reused across restarts. This must stay disabled in any non-local environment and must match `AuthTokenProvider.debugToken` in the iOS client.
 
+### Transaction endpoints
+
+Two create/update families exist under `/api/v1/transactions`:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/transactions` | Legacy create — caller supplies `asset_id` + `account_id` UUIDs. |
+| `POST` | `/transactions/smart` | Smart create — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates account + asset server-side. |
+| `PUT` | `/transactions/{id}` | Legacy update — partial update by UUID; reverses then reapplies on the **same** asset row. |
+| `PUT` | `/transactions/{id}/smart` | Smart update — full smart body; `TransactionService.smart_update` reverses on the **old** asset, then re-resolves account + asset from the payload (same rules as `smart_create`). |
+| `DELETE` | `/transactions/{id}` | Reverses asset effect and deletes the row. |
+
 ### The transaction → asset → snapshot chain
 
 The most important invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (helpers in [app/services/asset_sync.py](app/services/asset_sync.py)):
@@ -149,6 +161,8 @@ The most important invariant: **any write to `transactions` must keep the parent
 3. Both are called inside the same DB transaction before `db.commit()`.
 
 Transaction updates reverse the old effect first (`is_reversal=True`), then apply the new values.
+
+**Missing-asset guard:** If the `Asset` row pointed to by a transaction cannot be found at update time, the router returns **409 Conflict** (`"Transaction references a missing asset"`) rather than silently skipping the reversal. `TransactionService.smart_update` raises `SmartUpdateMissingLinkedAssetError` for this case; the legacy `PUT` handler checks inline. Both paths are covered by tests and the `VT_BREAK_TESTS` falsification fixture.
 
 ### Dashboard category keys
 
