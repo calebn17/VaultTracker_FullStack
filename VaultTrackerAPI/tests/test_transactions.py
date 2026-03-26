@@ -61,3 +61,99 @@ def test_legacy_create_transaction_still_works(client, test_user, db_session):
         },
     )
     assert r.status_code == 201, r.text
+
+
+def test_smart_transaction_update_changes_quantity_and_preserves_resolution(client, test_user, db_session):
+    create_body = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "asset_name": "Bitcoin",
+        "symbol": "BTC",
+        "quantity": 1.0,
+        "price_per_unit": 40000.0,
+        "account_name": "Coinbase",
+        "account_type": "cryptoExchange",
+    }
+    r0 = client.post("/api/v1/transactions/smart", json=create_body)
+    assert r0.status_code == 201, r0.text
+    tx_id = r0.json()["id"]
+
+    update_body = {
+        **create_body,
+        "quantity": 2.0,
+        "price_per_unit": 41000.0,
+    }
+    r1 = client.put(f"/api/v1/transactions/{tx_id}/smart", json=update_body)
+    assert r1.status_code == 200, r1.text
+    assert r1.json()["quantity"] == 2.0
+    assert r1.json()["price_per_unit"] == 41000.0
+
+    lst = client.get("/api/v1/transactions")
+    assert lst.status_code == 200
+    rows = lst.json()
+    assert len(rows) == 1
+    assert rows[0]["quantity"] == 2.0
+    assert rows[0]["total_value"] == 2.0 * 41000.0
+
+
+def test_smart_transaction_update_404(client, test_user, db_session):
+    r = client.put(
+        "/api/v1/transactions/nonexistent-id/smart",
+        json={
+            "transaction_type": "buy",
+            "category": "crypto",
+            "asset_name": "X",
+            "symbol": "BTC",
+            "quantity": 1.0,
+            "price_per_unit": 1.0,
+            "account_name": "A",
+            "account_type": "cryptoExchange",
+        },
+    )
+    assert r.status_code == 404
+
+
+def test_smart_transaction_update_moves_to_new_asset_and_account(client, test_user, db_session):
+    """Reversal applies to old asset; new payload resolves a different account + symbol."""
+    create_body = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "asset_name": "Bitcoin",
+        "symbol": "BTC",
+        "quantity": 1.0,
+        "price_per_unit": 40000.0,
+        "account_name": "Coinbase",
+        "account_type": "cryptoExchange",
+    }
+    r0 = client.post("/api/v1/transactions/smart", json=create_body)
+    assert r0.status_code == 201, r0.text
+    tx_id = r0.json()["id"]
+
+    update_body = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "asset_name": "Ethereum",
+        "symbol": "ETH",
+        "quantity": 2.0,
+        "price_per_unit": 3000.0,
+        "account_name": "Kraken",
+        "account_type": "cryptoExchange",
+    }
+    r1 = client.put(f"/api/v1/transactions/{tx_id}/smart", json=update_body)
+    assert r1.status_code == 200, r1.text
+
+    lst = client.get("/api/v1/transactions")
+    assert lst.status_code == 200
+    rows = lst.json()
+    assert len(rows) == 1
+    assert rows[0]["asset"]["symbol"] == "ETH"
+    assert rows[0]["asset"]["name"] == "Ethereum"
+    assert rows[0]["account"]["name"] == "Kraken"
+    assert rows[0]["total_value"] == 2.0 * 3000.0
+
+    assets_r = client.get("/api/v1/assets")
+    assert assets_r.status_code == 200
+    by_symbol = {a["symbol"]: a for a in assets_r.json() if a.get("symbol")}
+    assert by_symbol["BTC"]["quantity"] == 0.0
+    assert by_symbol["ETH"]["quantity"] == 2.0
+    assert by_symbol["ETH"]["current_value"] == 2.0 * 3000.0
