@@ -18,6 +18,10 @@ from app.services.asset_sync import record_networth_snapshot, update_asset_from_
 from app.services.cache_service import cache
 
 
+class SmartUpdateMissingLinkedAssetError(Exception):
+    """Transaction row exists but its asset_id does not resolve — cannot reverse prior effect."""
+
+
 def _resolve_account_and_asset(
     db: Session,
     user: User,
@@ -122,15 +126,17 @@ class TransactionService:
             return None
 
         old_asset = db.query(Asset).filter(Asset.id == tx.asset_id).first()
-        if old_asset:
-            update_asset_from_transaction(
-                db,
-                old_asset,
-                tx.transaction_type,
-                tx.quantity,
-                tx.price_per_unit,
-                is_reversal=True,
-            )
+        if not old_asset:
+            raise SmartUpdateMissingLinkedAssetError()
+
+        update_asset_from_transaction(
+            db,
+            old_asset,
+            tx.transaction_type,
+            tx.quantity,
+            tx.price_per_unit,
+            is_reversal=True,
+        )
 
         account, asset = _resolve_account_and_asset(db, user, data)
 

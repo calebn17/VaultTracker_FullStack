@@ -31,7 +31,7 @@ from app.schemas.transaction import (
 )
 from app.services.asset_sync import record_networth_snapshot, update_asset_from_transaction
 from app.services.cache_service import cache
-from app.services.transaction_service import TransactionService
+from app.services.transaction_service import SmartUpdateMissingLinkedAssetError, TransactionService
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
@@ -179,7 +179,13 @@ async def update_smart_transaction(
 ):
     """Update a transaction using the same smart payload as POST /smart (re-resolves account + asset)."""
     service = TransactionService()
-    tx = service.smart_update(transaction_id, body, current_user, db)
+    try:
+        tx = service.smart_update(transaction_id, body, current_user, db)
+    except SmartUpdateMissingLinkedAssetError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Transaction references a missing asset",
+        ) from None
     if not tx:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -208,29 +214,32 @@ async def update_transaction(
         )
 
     asset = db.query(Asset).filter(Asset.id == transaction.asset_id).first()
-
-    if asset:
-        update_asset_from_transaction(
-            db,
-            asset,
-            transaction.transaction_type,
-            transaction.quantity,
-            transaction.price_per_unit,
-            is_reversal=True,
+    if not asset:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Transaction references a missing asset",
         )
+
+    update_asset_from_transaction(
+        db,
+        asset,
+        transaction.transaction_type,
+        transaction.quantity,
+        transaction.price_per_unit,
+        is_reversal=True,
+    )
 
     update_data = transaction_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
-    if asset:
-        update_asset_from_transaction(
-            db,
-            asset,
-            transaction.transaction_type,
-            transaction.quantity,
-            transaction.price_per_unit,
-        )
+    update_asset_from_transaction(
+        db,
+        asset,
+        transaction.transaction_type,
+        transaction.quantity,
+        transaction.price_per_unit,
+    )
 
     record_networth_snapshot(db, current_user.id)
     db.commit()

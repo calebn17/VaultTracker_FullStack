@@ -81,6 +81,14 @@ def _vt_inject_broken_behavior_for_falsification_checks(monkeypatch: pytest.Monk
         "app.services.transaction_service.TransactionService.smart_create",
         broken_smart_create,
     )
+
+    def broken_smart_update(self, transaction_id, data, user, db):  # noqa: ARG002
+        raise RuntimeError("VT_BREAK_TESTS: intentional regression injection")
+
+    monkeypatch.setattr(
+        "app.services.transaction_service.TransactionService.smart_update",
+        broken_smart_update,
+    )
     yield
 
 

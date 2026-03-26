@@ -1,3 +1,8 @@
+import uuid
+
+from app.models.transaction import Transaction
+
+
 def test_smart_transaction_creates_account_asset_and_transaction(client, test_user, db_session):
     body = {
         "transaction_type": "buy",
@@ -63,6 +68,53 @@ def test_legacy_create_transaction_still_works(client, test_user, db_session):
     assert r.status_code == 201, r.text
 
 
+def test_legacy_update_409_when_linked_asset_missing(client, test_user, db_session):
+    from app.models.account import Account
+    from app.models.asset import Asset
+
+    acct = Account(
+        user_id=test_user.id,
+        name="Bank",
+        account_type="bank",
+    )
+    ast = Asset(
+        user_id=test_user.id,
+        name="Cash",
+        symbol=None,
+        category="cash",
+        quantity=0.0,
+        current_value=0.0,
+    )
+    db_session.add_all([acct, ast])
+    db_session.commit()
+    db_session.refresh(acct)
+    db_session.refresh(ast)
+
+    r0 = client.post(
+        "/api/v1/transactions",
+        json={
+            "asset_id": ast.id,
+            "account_id": acct.id,
+            "transaction_type": "buy",
+            "quantity": 10.0,
+            "price_per_unit": 1.0,
+        },
+    )
+    assert r0.status_code == 201, r0.text
+    tx_id = r0.json()["id"]
+
+    tx_row = db_session.query(Transaction).filter(Transaction.id == tx_id).first()
+    assert tx_row is not None
+    tx_row.asset_id = str(uuid.uuid4())
+    db_session.commit()
+
+    r1 = client.put(
+        f"/api/v1/transactions/{tx_id}",
+        json={"quantity": 5.0},
+    )
+    assert r1.status_code == 409
+
+
 def test_smart_transaction_update_changes_quantity_and_preserves_resolution(client, test_user, db_session):
     create_body = {
         "transaction_type": "buy",
@@ -94,6 +146,33 @@ def test_smart_transaction_update_changes_quantity_and_preserves_resolution(clie
     assert len(rows) == 1
     assert rows[0]["quantity"] == 2.0
     assert rows[0]["total_value"] == 2.0 * 41000.0
+
+
+def test_smart_transaction_update_409_when_linked_asset_missing(client, test_user, db_session):
+    create_body = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "asset_name": "Bitcoin",
+        "symbol": "BTC",
+        "quantity": 1.0,
+        "price_per_unit": 40000.0,
+        "account_name": "Coinbase",
+        "account_type": "cryptoExchange",
+    }
+    r0 = client.post("/api/v1/transactions/smart", json=create_body)
+    assert r0.status_code == 201, r0.text
+    tx_id = r0.json()["id"]
+
+    tx_row = db_session.query(Transaction).filter(Transaction.id == tx_id).first()
+    assert tx_row is not None
+    tx_row.asset_id = str(uuid.uuid4())
+    db_session.commit()
+
+    r1 = client.put(
+        f"/api/v1/transactions/{tx_id}/smart",
+        json={**create_body, "quantity": 2.0},
+    )
+    assert r1.status_code == 409
 
 
 def test_smart_transaction_update_404(client, test_user, db_session):
