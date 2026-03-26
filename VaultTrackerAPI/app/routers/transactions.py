@@ -170,6 +170,24 @@ async def get_transaction(
     return transaction
 
 
+@router.put("/{transaction_id}/smart", response_model=TransactionResponse)
+async def update_smart_transaction(
+    transaction_id: str,
+    body: SmartTransactionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update a transaction using the same smart payload as POST /smart (re-resolves account + asset)."""
+    service = TransactionService()
+    tx = service.smart_update(transaction_id, body, current_user, db)
+    if not tx:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found",
+        )
+    return tx
+
+
 @router.put("/{transaction_id}", response_model=TransactionResponse)
 async def update_transaction(
     transaction_id: str,
@@ -191,26 +209,28 @@ async def update_transaction(
 
     asset = db.query(Asset).filter(Asset.id == transaction.asset_id).first()
 
-    update_asset_from_transaction(
-        db,
-        asset,
-        transaction.transaction_type,
-        transaction.quantity,
-        transaction.price_per_unit,
-        is_reversal=True,
-    )
+    if asset:
+        update_asset_from_transaction(
+            db,
+            asset,
+            transaction.transaction_type,
+            transaction.quantity,
+            transaction.price_per_unit,
+            is_reversal=True,
+        )
 
     update_data = transaction_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
-    update_asset_from_transaction(
-        db,
-        asset,
-        transaction.transaction_type,
-        transaction.quantity,
-        transaction.price_per_unit,
-    )
+    if asset:
+        update_asset_from_transaction(
+            db,
+            asset,
+            transaction.transaction_type,
+            transaction.quantity,
+            transaction.price_per_unit,
+        )
 
     record_networth_snapshot(db, current_user.id)
     db.commit()
