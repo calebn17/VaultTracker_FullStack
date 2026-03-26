@@ -16,9 +16,8 @@ import {
   signOut,
   type User,
 } from "firebase/auth";
+import { DEBUG_AUTH_AVAILABLE, DEBUG_AUTH_TOKEN } from "@/lib/auth-debug";
 import { getFirebaseAuth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
-
-const DEBUG_TOKEN = "vaulttracker-debug-user";
 
 type AuthMode = "firebase" | "debug";
 
@@ -27,7 +26,7 @@ type AuthContextValue = {
   loading: boolean;
   mode: AuthMode;
   signInWithGoogle: () => Promise<void>;
-  signInDebug: () => void;
+  signInDebug?: () => void;
   signOutUser: () => Promise<void>;
   getToken: (forceRefresh?: boolean) => Promise<string>;
 };
@@ -59,10 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithPopup(auth, googleProvider);
   }, []);
 
-  const signInDebug = useCallback(() => {
-    setMode("debug");
-    setUser({ uid: "debug-local" } as User);
-    setLoading(false);
+  const signInDebug = useMemo(() => {
+    if (!DEBUG_AUTH_AVAILABLE) return undefined;
+    return () => {
+      setMode("debug");
+      setUser({ uid: "debug-local" } as User);
+      setLoading(false);
+    };
   }, []);
 
   const signOutUser = useCallback(async () => {
@@ -81,7 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getToken = useCallback(
     async (forceRefresh = false) => {
       if (mode === "debug") {
-        return DEBUG_TOKEN;
+        if (!DEBUG_AUTH_TOKEN) {
+          throw new Error("Debug authentication is not available.");
+        }
+        return DEBUG_AUTH_TOKEN;
       }
       const auth = getFirebaseAuth();
       const u = auth.currentUser;
@@ -93,26 +98,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [mode]
   );
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const base = {
       user,
       loading,
       mode,
       signInWithGoogle,
-      signInDebug,
       signOutUser,
       getToken,
-    }),
-    [
-      user,
-      loading,
-      mode,
-      signInWithGoogle,
-      signInDebug,
-      signOutUser,
-      getToken,
-    ]
-  );
+    };
+    return signInDebug === undefined
+      ? base
+      : { ...base, signInDebug };
+  }, [
+    user,
+    loading,
+    mode,
+    signInWithGoogle,
+    signInDebug,
+    signOutUser,
+    getToken,
+  ]);
 
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

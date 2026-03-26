@@ -48,7 +48,7 @@ export default function LoginPage() {
               enable Google sign-in.
             </p>
           )}
-          {process.env.NODE_ENV === "development" ? (
+          {process.env.NODE_ENV === "development" && signInDebug ? (
             <Button
               type="button"
               variant="secondary"
