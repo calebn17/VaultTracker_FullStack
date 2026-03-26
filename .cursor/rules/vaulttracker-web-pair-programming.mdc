@@ -1,0 +1,61 @@
+---
+description: Pair-programming and learning checkpoints for VaultTracker Web (and related API work); high-level web architecture
+alwaysApply: true
+---
+
+# VaultTracker — Web implementation (pair programming / learning)
+
+Use this when implementing or extending **VaultTrackerWeb** or **backend endpoints** that exist primarily for the web client (e.g. smart transaction update). It complements [vaulttracker-change-communication.mdc](vaulttracker-change-communication.mdc).
+
+## High-level architecture (for learning)
+
+```mermaid
+flowchart LR
+  subgraph client [Browser]
+    Next[Next.js App Router]
+    FB[Firebase Auth Web SDK]
+    RQ[TanStack Query]
+    Next --> FB
+    Next --> RQ
+  end
+  subgraph api [VaultTrackerAPI]
+    FastAPI[FastAPI /api/v1]
+    Svc[Services layer]
+    DB[(PostgreSQL)]
+    Cache[In-memory TTL cache]
+    FastAPI --> Svc
+    Svc --> DB
+    FastAPI --> Cache
+  end
+  FB -->|ID token JWT Bearer| FastAPI
+  RQ -->|fetch + Authorization| FastAPI
+```
+
+- **Thin client:** The web app does not resolve assets/accounts, join data, or compute net worth. It renders API responses and sends CRUD/smart payloads the backend validates and applies.
+- **Identity:** Same Firebase project as iOS. The backend verifies the JWT (or debug bypass locally) and scopes all rows by `user_id`.
+- **State:** Server-fetched data lives in **TanStack Query** (cache, refetch, mutations with invalidation). Theme and auth user/session stay in **React context** (or `next-themes` for appearance).
+- **Backend:** Routers stay thin; **services** own resolution, snapshots, and price calls; **cache** speeds read-heavy routes until writes invalidate per user.
+
+## Learning checkpoints (pair-programming pauses)
+
+The **Web app implementation** plan defines checkpoints **CP-B1** … **CP-D1** (full table in `.cursor/plans/`, file name `web_app_implementation_start_*.plan.md`).
+
+- **Default:** A plain **“execute”** may ship work in **larger batches**; still give high-level summaries per `vaulttracker-change-communication.mdc`. The first full VaultTrackerWeb build was done that way—**checkpoints were not used as live stops**.
+- **Checkpoint mode:** When the user says **“use the plan checkpoints”**, **“pause after each CP”**, or similar, work in **small batches** and **stop** after each checkpoint. At each stop explain **what** changed, **why** it matters, and **how to verify** when helpful. They may ask for deeper detail before **continue**.
+- **Retrospective:** They can ask for a walkthrough in CP order **without new code** to map each stop to files already in the repo.
+
+Summary labels:
+
+| Label | Area | Typical stop-after |
+|-------|------|-------------------|
+| CP-B1/B2 | API | `PUT …/transactions/{id}/smart` + `smart_update` + tests |
+| CP-W1–W6 | Web | Scaffold → client/types → providers → shell → dashboard → transactions |
+| CP-D1 | Docs | Spec + System Design contract for smart PUT |
+
+If the plan file differs from this rule, **follow the plan** and update this rule when the checkpoint scheme changes.
+
+## Related docs
+
+- [VaultTrackerWeb/Documentation/Web App Spec.md](VaultTrackerWeb/Documentation/Web%20App%20Spec.md)
+- [VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md](VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md)
+- [Documentation/VaultTracker System Design.md](Documentation/VaultTracker%20System%20Design.md)
