@@ -61,7 +61,7 @@ export function toFormDefaults(tx?: EnrichedTransaction | null): TransactionForm
       category: cat,
       asset_name: "",
       symbol: "",
-      quantity: 0,
+      quantity: 1,
       price_per_unit: 1,
       account_name: "",
       account_type: defaultAccountType(cat),

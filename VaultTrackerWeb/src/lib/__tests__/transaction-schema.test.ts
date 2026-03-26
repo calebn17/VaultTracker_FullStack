@@ -95,6 +95,7 @@ describe("toFormDefaults", () => {
   it("returns defaults for null with crypto and price_per_unit 1", () => {
     const d = toFormDefaults(null);
     expect(d.category).toBe("crypto");
+    expect(d.quantity).toBe(1);
     expect(d.price_per_unit).toBe(1);
     expect(d.transaction_type).toBe("buy");
     expect(d.asset_name).toBe("");
