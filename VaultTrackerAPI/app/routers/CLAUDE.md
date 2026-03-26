@@ -10,21 +10,26 @@ Each file maps to one resource and one `/api/v1/<resource>` prefix. Routers only
 |------|--------|-------|
 | `accounts.py` | `/accounts` | Plain CRUD, no service layer needed |
 | `assets.py` | `/assets` | Plain CRUD + optional `?category=` filter |
-| `transactions.py` | `/transactions` | Two creation paths — see below |
+| `transactions.py` | `/transactions` | Smart + legacy create/update — see below |
 | `dashboard.py` | `/dashboard` | Aggregation only; no service layer |
 | `networth.py` | `/networth` | History with `period=daily|weekly|monthly|all`; responses cached |
 | `analytics.py` | `/analytics` | Delegates to `AnalyticsService`; result is cached |
 | `prices.py` | `/prices` | Delegates to `PriceService`; `GET /{symbol}` tries crypto first, then stock |
 | `users.py` | `/users` | Returns current user profile |
 
-## Two transaction creation paths
+## Transaction endpoints (smart + legacy)
 
-`transactions.py` exposes two POST endpoints:
+**Create**
 
 - `POST /transactions` — caller supplies `asset_id` + `account_id` (UUIDs must already exist). Used by the current iOS app.
-- `POST /transactions/smart` — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates the account + asset server-side. Intended for future web client / import flows.
+- `POST /transactions/smart` — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates the account + asset server-side (web / import flows).
 
-Both paths call `update_asset_from_transaction` + `record_networth_snapshot` from `app/services/asset_sync.py`.
+**Update**
+
+- `PUT /transactions/{id}` — partial update by UUID; reverses then reapplies on the **same** asset row.
+- `PUT /transactions/{id}/smart` — full smart body; reverses on the **old** asset, then resolves account + asset from the payload like `smart_create` (`TransactionService.smart_update`).
+
+All write paths call `update_asset_from_transaction` + `record_networth_snapshot` from `app/services/asset_sync.py`.
 
 ## Enriched transaction response
 
