@@ -4,17 +4,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-VaultTrackerWeb is **fully implemented**. All seven phases from `Documentation/Web App Spec.md` are complete.
+All seven implementation phases (scaffolding, auth/layout, dashboard, transactions, accounts, analytics, polish) are **complete**.
+
+- **Tests** — Vitest (unit + component) and Playwright (E2E) are wired; suites live under `src/**/__tests__/` and `e2e/`. See [Testing](#testing) below and `Documentation/Testing Plan.md` for layout, scenarios, and rationale.
+- **Deployment** — Not yet deployed to Vercel; no `vercel.json`, no production URL, and the API CORS allowlist has not been updated with a Vercel domain.
+
+See `Documentation/Web App Spec.md` Phase 7 for the open checklist items (7.3–7.9).
 
 ## Commands
 
 ```bash
-npm run dev    # Dev server at localhost:3000
-npm run build  # Production build
-npm run lint   # ESLint
+npm run dev           # Dev server at localhost:3000
+npm run build         # Production build
+npm run lint          # ESLint
+npm run test          # Vitest (unit + component), single run
+npm run test:watch    # Vitest watch mode
+npm run test:coverage # Vitest with coverage
+npm run test:e2e      # Playwright (starts dev server via playwright.config unless one is already running)
 ```
 
-Tests are not yet configured.
+## Testing
+
+**Docs:** `Documentation/Testing Plan.md` describes the pyramid (Vitest for pure logic/schemas/components, Playwright for full flows), setup assumptions, and file map.
+
+**Vitest** (`vitest.config.ts`, `vitest.setup.ts`): runs in `jsdom`; path alias `@/` matches the app. The `e2e/` folder is **excluded** so Playwright specs are not picked up as Vitest tests.
+
+**Where tests live**
+
+| Area | Location |
+|------|----------|
+| Unit | `src/lib/__tests__/*.test.ts` |
+| Components / context | `src/components/__tests__/`, `src/contexts/__tests__/` |
+| E2E | `e2e/*.spec.ts` |
+
+**Playwright** (`playwright.config.ts`): `testDir` is `./e2e`, `baseURL` `http://localhost:3000`, `webServer` runs `npm run dev` unless `CI` is set (see `reuseExistingServer`). Install browsers once: `npx playwright install --with-deps chromium`.
+
+**E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` should go through **client navigation** (e.g. click the sidebar link **Transactions** after landing on `/dashboard`).
+
+**E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser.
+
+**Auth UI copy:** Login uses **Continue with Google** (when Firebase is configured). Success toasts for new transactions use **Transaction added** (not “created”).
 
 ## Tech Stack
 
@@ -134,4 +163,4 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 
 `NEXT_PUBLIC_API_HOST` is also accepted as a fallback for the API base URL.
 
-Production API URL: `https://vaulttracker-api.onrender.com`. Deployed to Vercel — set env vars in the Vercel dashboard and add the Vercel domain to the API's CORS allowlist.
+Production API URL: `https://vaulttracker-api.onrender.com`. **Not yet deployed to Vercel** — when deploying, set the env vars in the Vercel dashboard and add the Vercel domain to the API's `ALLOWED_ORIGINS` in `VaultTrackerAPI/app/config.py` (or via the Render env var).
