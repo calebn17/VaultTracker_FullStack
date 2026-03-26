@@ -79,7 +79,8 @@ Your local `.env` is never deployed. Render injects its own environment variable
 
 ```bash
 # One-time: create venv and install deps (from VaultTrackerAPI/)
-python3 -m venv venv
+# Use 3.10+ (macOS `python3` may be 3.9; code uses PEP 604 `X | Y` unions).
+python3.10 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 
 # Optional: activate venv for a shell session (then pip/pytest work without a prefix)
