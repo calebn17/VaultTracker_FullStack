@@ -36,11 +36,11 @@ test.describe("Transactions", () => {
   });
 
   test("create valid buy shows toast and new row", async ({ page }) => {
-    const label = `E2E ${Date.now()}`;
+    const assetName = "Bitcoin";
     await page.getByRole("button", { name: /add transaction/i }).click();
     const dialog = page.getByRole("dialog");
 
-    await dialog.locator('input[name="asset_name"]').fill(label);
+    await dialog.locator('input[name="asset_name"]').fill(assetName);
     await dialog.locator('input[name="symbol"]').fill("BTC");
     await dialog.locator('input[name="quantity"]').fill("0.1");
     await dialog.locator('input[name="price_per_unit"]').fill("50000");
@@ -51,18 +51,18 @@ test.describe("Transactions", () => {
     await expect(page.getByText(/transaction added/i)).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByRole("cell", { name: label })).toBeVisible({
+    await expect(page.getByRole("cell", { name: assetName })).toBeVisible({
       timeout: 20_000,
     });
   });
 
   test("delete shows confirmation and removes row", async ({ page }) => {
-    const label = `Del ${Date.now()}`;
+    const assetName = "Ethereum";
     await page.getByRole("button", { name: /add transaction/i }).click();
     const dialog = page.getByRole("dialog");
 
-    await dialog.locator('input[name="asset_name"]').fill(label);
-    await dialog.locator('input[name="symbol"]').fill("ETH");
+    await dialog.locator('input[name="asset_name"]').fill(assetName);
+    await dialog.locator('input[name="symbol"]').fill("Eth");
     await dialog.locator('input[name="quantity"]').fill("0.2");
     await dialog.locator('input[name="price_per_unit"]').fill("3000");
     await dialog.locator('input[name="account_name"]').fill("E2E Del");
@@ -72,7 +72,7 @@ test.describe("Transactions", () => {
       timeout: 20_000,
     });
 
-    const row = page.getByRole("row").filter({ hasText: label });
+    const row = page.getByRole("row").filter({ hasText: assetName });
     await row.getByRole("button", { name: "Delete" }).click();
 
     await expect(
@@ -86,7 +86,7 @@ test.describe("Transactions", () => {
 
     await expect(page.getByText(/deleted/i)).toBeVisible({ timeout: 20_000 });
     await expect(
-      page.getByRole("cell", { name: label })
+      page.getByRole("cell", { name: assetName })
     ).not.toBeVisible({ timeout: 10_000 });
   });
 });
