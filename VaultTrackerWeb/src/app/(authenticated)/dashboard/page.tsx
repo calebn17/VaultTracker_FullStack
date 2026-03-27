@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { CategoryBar } from "@/components/dashboard/category-bar";
+import { CategorySummaryList } from "@/components/dashboard/category-summary-list";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { HoldingsGrid } from "@/components/dashboard/holdings-grid";
 import { useDashboard } from "@/lib/queries/use-dashboard";
@@ -15,6 +16,12 @@ import { useRefreshPrices } from "@/lib/queries/use-prices";
 import { formatCurrency } from "@/lib/format";
 import type { Category, NetWorthPeriod } from "@/types/api";
 import { cn } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -67,9 +74,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-4">
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <StatCard
+            variant="hero"
+            title="Total net worth"
+            value={formatCurrency(d?.totalNetWorth ?? 0)}
+            loading={loading}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 lg:pt-1">
           <Select
             value={period}
             onValueChange={(v) => setPeriod(v as NetWorthPeriod)}
@@ -123,47 +138,47 @@ export default function DashboardPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title="Total net worth"
-          value={formatCurrency(d?.totalNetWorth ?? 0)}
-          loading={loading}
-        />
-        {d?.categoryTotals
-          ? (["crypto", "stocks", "cash", "realEstate", "retirement"] as const).map(
-              (k) => (
-                <StatCard
-                  key={k}
-                  title={k}
-                  value={formatCurrency(d.categoryTotals[k])}
+      <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
+        <Card className="lg:col-span-8">
+          <CardHeader className="border-b border-border/60">
+            <CardTitle>Net worth history</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <NetWorthChart
+              data={history.data?.snapshots ?? []}
+              loading={history.isLoading}
+            />
+            {history.isError ? (
+              <p className="text-destructive text-sm">Could not load history.</p>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col gap-4 lg:col-span-4">
+          <Card size="sm">
+            <CardHeader className="border-b border-border/60">
+              <CardTitle>By category</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <CategorySummaryList
+                totals={d?.categoryTotals}
+                loading={loading}
+              />
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-xs font-medium">
+                  Allocation
+                </p>
+                <CategoryBar
+                  totals={d?.categoryTotals}
+                  total={d?.totalNetWorth ?? 0}
                   loading={loading}
+                  showLegend={false}
                 />
-              )
-            )
-          : [1, 2, 3, 4, 5].map((i) => (
-              <StatCard key={i} title="…" value="…" loading />
-            ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">Net worth history</h2>
-        <NetWorthChart
-          data={history.data?.snapshots ?? []}
-          loading={history.isLoading}
-        />
-        {history.isError ? (
-          <p className="text-destructive text-sm">Could not load history.</p>
-        ) : null}
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">Allocation bar</h2>
-        <CategoryBar
-          totals={d?.categoryTotals}
-          total={d?.totalNetWorth ?? 0}
-          loading={loading}
-        />
-      </section>
 
       <section className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

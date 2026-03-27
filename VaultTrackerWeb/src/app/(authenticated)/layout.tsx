@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +27,8 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+  const dashboardWide = pathname === "/dashboard";
 
   if (loading) {
     return (
@@ -41,5 +43,11 @@ export default function AuthenticatedLayout({
     return <LoginGateRedirect />;
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell
+      contentClassName={dashboardWide ? "max-w-7xl" : undefined}
+    >
+      {children}
+    </AppShell>
+  );
 }
