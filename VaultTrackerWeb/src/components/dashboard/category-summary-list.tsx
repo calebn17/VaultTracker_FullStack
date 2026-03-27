@@ -3,7 +3,11 @@
 import type { CategoryTotals } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/components/dashboard/category-bar";
+import {
+  CATEGORY_BAR_COLORS,
+  CATEGORY_LABELS,
+  CATEGORY_ORDER,
+} from "@/components/dashboard/category-bar";
 
 export function CategorySummaryList({
   totals,
@@ -20,7 +24,10 @@ export function CategorySummaryList({
             key={key}
             className="flex items-center justify-between gap-3 text-sm"
           >
-            <span className="bg-muted h-4 w-20 animate-pulse rounded" />
+            <span className="flex items-center gap-2">
+              <span className="bg-muted size-2 shrink-0 rounded-full animate-pulse" />
+              <span className="bg-muted h-4 w-20 animate-pulse rounded" />
+            </span>
             <span className="bg-muted h-4 w-24 animate-pulse rounded" />
           </li>
         ))}
@@ -37,7 +44,16 @@ export function CategorySummaryList({
             "flex items-baseline justify-between gap-3 border-b border-border/60 pb-2 text-sm last:border-0 last:pb-0"
           )}
         >
-          <span className="text-muted-foreground">{CATEGORY_LABELS[key]}</span>
+          <span className="text-muted-foreground flex items-center gap-2">
+            <span
+              className={cn(
+                "size-2 shrink-0 rounded-full",
+                CATEGORY_BAR_COLORS[key]
+              )}
+              aria-hidden
+            />
+            {CATEGORY_LABELS[key]}
+          </span>
           <span className="tabular-nums font-medium">
             {formatCurrency(totals[key])}
           </span>
