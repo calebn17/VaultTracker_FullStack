@@ -9,10 +9,12 @@ import { CategoryBar } from "@/components/dashboard/category-bar";
 import { CategorySummaryList } from "@/components/dashboard/category-summary-list";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { HoldingsGrid } from "@/components/dashboard/holdings-grid";
+import { TransactionFormDialog } from "@/components/transactions/transaction-form";
 import { useDashboard } from "@/lib/queries/use-dashboard";
 import { useNetWorthHistory } from "@/lib/queries/use-networth";
 import { useAssets } from "@/lib/queries/use-assets";
 import { useRefreshPrices } from "@/lib/queries/use-prices";
+import { useCreateTransaction } from "@/lib/queries/use-transactions";
 import { formatCurrency } from "@/lib/format";
 import type { Category, NetWorthPeriod } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -35,15 +37,17 @@ const CATEGORY_CHIPS: { key: Category | "all"; label: string }[] = [
   { key: "crypto", label: "Crypto" },
   { key: "stocks", label: "Stocks" },
   { key: "cash", label: "Cash" },
-  { key: "realEstate", label: "Real estate" },
+  { key: "realEstate", label: "Real Estate" },
   { key: "retirement", label: "Retirement" },
 ];
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<NetWorthPeriod>("daily");
   const [assetCategory, setAssetCategory] = useState<Category | "all">("all");
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false);
 
   const dashboard = useDashboard();
+  const createTx = useCreateTransaction();
   const history = useNetWorthHistory(period);
   const assetsFiltered = useAssets(
     assetCategory === "all" ? undefined : assetCategory
@@ -183,7 +187,7 @@ export default function DashboardPage() {
       <section className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-medium">Holdings</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {CATEGORY_CHIPS.map(({ key, label }) => (
               <Button
                 key={key}
@@ -195,13 +199,42 @@ export default function DashboardPage() {
                 {label}
               </Button>
             ))}
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setAddTransactionOpen(true)}
+            >
+              Add transaction
+            </Button>
           </div>
         </div>
         <HoldingsGrid
           grouped={groupedForFilter}
           loading={loading || assetsFiltered.isLoading}
+          categoryFilter={assetCategory}
         />
       </section>
+
+      <TransactionFormDialog
+        open={addTransactionOpen}
+        onOpenChange={setAddTransactionOpen}
+        initial={null}
+        title="Add transaction"
+        pending={createTx.isPending}
+        defaultCategory={
+          assetCategory === "all" ? undefined : assetCategory
+        }
+        onSubmit={(payload) => {
+          createTx.mutate(payload, {
+            onSuccess: () => {
+              toast.success("Transaction added");
+              setAddTransactionOpen(false);
+            },
+            onError: (e) =>
+              toast.error(e instanceof Error ? e.message : "Create failed"),
+          });
+        }}
+      />
     </div>
   );
 }

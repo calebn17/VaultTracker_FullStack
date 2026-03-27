@@ -53,9 +53,12 @@ export function isCashLike(cat: Category): boolean {
   return cat === "cash" || cat === "realEstate";
 }
 
-export function toFormDefaults(tx?: EnrichedTransaction | null): TransactionFormValues {
+export function toFormDefaults(
+  tx?: EnrichedTransaction | null,
+  preferredCategory?: Category
+): TransactionFormValues {
   if (!tx) {
-    const cat: Category = "crypto";
+    const cat: Category = preferredCategory ?? "crypto";
     return {
       transaction_type: "buy",
       category: cat,

@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Category, EnrichedTransaction } from "@/types/api";
+import { CATEGORY_LABELS } from "@/components/dashboard/category-bar";
 import { ACCOUNT_TYPES_BY_CATEGORY } from "@/lib/account-types";
 import {
   transactionSchema,
@@ -37,10 +38,13 @@ export function TransactionFormDialog({
   onSubmit,
   pending,
   title,
+  defaultCategory,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   initial: EnrichedTransaction | null;
+  /** When adding (no `initial`), pre-select this category in the form. */
+  defaultCategory?: Category;
   onSubmit: (payload: {
     transaction_type: "buy" | "sell";
     category: Category;
@@ -55,7 +59,10 @@ export function TransactionFormDialog({
   pending?: boolean;
   title: string;
 }) {
-  const defaults = useMemo(() => toFormDefaults(initial), [initial]);
+  const defaults = useMemo(
+    () => toFormDefaults(initial, defaultCategory),
+    [initial, defaultCategory]
+  );
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -64,9 +71,9 @@ export function TransactionFormDialog({
 
   useEffect(() => {
     if (open) {
-      form.reset(toFormDefaults(initial));
+      form.reset(toFormDefaults(initial, defaultCategory));
     }
-  }, [open, initial, form]);
+  }, [open, initial, defaultCategory, form]);
 
   const category = form.watch("category");
 
@@ -136,13 +143,15 @@ export function TransactionFormDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Category">
+                  {CATEGORY_LABELS[form.watch("category")]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="crypto">Crypto</SelectItem>
                 <SelectItem value="stocks">Stocks</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="realEstate">Real estate</SelectItem>
+                <SelectItem value="realEstate">Real Estate</SelectItem>
                 <SelectItem value="retirement">Retirement</SelectItem>
               </SelectContent>
             </Select>

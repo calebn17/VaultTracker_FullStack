@@ -5,7 +5,6 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import type { Category, HoldingItem } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const ORDER: Category[] = [
   "crypto",
@@ -19,20 +18,26 @@ const LABELS: Record<Category, string> = {
   crypto: "Crypto",
   stocks: "Stocks",
   cash: "Cash",
-  realEstate: "Real estate",
+  realEstate: "Real Estate",
   retirement: "Retirement",
 };
 
 export function HoldingsGrid({
   grouped,
   loading,
+  categoryFilter = "all",
 }: {
   grouped: Record<string, HoldingItem[]> | undefined;
   loading?: boolean;
+  /** When not `"all"`, only that category section is shown. */
+  categoryFilter?: Category | "all";
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(ORDER.map((k) => [k, true]))
   );
+
+  const categoriesToShow =
+    categoryFilter === "all" ? ORDER : [categoryFilter];
 
   if (loading) {
     return (
@@ -46,7 +51,7 @@ export function HoldingsGrid({
 
   return (
     <div className="space-y-2">
-      {ORDER.map((cat) => {
+      {categoriesToShow.map((cat) => {
         const items = grouped?.[cat] ?? [];
         const total = items.reduce((s, h) => s + h.current_value, 0);
         const isOpen = open[cat] ?? true;
@@ -80,9 +85,9 @@ export function HoldingsGrid({
                 {items.map((h) => (
                   <li
                     key={h.id}
-                    className="flex items-center justify-between py-2 text-sm"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 py-2 text-sm"
                   >
-                    <span>
+                    <span className="min-w-0 truncate">
                       {h.name}
                       {h.symbol ? (
                         <span className="text-muted-foreground ml-1">
@@ -90,13 +95,7 @@ export function HoldingsGrid({
                         </span>
                       ) : null}
                     </span>
-                    <span className="text-muted-foreground tabular-nums">
-                      {h.quantity.toLocaleString()} @{" "}
-                      {formatCurrency(
-                        h.quantity !== 0 ? h.current_value / h.quantity : 0
-                      )}
-                    </span>
-                    <span className="ml-4 font-medium tabular-nums">
+                    <span className="shrink-0 whitespace-nowrap text-right font-medium tabular-nums">
                       {formatCurrency(h.current_value)}
                     </span>
                   </li>
