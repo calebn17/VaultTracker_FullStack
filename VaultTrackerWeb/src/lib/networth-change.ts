@@ -11,7 +11,7 @@ export function computeApproxMonthChange(
   );
   const latest = sorted[sorted.length - 1];
   const cutoff = new Date(latest.date);
-  cutoff.setDate(cutoff.getDate() - 30);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 30);
   const t = cutoff.getTime();
   let baseline = sorted[0];
   for (const s of sorted) {

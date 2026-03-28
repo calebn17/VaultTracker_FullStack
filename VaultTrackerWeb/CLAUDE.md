@@ -147,6 +147,14 @@ Defined in `src/types/api.ts`. Mirror of backend schemas in `VaultTrackerAPI/app
 - **Cash & Real Estate:** Hide `symbol` and `price_per_unit`; label quantity as "Amount ($)"; hardcode `price_per_unit = 1.0`
 - **Crypto, Stocks, Retirement:** Show `symbol` (required), `quantity`, `price_per_unit`
 
+### Transaction modal (Meridian reference)
+
+Add/edit transaction UI lives in `src/components/transactions/transaction-form.tsx`. It follows the visual language of `Documentation/References/networth-tracker.html` (dark surfaces, Instrument Serif title, uppercase micro-labels, 2-column grid, lime primary actions, heavy modal shadow). `globals.css` dark theme variables are aligned with that reference.
+
+**Dialog primitives:** `src/components/ui/dialog.tsx` `DialogContent` accepts optional **`overlayClassName`** (e.g. darker scrim + `backdrop-blur-md`) and **`closeButtonClassName`** (e.g. `top-6 right-6` when using large modal padding). Other dialogs keep defaults unless they pass these props.
+
+**API values vs. display:** `TransactionType` remains `"buy" | "sell"` for payloads. The Type `<Select>` shows **Buy** / **Sell** via `TRANSACTION_TYPE_LABELS`, matching how Category uses `CATEGORY_LABELS`—do not render the raw enum string in the trigger.
+
 ## Environment
 
 Copy `.env.local.example` → `.env.local`:

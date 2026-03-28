@@ -13,14 +13,28 @@ from app.models.asset import Asset
 from app.models.networth_snapshot import NetWorthSnapshot
 
 
-def record_networth_snapshot(db: Session, user_id: str) -> None:
+def record_networth_snapshot(
+    db: Session,
+    user_id: str,
+    *,
+    snapshot_at: datetime | None = None,
+) -> None:
     """
     Sum current_value across all user assets and save a NetWorthSnapshot.
     Called after every transaction write so the chart always has fresh data.
+
+    snapshot_at: Time for this snapshot row (UTC). Defaults to "now" (e.g. price
+    refresh, delete). Pass the transaction's trade date after create/update so
+    backdated trades produce distinct points on the net-worth chart.
     """
     assets = db.query(Asset).filter(Asset.user_id == user_id).all()
     net_worth = sum(a.current_value or 0.0 for a in assets)
-    snapshot = NetWorthSnapshot(user_id=user_id, value=net_worth)
+    when = snapshot_at if snapshot_at is not None else datetime.now(timezone.utc)
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    else:
+        when = when.astimezone(timezone.utc)
+    snapshot = NetWorthSnapshot(user_id=user_id, value=net_worth, date=when)
     db.add(snapshot)
 
 

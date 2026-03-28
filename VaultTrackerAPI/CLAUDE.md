@@ -116,6 +116,21 @@ VT_BREAK_TESTS=1 ./venv/bin/python -m pytest tests/ -q
 
 Expect multiple failures. If the suite still passes, widen `_vt_inject_broken_behavior_for_falsification_checks` in `tests/conftest.py` or fix vacuous assertions. Omit `VT_BREAK_TESTS` for normal runs.
 
+### Demo portfolio seed (local web / UI visualization)
+
+For **VaultTrackerWeb** (or manual API exploration), you can load realistic demo holdings and a long net-worth history without mocking the client. Script: [`scripts/seed_demo_portfolio.py`](scripts/seed_demo_portfolio.py).
+
+- **Mechanism:** Inserts many backdated `SmartTransactionCreate` rows via `TransactionService.smart_create` — same write path as `POST /api/v1/transactions/smart` — so accounts, assets, transactions, and `NetWorthSnapshot` rows stay consistent with production rules.
+- **Default user:** `firebase_id` **`debug-user`** (matches `DEBUG_AUTH_ENABLED` + Bearer `vaulttracker-debug-user`). Override with `--firebase-id <uid>` if you need a different user row.
+- **`--clear`:** Deletes that user’s transactions, snapshots, assets, and accounts (same effect as `DELETE /api/v1/users/me/data`) before seeding. Use it on repeat runs; seeding **without** `--clear` **duplicates** buys.
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python scripts/seed_demo_portfolio.py --clear
+```
+
+Then run the API with `DEBUG_AUTH_ENABLED=true`, start the web app with `NEXT_PUBLIC_API_URL` pointing at the API, and sign in with **debug** on `/login`. Optional: use **Refresh prices** on the dashboard for live crypto quotes (symbols must appear in `PriceService.CRYPTO_MAP` in [`app/services/price_service.py`](app/services/price_service.py)).
+
 ## Architecture
 
 This is a **FastAPI + SQLAlchemy** backend serving the VaultTracker iOS app (default local DB is **SQLite**; set `DATABASE_URL` for **PostgreSQL** e.g. Neon). All routes are mounted under `/api/v1`.
@@ -161,6 +176,8 @@ The most important invariant: **any write to `transactions` must keep the parent
 3. Both are called inside the same DB transaction before `db.commit()`.
 
 Transaction updates reverse the old effect first (`is_reversal=True`), then apply the new values.
+
+**Delete snapshot correction:** Deleting a backdated transaction would leave all historical snapshots on or after that date with stale (inflated/deflated) values. The delete handler computes `delta = quantity * price_per_unit` (negated for buys, positive for sells) and applies it to every `NetWorthSnapshot` whose `date >= tx.date`. This preserves the curve shape while correcting absolute values across all of history. A final snapshot at "now" is then appended via `record_networth_snapshot`.
 
 **Missing-asset guard:** If the `Asset` row pointed to by a transaction cannot be found at update time, the router returns **409 Conflict** (`"Transaction references a missing asset"`) rather than silently skipping the reversal. `TransactionService.smart_update` raises `SmartUpdateMissingLinkedAssetError` for this case; the legacy `PUT` handler checks inline. Both paths are covered by tests and the `VT_BREAK_TESTS` falsification fixture.
 

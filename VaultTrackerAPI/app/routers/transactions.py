@@ -20,6 +20,7 @@ from app.models.user import User
 from app.models.asset import Asset
 from app.models.account import Account
 from app.models.transaction import Transaction
+from app.models.networth_snapshot import NetWorthSnapshot
 from app.schemas.transaction import (
     EnrichedTransactionResponse,
     SmartTransactionCreate,
@@ -143,7 +144,7 @@ async def create_transaction(
         transaction.price_per_unit,
     )
 
-    record_networth_snapshot(db, current_user.id)
+    record_networth_snapshot(db, current_user.id, snapshot_at=when)
     db.commit()
     db.refresh(db_transaction)
     cache.invalidate_user(current_user.id)
@@ -241,7 +242,7 @@ async def update_transaction(
         transaction.price_per_unit,
     )
 
-    record_networth_snapshot(db, current_user.id)
+    record_networth_snapshot(db, current_user.id, snapshot_at=transaction.date)
     db.commit()
     db.refresh(transaction)
     cache.invalidate_user(current_user.id)
@@ -287,6 +288,36 @@ async def delete_transaction(
         )
         if remaining == 0:
             db.delete(asset)
+
+    # Capture fields before the session expunges the deleted object.
+    tx_date = transaction.date
+    tx_type = transaction.transaction_type
+    tx_qty = transaction.quantity
+    tx_price = transaction.price_per_unit
+    if tx_date.tzinfo is None:
+        tx_date = tx_date.replace(tzinfo=timezone.utc)
+    else:
+        tx_date = tx_date.astimezone(timezone.utc)
+
+    # The delta this transaction added to every snapshot on or after its date.
+    # A "buy" of qty@price added qty*price to net worth; reverting removes it.
+    # A "sell" subtracted qty*price; reverting adds it back.
+    delta = tx_qty * tx_price
+    if tx_type == "buy":
+        delta = -delta  # remove the asset's contribution
+
+    # Adjust all historical snapshots that were recorded on or after the trade
+    # date so the curve shape is preserved with corrected absolute values.
+    affected_snaps = (
+        db.query(NetWorthSnapshot)
+        .filter(
+            NetWorthSnapshot.user_id == current_user.id,
+            NetWorthSnapshot.date >= tx_date,
+        )
+        .all()
+    )
+    for snap in affected_snaps:
+        snap.value = max(0.0, snap.value + delta)
 
     record_networth_snapshot(db, current_user.id)
     db.commit()

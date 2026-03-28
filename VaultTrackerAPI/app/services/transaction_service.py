@@ -100,7 +100,7 @@ class TransactionService:
             data.quantity,
             data.price_per_unit,
         )
-        record_networth_snapshot(db, user.id)
+        record_networth_snapshot(db, user.id, snapshot_at=when)
         db.commit()
         db.refresh(transaction)
         cache.invalidate_user(user.id)
@@ -155,7 +155,7 @@ class TransactionService:
             data.quantity,
             data.price_per_unit,
         )
-        record_networth_snapshot(db, user.id)
+        record_networth_snapshot(db, user.id, snapshot_at=when)
         db.commit()
         db.refresh(tx)
         cache.invalidate_user(user.id)

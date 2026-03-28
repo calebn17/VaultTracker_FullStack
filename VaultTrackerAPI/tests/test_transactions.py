@@ -41,6 +41,94 @@ def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test
     assert "Solana" not in names_after
 
 
+def test_smart_transactions_with_different_dates_yield_multiple_networth_points(
+    client, test_user, db_session
+):
+    """Net worth snapshots use each trade's date so history matches transaction dates."""
+    base_buy = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "quantity": 0.1,
+        "price_per_unit": 40000.0,
+        "account_name": "Coinbase",
+        "account_type": "cryptoExchange",
+    }
+    r1 = client.post(
+        "/api/v1/transactions/smart",
+        json={
+            **base_buy,
+            "asset_name": "Bitcoin",
+            "symbol": "BTC",
+            "date": "2024-02-01T12:00:00Z",
+        },
+    )
+    assert r1.status_code == 201, r1.text
+    r2 = client.post(
+        "/api/v1/transactions/smart",
+        json={
+            **base_buy,
+            "asset_name": "Ethereum",
+            "symbol": "ETH",
+            "date": "2024-03-15T12:00:00Z",
+        },
+    )
+    assert r2.status_code == 201, r2.text
+
+    h = client.get("/api/v1/networth/history", params={"period": "daily"})
+    assert h.status_code == 200
+    snaps = h.json()["snapshots"]
+    assert len(snaps) == 2
+
+
+def test_deleting_backdated_transaction_adjusts_historical_snapshots(client, test_user, db_session):
+    """Deleting a backdated buy corrects all snapshot values on or after that date."""
+    base = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "account_name": "Coinbase",
+        "account_type": "cryptoExchange",
+    }
+    # Two buys on different dates
+    r1 = client.post("/api/v1/transactions/smart", json={
+        **base, "asset_name": "Bitcoin", "symbol": "BTC",
+        "quantity": 1.0, "price_per_unit": 40000.0,
+        "date": "2024-01-01T00:00:00Z",
+    })
+    assert r1.status_code == 201, r1.text
+    btc_tx_id = r1.json()["id"]
+
+    r2 = client.post("/api/v1/transactions/smart", json={
+        **base, "asset_name": "Ethereum", "symbol": "ETH",
+        "quantity": 1.0, "price_per_unit": 5000.0,
+        "date": "2024-06-01T00:00:00Z",
+    })
+    assert r2.status_code == 201, r2.text
+
+    h_before = client.get("/api/v1/networth/history", params={"period": "daily"})
+    snaps_before = h_before.json()["snapshots"]
+    # Jan snapshot = 40000, Jun snapshot = 45000
+    assert len(snaps_before) == 2
+    jan_value = snaps_before[0]["value"]
+    jun_value = snaps_before[1]["value"]
+    assert jan_value == 40000.0
+    assert jun_value == 45000.0
+
+    # Delete the January BTC buy (backdated)
+    r_del = client.delete(f"/api/v1/transactions/{btc_tx_id}")
+    assert r_del.status_code == 204
+
+    h_after = client.get("/api/v1/networth/history", params={"period": "daily"})
+    snaps_after = h_after.json()["snapshots"]
+
+    # Jan snapshot should decrease by 40000
+    jan_after = next(s for s in snaps_after if "2024-01" in s["date"])
+    assert jan_after["value"] == 0.0  # clamped to 0 (was 40000 - 40000)
+
+    # Jun snapshot should also decrease by 40000 (the delta propagates forward)
+    jun_after = next(s for s in snaps_after if "2024-06" in s["date"])
+    assert jun_after["value"] == 5000.0  # was 45000 - 40000
+
+
 def test_smart_transaction_creates_account_asset_and_transaction(client, test_user, db_session):
     body = {
         "transaction_type": "buy",
