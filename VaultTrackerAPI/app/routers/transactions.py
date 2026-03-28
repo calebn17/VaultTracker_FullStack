@@ -278,6 +278,16 @@ async def delete_transaction(
         )
 
     db.delete(transaction)
+    if asset:
+        db.flush()
+        remaining = (
+            db.query(Transaction)
+            .filter(Transaction.asset_id == asset.id)
+            .count()
+        )
+        if remaining == 0:
+            db.delete(asset)
+
     record_networth_snapshot(db, current_user.id)
     db.commit()
     cache.invalidate_user(current_user.id)

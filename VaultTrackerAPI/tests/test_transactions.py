@@ -3,6 +3,44 @@ import uuid
 from app.models.transaction import Transaction
 
 
+def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test_user, db_session):
+    """Deleting the only tx for an asset removes the holding (row deleted + dashboard omits empties)."""
+    body = {
+        "transaction_type": "buy",
+        "category": "crypto",
+        "asset_name": "Solana",
+        "symbol": "SOL",
+        "quantity": 1.0,
+        "price_per_unit": 100.0,
+        "account_name": "DelTest",
+        "account_type": "cryptoExchange",
+    }
+    r0 = client.post("/api/v1/transactions/smart", json=body)
+    assert r0.status_code == 201, r0.text
+    tx_id = r0.json()["id"]
+
+    d1 = client.get("/api/v1/dashboard")
+    assert d1.status_code == 200
+    names = sorted(
+        h["name"]
+        for cat in d1.json()["groupedHoldings"].values()
+        for h in cat
+    )
+    assert "Solana" in names
+
+    r_del = client.delete(f"/api/v1/transactions/{tx_id}")
+    assert r_del.status_code == 204
+
+    d2 = client.get("/api/v1/dashboard")
+    assert d2.status_code == 200
+    names_after = [
+        h["name"]
+        for cat in d2.json()["groupedHoldings"].values()
+        for h in cat
+    ]
+    assert "Solana" not in names_after
+
+
 def test_smart_transaction_creates_account_asset_and_transaction(client, test_user, db_session):
     body = {
         "transaction_type": "buy",

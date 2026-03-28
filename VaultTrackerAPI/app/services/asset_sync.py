@@ -52,3 +52,8 @@ def update_asset_from_transaction(
 
     asset.current_value = asset.quantity * price_per_unit
     asset.last_updated = datetime.now(timezone.utc)
+
+
+def is_empty_position(asset: Asset) -> bool:
+    """True when quantity and mark-to-market value are both zero (no visible holding)."""
+    return abs(asset.quantity or 0.0) < 1e-9 and abs(asset.current_value or 0.0) < 1e-9

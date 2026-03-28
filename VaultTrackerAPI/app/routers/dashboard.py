@@ -16,6 +16,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.asset import Asset
 from app.schemas.dashboard import DashboardResponse, CategoryTotals, GroupedHolding
+from app.services.asset_sync import is_empty_position
 from app.services.cache_service import cache
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -57,6 +58,8 @@ async def get_dashboard(
     for asset in assets:
         category = asset.category
         if category in category_totals:
+            if is_empty_position(asset):
+                continue
             category_totals[category] += asset.current_value
             grouped_holdings[category].append(
                 GroupedHolding(
