@@ -1,0 +1,21 @@
+---
+description: Plans and todo lists — atomic committable steps and review stops after each item
+alwaysApply: true
+---
+
+# VaultTracker — plans and todo granularity
+
+When you **create or execute a plan** (including `TodoWrite` / task lists in chat):
+
+## Todo items must be committable units
+
+- **One bullet = one logical commit** — Each todo should represent a coherent change that could be committed on its own (tests + implementation for that slice, or one isolated refactor), not a vague mega-task.
+- **Split large work** — Prefer several small todos over one todo that mixes unrelated files or concerns.
+- **Name todos for the diff** — Wording should map clearly to what would appear in a commit message (e.g. “Add smart PUT handler tests” not “Do backend”).
+
+## Stop for review after each todo
+
+- **After completing a single todo item**, **pause**: summarize what changed, then **wait for the user to review** before starting the next item.
+- **Exception** — Only continue through multiple todos without stopping if the user explicitly asks to batch, skip review, or “do the rest.”
+
+This pairs with [vaulttracker-change-communication.mdc](vaulttracker-change-communication.mdc) (what to summarize) and optional checkpoint modes in [vaulttracker-web-pair-programming.mdc](vaulttracker-web-pair-programming.mdc).
