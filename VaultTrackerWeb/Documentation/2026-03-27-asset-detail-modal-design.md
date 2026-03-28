@@ -31,7 +31,7 @@ No API changes required. All data is derived from existing cached queries.
 
 **Each recent transaction row shows:** date, type (buy/sell), quantity, price per unit, account name.
 
-**Category-aware display:** Cash and Real Estate categories hide `Quantity`, `Avg Cost / Unit`, and `Unrealized P&L` (these use `price_per_unit = 1.0` where quantity = dollar amount, making those metrics meaningless). They show only: Current Value, Cost Basis, Last Transaction.
+**Category-aware display:** Cash and Real Estate hide `Quantity`, `Avg Cost / Unit`, and `Unrealized P&L` (these use `price_per_unit = 1.0` where quantity = dollar amount, making those metrics meaningless). **Cash** also hides **Cost Basis** — for cash holdings, current value is treated as the primary figure. **Real estate** still shows **Cost Basis** alongside Current Value and Last Transaction.
 
 ---
 

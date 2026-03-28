@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 15 App Router, TypeScript, Tailwind CSS, TanStack React Query v5, Vitest + React Testing Library, date-fns
 
-**Category-aware metrics:** Cash and Real Estate categories hide `Quantity`, `Avg Cost / Unit`, and `Unrealized P&L` since these categories use `price_per_unit = 1.0` and quantity = dollar amount, making those metrics meaningless. They show: Current Value, Cost Basis, Last Transaction.
+**Category-aware metrics:** Cash and Real Estate hide `Quantity`, `Avg Cost / Unit`, and `Unrealized P&L` since those categories use `price_per_unit = 1.0` and quantity = dollar amount, making those metrics meaningless. **Cash** also hides **Cost Basis** (current value is the meaningful summary). **Real estate** shows **Cost Basis** plus Current Value and Last Transaction.
 
 ---
 
@@ -201,7 +201,7 @@ describe("AssetDetailDialog", () => {
     expect(screen.getAllByText("Coinbase").length).toBeGreaterThan(0);
   });
 
-  it("hides quantity, avg cost, and P&L for cash category", () => {
+  it("hides quantity, avg cost, P&L, and cost basis for cash category", () => {
     render(
       <AssetDetailDialog
         holding={mockCashHolding}
@@ -213,9 +213,8 @@ describe("AssetDetailDialog", () => {
     expect(screen.queryByText("Quantity")).not.toBeInTheDocument();
     expect(screen.queryByText("Avg Cost / Unit")).not.toBeInTheDocument();
     expect(screen.queryByText("Unrealized P&L")).not.toBeInTheDocument();
-    // Should still show Current Value, Cost Basis, Last Transaction
+    expect(screen.queryByText("Cost Basis")).not.toBeInTheDocument();
     expect(screen.getByText("Current Value")).toBeInTheDocument();
-    expect(screen.getByText("Cost Basis")).toBeInTheDocument();
     expect(screen.getByText("Last Transaction")).toBeInTheDocument();
   });
 });
@@ -330,7 +329,9 @@ export function AssetDetailDialog({
           },
         ]
       : []),
-    { label: "Cost Basis", value: formatCurrency(costBasis) },
+    ...(category !== "cash"
+      ? [{ label: "Cost Basis", value: formatCurrency(costBasis) }]
+      : []),
     ...(!isSimple
       ? [
           { label: "Avg Cost / Unit", value: formatCurrency(avgCostPerUnit) },
@@ -579,7 +580,7 @@ Expected: all tests pass.
 cd VaultTrackerWeb && npm run dev
 ```
 
-Open `http://localhost:3000/dashboard`. Click any asset row — the detail modal should open with correct metrics and recent transactions. Close it with the X or by clicking the overlay. Verify that clicking a cash or real estate asset does not show Quantity, Avg Cost / Unit, or Unrealized P&L.
+Open `http://localhost:3000/dashboard`. Click any asset row — the detail modal should open with correct metrics and recent transactions. Close it with the X or by clicking the overlay. Verify that cash and real estate do not show Quantity, Avg Cost / Unit, or Unrealized P&L; **cash** should also omit Cost Basis; **real estate** should still show Cost Basis.
 
 - [ ] **Step 6: Commit**
 
