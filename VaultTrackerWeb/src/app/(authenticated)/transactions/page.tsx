@@ -38,7 +38,9 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
+        <h1 className="font-heading text-xl font-semibold tracking-tight">
+          Transactions
+        </h1>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => downloadTransactionsCsv(rows)}>
             Export CSV

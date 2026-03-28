@@ -35,7 +35,9 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
+        Profile
+      </h1>
 
       <Card>
         <CardHeader>

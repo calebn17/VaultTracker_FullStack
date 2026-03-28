@@ -23,13 +23,13 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed bottom-0 left-0 right-0 z-50 flex border-t md:hidden">
+    <nav className="border-border bg-background/90 supports-[backdrop-filter]:bg-background/85 fixed bottom-0 left-0 right-0 z-50 flex border-t backdrop-blur-md md:hidden">
       {links.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
           className={cn(
-            "text-muted-foreground flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium",
+            "text-muted-foreground flex flex-1 flex-col items-center gap-0.5 py-2 font-mono text-[10px] font-medium tracking-wide",
             pathname === href && "text-primary"
           )}
         >

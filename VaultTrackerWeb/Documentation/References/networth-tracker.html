@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian — Net Worth</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --surface2: #181c23;
+    --border: rgba(255,255,255,0.07);
+    --accent: #c8f564;
+    --accent2: #64c8f5;
+    --accent3: #f5a864;
+    --red: #f56464;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --muted2: #3a3f4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .app { position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,15,0.8);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--accent); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .date-chip {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .btn-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #0a0c0f;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-add:hover { background: #d9ff6e; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,245,100,0.3); }
+  .btn-add:active { transform: translateY(0); }
+
+  .btn-add svg { width: 14px; height: 14px; }
+
+  /* Main layout */
+  main {
+    padding: 32px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Net worth hero */
+  .hero {
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .hero-value {
+    font-family: 'Instrument Serif', serif;
+    font-size: 64px;
+    letter-spacing: -2px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .hero-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .hero-change.negative { color: var(--red); }
+
+  /* Metrics row */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .metric-card:hover { border-color: rgba(255,255,255,0.15); }
+
+  .metric-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .metric-sub.up { color: var(--accent); }
+  .metric-sub.down { color: var(--red); }
+
+  /* Chart + breakdown layout */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .range-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 3px;
+  }
+
+  .range-tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.15s;
+  }
+
+  .range-tab.active {
+    background: var(--surface);
+    color: var(--accent);
+    border: 1px solid rgba(200,245,100,0.2);
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 260px;
+  }
+
+  /* Allocation card */
+  .allocation-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .alloc-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .alloc-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .alloc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .alloc-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .alloc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .alloc-pct {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .alloc-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .alloc-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .alloc-amount {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* Holdings table */
+  .holdings-section {
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .filter-tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: none;
+    transition: all 0.15s;
+  }
+
+  .filter-tab.active {
+    color: var(--text);
+    border-color: var(--border);
+    background: var(--surface);
+  }
+
+  .holdings-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 0.8fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .table-head span:not(:first-child) { text-align: right; }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 0.8fr;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: rgba(255,255,255,0.025); }
+
+  .asset-info { display: flex; align-items: center; gap: 12px; }
+
+  .asset-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .asset-name { font-size: 13px; color: var(--text); margin-bottom: 2px; }
+  .asset-type { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .table-row .col { text-align: right; font-size: 12px; }
+  .col-value { color: var(--text); font-size: 13px; }
+  .col-change.up { color: var(--accent); }
+  .col-change.down { color: var(--red); }
+  .col-pct { color: var(--muted); font-size: 11px; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-stocks { background: rgba(100,200,245,0.12); color: var(--accent2); }
+  .badge-crypto { background: rgba(245,168,100,0.12); color: var(--accent3); }
+  .badge-real-estate { background: rgba(200,245,100,0.12); color: var(--accent); }
+  .badge-cash { background: rgba(200,200,200,0.1); color: var(--muted); }
+  .badge-savings { background: rgba(200,200,200,0.1); color: var(--muted); }
+
+  /* Group headers */
+  .group-header {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 0.8fr;
+    padding: 11px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .group-header:hover { background: rgba(255,255,255,0.04); }
+
+  .group-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .group-color-bar {
+    width: 3px;
+    height: 16px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+
+  .group-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .group-count {
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+
+  .group-header .col { text-align: right; font-size: 12px; color: var(--text); }
+  .group-header .col-muted { color: var(--muted); font-size: 11px; }
+
+  .group-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+
+  .group-chevron.collapsed { transform: rotate(-90deg); }
+
+  .group-rows {
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .group-rows.collapsed { max-height: 0 !important; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 32px;
+    width: 460px;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+
+  .modal-overlay.open .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-full { grid-column: span 2; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .form-input, .form-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: rgba(200,245,100,0.4); }
+  .form-select option { background: var(--surface2); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .btn-cancel {
+    flex: 1;
+    padding: 11px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-cancel:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  .btn-submit {
+    flex: 2;
+    padding: 11px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #0a0c0f;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-submit:hover { background: #d9ff6e; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 12px;
+    z-index: 2000;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 1100px) {
+    .content-grid { grid-template-columns: 1fr; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 700px) {
+    main { padding: 20px; }
+    header { padding: 16px 20px; }
+    .hero-value { font-size: 44px; }
+    .table-head, .table-row { grid-template-columns: 2fr 1fr 1fr; }
+    .table-head span:nth-child(3), .table-head span:nth-child(5),
+    .table-row .col:nth-child(3), .table-row .col:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">meridian<span>.</span></div>
+    <div class="header-right">
+      <span class="date-chip" id="current-date"></span>
+      <button class="btn-add" onclick="openModal()">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+        </svg>
+        Add Transaction
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">Total Net Worth</div>
+      <div class="hero-value" id="total-net-worth">$0</div>
+      <div class="hero-change" id="hero-change">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1,9 5,4 8,7 11,2"/>
+        </svg>
+        <span id="hero-change-text">+$0 (0%)</span>
+        <span style="color: var(--muted); font-size:11px"> this month</span>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-label">Liquid Assets</div>
+        <div class="metric-value" id="liquid-assets">$0</div>
+        <div class="metric-sub" id="liquid-sub">Cash + Savings</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Investments</div>
+        <div class="metric-value" id="investments">$0</div>
+        <div class="metric-sub up" id="invest-sub">Stocks + Crypto</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Real Estate</div>
+        <div class="metric-value" id="real-estate">$0</div>
+        <div class="metric-sub" id="re-sub">Property value</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Monthly Change</div>
+        <div class="metric-value up" id="monthly-change" style="color: var(--accent)">+$0</div>
+        <div class="metric-sub up" id="monthly-pct">vs last month</div>
+      </div>
+    </div>
+
+    <!-- Chart + Allocation -->
+    <div class="content-grid">
+      <div class="chart-card">
+        <div class="card-header">
+          <div class="card-title">Net Worth Over Time</div>
+          <div class="range-tabs">
+            <button class="range-tab" onclick="setRange('1M', this)">1M</button>
+            <button class="range-tab active" onclick="setRange('6M', this)">6M</button>
+            <button class="range-tab" onclick="setRange('1Y', this)">1Y</button>
+            <button class="range-tab" onclick="setRange('ALL', this)">ALL</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="netWorthChart"></canvas>
+        </div>
+      </div>
+
+      <div class="allocation-card">
+        <div class="card-header">
+          <div class="card-title">Allocation</div>
+        </div>
+        <div class="alloc-list" id="alloc-list"></div>
+      </div>
+    </div>
+
+    <!-- Holdings -->
+    <div class="holdings-section">
+      <div class="section-header">
+        <div class="section-title">Holdings</div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterHoldings('all', this)">All</button>
+          <button class="filter-tab" onclick="filterHoldings('stocks', this)">Stocks</button>
+          <button class="filter-tab" onclick="filterHoldings('crypto', this)">Crypto</button>
+          <button class="filter-tab" onclick="filterHoldings('real-estate', this)">Real Estate</button>
+          <button class="filter-tab" onclick="filterHoldings('cash', this)">Cash</button>
+        </div>
+      </div>
+      <div class="holdings-table">
+        <div class="table-head">
+          <span>Asset</span>
+          <span>Value</span>
+          <span>24h Change</span>
+          <span>Allocation</span>
+          <span>Ticker</span>
+        </div>
+        <div id="holdings-body"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title">New Transaction</div>
+    <div class="modal-sub">Add or update an asset in your portfolio</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Asset Name</label>
+        <input class="form-input" id="input-name" placeholder="e.g. AAPL" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="input-category">
+          <option value="stocks">Stocks</option>
+          <option value="crypto">Crypto</option>
+          <option value="cash">Cash</option>
+          <option value="savings">Savings</option>
+          <option value="real-estate">Real Estate</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Current Value ($)</label>
+        <input class="form-input" id="input-value" type="number" placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cost Basis ($)</label>
+        <input class="form-input" id="input-basis" type="number" placeholder="0.00" />
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">Notes (optional)</label>
+        <input class="form-input" id="input-notes" placeholder="e.g. Roth IRA, primary residence..." />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="addTransaction()">Add Asset →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Transaction added successfully</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let holdings = [
+  { id: 1, name: 'Apple Inc.', ticker: 'AAPL', category: 'stocks', value: 84200, basis: 60000, change24h: 2.14 },
+  { id: 2, name: 'S&P 500 ETF', ticker: 'VOO', category: 'stocks', value: 112500, basis: 90000, change24h: 0.87 },
+  { id: 3, name: 'Bitcoin', ticker: 'BTC', category: 'crypto', value: 68400, basis: 45000, change24h: -1.32 },
+  { id: 4, name: 'Ethereum', ticker: 'ETH', category: 'crypto', value: 24800, basis: 18000, change24h: -0.54 },
+  { id: 5, name: 'Primary Residence', ticker: '', category: 'real-estate', value: 480000, basis: 380000, change24h: 0.12 },
+  { id: 6, name: 'High-Yield Savings', ticker: 'HYSA', category: 'savings', value: 32000, basis: 32000, change24h: 0.01 },
+  { id: 7, name: 'Chase Checking', ticker: '', category: 'cash', value: 12400, basis: 12400, change24h: 0 },
+  { id: 8, name: 'NVIDIA Corp', ticker: 'NVDA', category: 'stocks', value: 38600, basis: 12000, change24h: 3.21 },
+];
+
+let activeFilter = 'all';
+let currentRange = '6M';
+let chart = null;
+
+const CATEGORY_COLORS = {
+  stocks: '#64c8f5',
+  crypto: '#f5a864',
+  'real-estate': '#c8f564',
+  savings: '#a89cf5',
+  cash: '#f5f0c8'
+};
+
+const CATEGORY_ICONS = {
+  stocks: '📈', crypto: '🔐', 'real-estate': '🏠', savings: '🏦', cash: '💵'
+};
+
+// ─── Calculations ─────────────────────────────────────────────────────────────
+function getTotalNetWorth() {
+  return holdings.reduce((sum, h) => sum + h.value, 0);
+}
+
+function getCategoryTotal(cat) {
+  return holdings.filter(h => h.category === cat).reduce((sum, h) => sum + h.value, 0);
+}
+
+function fmt(n, decimals = 0) {
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(2) + 'M';
+  if (n >= 1000) return '$' + n.toLocaleString('en-US', { maximumFractionDigits: decimals });
+  return '$' + n.toFixed(decimals);
+}
+
+function fmtChange(val) {
+  return val >= 0 ? '+' + val.toFixed(2) + '%' : val.toFixed(2) + '%';
+}
+
+// ─── Chart Data ───────────────────────────────────────────────────────────────
+function generateHistoricalData(range) {
+  const total = getTotalNetWorth();
+  const points = { '1M': 30, '6M': 26, '1Y': 52, 'ALL': 36 }[range];
+  const volatility = { '1M': 0.008, '6M': 0.018, '1Y': 0.022, 'ALL': 0.03 }[range];
+  const trend = { '1M': 0.003, '6M': 0.008, '1Y': 0.007, 'ALL': 0.012 }[range];
+
+  let val = total * (1 - trend * points * 0.6);
+  const data = [];
+  const labels = [];
+  const now = new Date();
+
+  for (let i = points; i >= 0; i--) {
+    const d = new Date(now);
+    if (range === '1M') d.setDate(d.getDate() - i);
+    else if (range === '6M') d.setDate(d.getDate() - i * 7);
+    else if (range === '1Y') d.setDate(d.getDate() - i * 7);
+    else d.setMonth(d.getMonth() - i);
+
+    val *= (1 + trend + (Math.random() - 0.45) * volatility);
+    data.push(Math.round(val));
+
+    if (range === '1M') labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    else if (range === '6M' || range === '1Y') labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    else labels.push(d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }));
+  }
+
+  data[data.length - 1] = total;
+  return { data, labels };
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderHero() {
+  const total = getTotalNetWorth();
+  const change = total * 0.042;
+  const pct = 4.2;
+
+  document.getElementById('total-net-worth').textContent = fmt(total);
+  document.getElementById('hero-change-text').textContent = `+${fmt(change)} (+${pct}%)`;
+}
+
+function renderMetrics() {
+  const liquid = getCategoryTotal('cash') + getCategoryTotal('savings');
+  const invest = getCategoryTotal('stocks') + getCategoryTotal('crypto');
+  const re = getCategoryTotal('real-estate');
+  const monthly = getTotalNetWorth() * 0.028;
+
+  document.getElementById('liquid-assets').textContent = fmt(liquid);
+  document.getElementById('investments').textContent = fmt(invest);
+  document.getElementById('real-estate').textContent = fmt(re);
+  document.getElementById('monthly-change').textContent = '+' + fmt(monthly);
+  document.getElementById('monthly-pct').textContent = '+2.8% this month';
+}
+
+function renderAllocation() {
+  const total = getTotalNetWorth();
+  const cats = ['stocks', 'real-estate', 'crypto', 'savings', 'cash'];
+  const names = { stocks: 'Stocks', 'real-estate': 'Real Estate', crypto: 'Crypto', savings: 'Savings', cash: 'Cash' };
+
+  const list = document.getElementById('alloc-list');
+  list.innerHTML = cats.map(cat => {
+    const val = getCategoryTotal(cat);
+    const pct = total > 0 ? (val / total * 100) : 0;
+    const color = CATEGORY_COLORS[cat];
+    return `
+      <div class="alloc-item">
+        <div class="alloc-top">
+          <div class="alloc-name">
+            <div class="alloc-dot" style="background:${color}"></div>
+            ${names[cat]}
+          </div>
+          <div class="alloc-pct">${pct.toFixed(1)}%</div>
+        </div>
+        <div class="alloc-bar-bg">
+          <div class="alloc-bar-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+        <div style="text-align:right; font-size:11px; color:var(--muted); margin-top:2px">${fmt(val)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+const collapsedGroups = new Set();
+
+function toggleGroup(cat) {
+  if (collapsedGroups.has(cat)) collapsedGroups.delete(cat);
+  else collapsedGroups.add(cat);
+  renderHoldings();
+}
+
+function renderHoldings() {
+  const total = getTotalNetWorth();
+  const CAT_ORDER = ['stocks', 'crypto', 'real-estate', 'savings', 'cash'];
+  const CAT_NAMES = { stocks: 'Stocks', crypto: 'Crypto', 'real-estate': 'Real Estate', savings: 'Savings', cash: 'Cash' };
+
+  const visibleCats = activeFilter === 'all' ? CAT_ORDER : [activeFilter];
+
+  const body = document.getElementById('holdings-body');
+  body.innerHTML = visibleCats.map(cat => {
+    const group = holdings.filter(h => h.category === cat);
+    if (!group.length) return '';
+
+    const groupTotal = group.reduce((s, h) => s + h.value, 0);
+    const groupPct = (groupTotal / total * 100).toFixed(1);
+    const groupChange = group.reduce((s, h) => s + h.value * h.change24h / 100, 0);
+    const groupChangePct = (groupChange / (groupTotal - groupChange) * 100).toFixed(2);
+    const changeClass = groupChange >= 0 ? 'up' : 'down';
+    const color = CATEGORY_COLORS[cat];
+    const collapsed = collapsedGroups.has(cat);
+    const rowCount = group.length;
+
+    // Estimate height for animation (each row ~64px)
+    const maxH = rowCount * 68;
+
+    const rows = [...group].sort((a, b) => b.value - a.value).map(h => {
+      const pct = (h.value / total * 100).toFixed(1);
+      const hChangeClass = h.change24h >= 0 ? 'up' : 'down';
+      const hChangeStr = fmtChange(h.change24h);
+      const hChange$ = h.value * h.change24h / 100;
+
+      return `
+        <div class="table-row">
+          <div class="asset-info">
+            <div class="asset-icon" style="background:${color}18; color:${color}; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.02em">${(h.ticker || h.name).slice(0,3).toUpperCase()}</div>
+            <div>
+              <div class="asset-name">${h.name}</div>
+              <div class="asset-type">${h.ticker || cat}</div>
+            </div>
+          </div>
+          <div class="col col-value">${fmt(h.value)}</div>
+          <div class="col col-change ${hChangeClass}">${hChangeStr}<br><span class="col-pct">${hChange$ >= 0 ? '+' : ''}${fmt(hChange$)}</span></div>
+          <div class="col col-pct">${pct}%</div>
+          <div class="col col-pct">${h.ticker || '—'}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="group-header" onclick="toggleGroup('${cat}')">
+        <div class="group-header-left">
+          <div class="group-color-bar" style="background:${color}"></div>
+          <span class="group-name">${CAT_NAMES[cat]}</span>
+          <span class="group-count">${rowCount} asset${rowCount !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="col" style="color:${color}">${fmt(groupTotal)}</div>
+        <div class="col col-change ${changeClass}" style="font-size:11px">
+          ${groupChange >= 0 ? '+' : ''}${fmt(groupChange)}<br>
+          <span class="col-pct">${groupChange >= 0 ? '+' : ''}${groupChangePct}%</span>
+        </div>
+        <div class="col col-muted">${groupPct}%</div>
+        <div class="group-chevron ${collapsed ? 'collapsed' : ''}">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,4 6,8 10,4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="group-rows ${collapsed ? 'collapsed' : ''}" style="max-height:${collapsed ? 0 : maxH}px">
+        ${rows}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderChart() {
+  const { data, labels } = generateHistoricalData(currentRange);
+  const ctx = document.getElementById('netWorthChart').getContext('2d');
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, 'rgba(200,245,100,0.18)');
+  gradient.addColorStop(1, 'rgba(200,245,100,0.0)');
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#c8f564',
+        borderWidth: 2,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#c8f564',
+        pointHoverBorderColor: '#0a0c0f',
+        pointHoverBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#181c23',
+          borderColor: 'rgba(255,255,255,0.08)',
+          borderWidth: 1,
+          titleColor: '#5a6070',
+          bodyColor: '#e8eaf0',
+          titleFont: { family: 'DM Mono', size: 10 },
+          bodyFont: { family: 'DM Mono', size: 13 },
+          padding: 12,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => ' ' + fmt(item.raw)
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: {
+            color: '#3a3f4a',
+            font: { family: 'DM Mono', size: 10 },
+            maxTicksLimit: 7,
+            maxRotation: 0,
+          }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          border: { display: false, dash: [4, 4] },
+          ticks: {
+            color: '#3a3f4a',
+            font: { family: 'DM Mono', size: 10 },
+            callback: v => v >= 1000000 ? '$' + (v/1000000).toFixed(1) + 'M' : '$' + (v/1000).toFixed(0) + 'k'
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderAll() {
+  renderHero();
+  renderMetrics();
+  renderAllocation();
+  renderHoldings();
+  renderChart();
+}
+
+// ─── Interactions ─────────────────────────────────────────────────────────────
+function setRange(range, btn) {
+  currentRange = range;
+  document.querySelectorAll('.range-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderChart();
+}
+
+function filterHoldings(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderHoldings();
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-value').value = '';
+  document.getElementById('input-basis').value = '';
+  document.getElementById('input-notes').value = '';
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function addTransaction() {
+  const name = document.getElementById('input-name').value.trim();
+  const category = document.getElementById('input-category').value;
+  const value = parseFloat(document.getElementById('input-value').value);
+  const basis = parseFloat(document.getElementById('input-basis').value) || value;
+
+  if (!name || isNaN(value) || value <= 0) {
+    document.getElementById('input-name').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('input-name').style.borderColor = '', 1500);
+    return;
+  }
+
+  const iconMap = { stocks: '📈', crypto: '🔐', 'real-estate': '🏠', savings: '🏦', cash: '💵' };
+  holdings.push({
+    id: Date.now(),
+    name,
+    ticker: name.toUpperCase(),
+    category,
+    value,
+    basis,
+    change24h: (Math.random() - 0.4) * 3,
+  });
+
+  closeModal();
+  renderAll();
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+  weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+});
+
+renderAll();
+</script>
+</body>
+</html>

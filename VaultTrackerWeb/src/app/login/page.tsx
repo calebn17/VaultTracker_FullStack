@@ -25,10 +25,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-1 items-center justify-center p-6">
-      <Card className="w-full max-w-md">
+      <Card className="bg-card w-full max-w-md rounded-2xl border shadow-2xl">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-serif text-2xl tracking-tight">
+            Sign in
+          </CardTitle>
+          <CardDescription className="font-mono text-xs">
             Use the same Google account as the iOS app to see your portfolio.
           </CardDescription>
         </CardHeader>

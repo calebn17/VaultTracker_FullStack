@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { Category, HoldingItem } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { MERIDIAN_CATEGORY_HEX } from "@/components/dashboard/category-summary-list";
 
 const ORDER: Category[] = [
   "crypto",
@@ -22,14 +23,40 @@ const LABELS: Record<Category, string> = {
   retirement: "Retirement",
 };
 
+const tableGrid =
+  "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr] gap-x-3 items-center";
+
+function AssetIcon({
+  label,
+  color,
+}: {
+  label: string;
+  color: string;
+}) {
+  const text = label.slice(0, 3).toUpperCase();
+  return (
+    <div
+      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold tracking-wide"
+      style={{
+        background: `${color}18`,
+        color,
+        fontFamily: "var(--font-meridian-syne), system-ui, sans-serif",
+      }}
+    >
+      {text}
+    </div>
+  );
+}
+
 export function HoldingsGrid({
   grouped,
+  totalNetWorth,
   loading,
   categoryFilter = "all",
 }: {
   grouped: Record<string, HoldingItem[]> | undefined;
+  totalNetWorth: number;
   loading?: boolean;
-  /** When not `"all"`, only that category section is shown. */
   categoryFilter?: Category | "all";
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
@@ -39,74 +66,161 @@ export function HoldingsGrid({
   const categoriesToShow =
     categoryFilter === "all" ? ORDER : [categoryFilter];
 
+  const hasAny = categoriesToShow.some(
+    (cat) => (grouped?.[cat] ?? []).length > 0
+  );
+
+  if (!loading && !hasAny) {
+    return (
+      <div className="bg-card text-muted-foreground rounded-2xl border px-5 py-12 text-center text-sm">
+        No holdings yet. Add a transaction to get started.
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="space-y-2">
+      <div className="bg-card overflow-hidden rounded-2xl border">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-muted h-12 animate-pulse rounded-lg" />
+          <div key={i} className="bg-muted/40 h-14 animate-pulse border-b last:border-0" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="bg-card overflow-hidden rounded-2xl border">
+      <div
+        className={cn(
+          tableGrid,
+          "text-muted-foreground border-border border-b px-5 py-3 text-[10px] tracking-[0.1em] uppercase"
+        )}
+      >
+        <span>Asset</span>
+        <span className="text-right">Value</span>
+        <span className="hidden text-right md:block">24h change</span>
+        <span className="text-right">Allocation</span>
+        <span className="hidden text-right md:block">Ticker</span>
+      </div>
+
       {categoriesToShow.map((cat) => {
         const items = grouped?.[cat] ?? [];
         const total = items.reduce((s, h) => s + h.current_value, 0);
         const isOpen = open[cat] ?? true;
+        const color = MERIDIAN_CATEGORY_HEX[cat];
+        const groupPct =
+          totalNetWorth > 0 ? ((total / totalNetWorth) * 100).toFixed(1) : "0.0";
+        const rowCount = items.length;
+
+        if (items.length === 0 && categoryFilter !== "all") {
+          return (
+            <p
+              key={cat}
+              className="text-muted-foreground border-border border-b px-5 py-6 text-sm last:border-0"
+            >
+              No holdings in this category.
+            </p>
+          );
+        }
+
+        if (items.length === 0) return null;
+
         return (
-          <div
-            key={cat}
-            className="bg-card rounded-lg border"
-          >
-            <Button
-              variant="ghost"
-              className="h-auto w-full justify-between px-4 py-3 font-medium"
+          <div key={cat}>
+            <button
+              type="button"
+              className={cn(
+                tableGrid,
+                "bg-secondary/80 border-border hover:bg-secondary w-full cursor-pointer border-b px-5 py-3 text-left transition-colors"
+              )}
               onClick={() =>
                 setOpen((o) => ({ ...o, [cat]: !isOpen }))
               }
             >
-              <span className="flex items-center gap-2">
-                {isOpen ? (
-                  <ChevronDown className="size-4" />
-                ) : (
-                  <ChevronRight className="size-4" />
-                )}
-                {LABELS[cat]}
-                <span className="text-muted-foreground text-sm font-normal">
-                  ({items.length} holding{items.length === 1 ? "" : "s"})
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className="h-4 w-0.5 shrink-0 rounded-full"
+                  style={{ background: color }}
+                  aria-hidden
+                />
+                <span
+                  className="font-heading text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase"
+                >
+                  {LABELS[cat]}
                 </span>
+                <span className="text-muted-foreground text-[10px]">
+                  {rowCount} holding{rowCount === 1 ? "" : "s"}
+                </span>
+              </div>
+              <span
+                className="text-right text-xs font-medium tabular-nums"
+                style={{ color }}
+              >
+                {formatCurrency(total)}
               </span>
-              <span className="tabular-nums">{formatCurrency(total)}</span>
-            </Button>
-            {isOpen && items.length > 0 ? (
-              <ul className="border-t px-4 py-2">
-                {items.map((h) => (
-                  <li
-                    key={h.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 py-2 text-sm"
-                  >
-                    <span className="min-w-0 truncate">
-                      {h.name}
-                      {h.symbol ? (
-                        <span className="text-muted-foreground ml-1">
-                          ({h.symbol})
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap text-right font-medium tabular-nums">
-                      {formatCurrency(h.current_value)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            {isOpen && items.length === 0 ? (
-              <p className="text-muted-foreground border-t px-4 py-3 text-sm">
-                No holdings in this category.
-              </p>
-            ) : null}
+              <span className="text-muted-foreground hidden text-right text-[11px] md:block">
+                —
+              </span>
+              <span className="text-muted-foreground text-right text-[11px]">
+                {groupPct}%
+              </span>
+              <span
+                className="text-muted-foreground hidden justify-end md:flex"
+                aria-hidden
+              >
+                <ChevronDown
+                  className={cn(
+                    "size-3 transition-transform",
+                    !isOpen && "-rotate-90"
+                  )}
+                />
+              </span>
+            </button>
+
+            {isOpen
+              ? [...items]
+                  .sort((a, b) => b.current_value - a.current_value)
+                  .map((h) => {
+                    const pct =
+                      totalNetWorth > 0
+                        ? ((h.current_value / totalNetWorth) * 100).toFixed(1)
+                        : "0.0";
+                    const iconLabel = h.symbol?.trim() || h.name;
+                    return (
+                      <div
+                        key={h.id}
+                        className={cn(
+                          tableGrid,
+                          "border-border hover:bg-foreground/[0.025] border-b px-5 py-3.5 text-sm last:border-0"
+                        )}
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <AssetIcon label={iconLabel} color={color} />
+                          <div className="min-w-0">
+                            <div className="truncate text-[13px] text-foreground">
+                              {h.name}
+                            </div>
+                            <div className="text-muted-foreground text-[10px] tracking-[0.06em] uppercase">
+                              {h.symbol ?? LABELS[cat]}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-foreground text-right text-[13px] tabular-nums">
+                          {formatCurrency(h.current_value)}
+                        </div>
+                        <div className="text-muted-foreground hidden text-right text-xs md:block">
+                          —
+                        </div>
+                        <div className="text-muted-foreground text-right text-[11px] tabular-nums">
+                          {pct}%
+                        </div>
+                        <div className="text-muted-foreground hidden text-right text-[11px] md:block">
+                          {h.symbol ?? "—"}
+                        </div>
+                      </div>
+                    );
+                  })
+              : null}
           </div>
         );
       })}

@@ -1,36 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { CategoryBar } from "@/components/dashboard/category-bar";
 import { CategorySummaryList } from "@/components/dashboard/category-summary-list";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { HoldingsGrid } from "@/components/dashboard/holdings-grid";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form";
 import { useDashboard } from "@/lib/queries/use-dashboard";
 import { useNetWorthHistory } from "@/lib/queries/use-networth";
-import { useAssets } from "@/lib/queries/use-assets";
 import { useRefreshPrices } from "@/lib/queries/use-prices";
 import { useCreateTransaction } from "@/lib/queries/use-transactions";
 import { formatCurrency } from "@/lib/format";
+import { computeApproxMonthChange } from "@/lib/networth-change";
 import type { Category, NetWorthPeriod } from "@/types/api";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const CATEGORY_CHIPS: { key: Category | "all"; label: string }[] = [
   { key: "all", label: "All" },
@@ -41,72 +27,124 @@ const CATEGORY_CHIPS: { key: Category | "all"; label: string }[] = [
   { key: "retirement", label: "Retirement" },
 ];
 
+type ChartRange = "1M" | "6M" | "1Y" | "ALL";
+
+const RANGE_TO_PERIOD: Record<ChartRange, NetWorthPeriod> = {
+  "1M": "daily",
+  "6M": "weekly",
+  "1Y": "monthly",
+  ALL: "all",
+};
+
 export default function DashboardPage() {
-  const [period, setPeriod] = useState<NetWorthPeriod>("daily");
+  const [chartRange, setChartRange] = useState<ChartRange>("6M");
   const [assetCategory, setAssetCategory] = useState<Category | "all">("all");
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
 
   const dashboard = useDashboard();
   const createTx = useCreateTransaction();
-  const history = useNetWorthHistory(period);
-  const assetsFiltered = useAssets(
-    assetCategory === "all" ? undefined : assetCategory
-  );
+  const historyForChart = useNetWorthHistory(RANGE_TO_PERIOD[chartRange]);
+  const historyDaily = useNetWorthHistory("daily");
   const refreshPrices = useRefreshPrices();
 
   const d = dashboard.data;
   const loading = dashboard.isLoading;
 
+  const chartSnapshots = useMemo(() => {
+    const raw = historyForChart.data?.snapshots ?? [];
+    if (chartRange !== "1M") return raw;
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return raw.filter((s) => new Date(s.date).getTime() >= cutoff);
+  }, [historyForChart.data?.snapshots, chartRange]);
+
+  const monthChange = useMemo(
+    () => computeApproxMonthChange(historyDaily.data?.snapshots ?? []),
+    [historyDaily.data?.snapshots]
+  );
+
   const groupedForFilter =
     assetCategory === "all"
       ? d?.groupedHoldings
-      : assetsFiltered.data?.reduce(
-          (acc, a) => {
-            const list = acc[a.category] ?? [];
-            list.push({
-              id: a.id,
-              name: a.name,
-              symbol: a.symbol,
-              quantity: a.quantity,
-              current_value: a.current_value,
-            });
-            acc[a.category] = list;
-            return acc;
-          },
-          {} as Record<string, import("@/types/api").HoldingItem[]>
-        );
+      : d?.groupedHoldings
+        ? { [assetCategory]: d.groupedHoldings[assetCategory] ?? [] }
+        : undefined;
+
+  const totals = d?.categoryTotals;
+  const liquid = totals ? totals.cash : 0;
+  const investments = totals
+    ? totals.crypto + totals.stocks + totals.retirement
+    : 0;
+  const realEstate = totals?.realEstate ?? 0;
+
+  const heroChange =
+    monthChange != null
+      ? {
+          abs: monthChange.absolute,
+          pct: monthChange.percent,
+        }
+      : null;
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <div className="space-y-6">
           <StatCard
             variant="hero"
             title="Total net worth"
             value={formatCurrency(d?.totalNetWorth ?? 0)}
             loading={loading}
           />
+          {heroChange ? (
+            <div
+              className={cn(
+                "inline-flex items-center gap-1.5 font-mono text-[13px]",
+                heroChange.abs >= 0 ? "text-primary" : "text-destructive"
+              )}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden
+              >
+                <polyline
+                  points="1,9 5,4 8,7 11,2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>
+                {heroChange.abs >= 0 ? "+" : ""}
+                {formatCurrency(heroChange.abs)} ({heroChange.pct >= 0 ? "+" : ""}
+                {heroChange.pct.toFixed(1)}%)
+              </span>
+              <span className="text-muted-foreground text-[11px] font-normal">
+                last ~30 days
+              </span>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-[13px]">
+              Add history to see trailing change.
+            </p>
+          )}
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:pt-1">
-          <Select
-            value={period}
-            onValueChange={(v) => setPeriod(v as NetWorthPeriod)}
+        <div className="flex flex-wrap items-center gap-2 lg:pt-2">
+          <Button
+            type="button"
+            className="rounded-md px-[18px] py-2.5 font-mono text-xs font-medium tracking-wide hover:shadow-[0_4px_20px_rgba(200,245,100,0.3)]"
+            onClick={() => setAddTransactionOpen(true)}
           >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="all">All</SelectItem>
-            </SelectContent>
-          </Select>
+            <Plus className="mr-2 size-3.5" strokeWidth={2} />
+            Add transaction
+          </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="font-mono text-xs"
             disabled={refreshPrices.isPending}
             onClick={() =>
               refreshPrices.mutate(undefined, {
@@ -142,75 +180,162 @@ export default function DashboardPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
-        <Card className="lg:col-span-8">
-          <CardHeader className="border-b border-border/60">
-            <CardTitle>Net worth history</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <NetWorthChart
-              data={history.data?.snapshots ?? []}
-              loading={history.isLoading}
-            />
-            {history.isError ? (
-              <p className="text-destructive text-sm">Could not load history.</p>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col gap-4 lg:col-span-4">
-          <Card size="sm">
-            <CardHeader className="border-b border-border/60">
-              <CardTitle>By category</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-4">
-              <CategorySummaryList
-                totals={d?.categoryTotals}
-                loading={loading}
-              />
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-xs font-medium">
-                  Allocation
-                </p>
-                <CategoryBar
-                  totals={d?.categoryTotals}
-                  total={d?.totalNetWorth ?? 0}
-                  loading={loading}
-                  showLegend={false}
-                />
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
+          <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
+            Liquid assets
+          </p>
+          {loading ? (
+            <div className="bg-muted h-7 w-28 animate-pulse rounded" />
+          ) : (
+            <p className="font-heading text-[22px] font-semibold tabular-nums">
+              {formatCurrency(liquid)}
+            </p>
+          )}
+          <p className="text-muted-foreground mt-1.5 text-[11px]">Cash</p>
+        </div>
+        <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
+          <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
+            Investments
+          </p>
+          {loading ? (
+            <div className="bg-muted h-7 w-28 animate-pulse rounded" />
+          ) : (
+            <p className="font-heading text-[22px] font-semibold tabular-nums">
+              {formatCurrency(investments)}
+            </p>
+          )}
+          <p className="text-primary mt-1.5 text-[11px]">
+            Stocks + crypto + retirement
+          </p>
+        </div>
+        <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
+          <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
+            Real estate
+          </p>
+          {loading ? (
+            <div className="bg-muted h-7 w-28 animate-pulse rounded" />
+          ) : (
+            <p className="font-heading text-[22px] font-semibold tabular-nums">
+              {formatCurrency(realEstate)}
+            </p>
+          )}
+          <p className="text-muted-foreground mt-1.5 text-[11px]">
+            Property value
+          </p>
+        </div>
+        <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
+          <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
+            ~30 day change
+          </p>
+          {loading ? (
+            <div className="bg-muted h-7 w-28 animate-pulse rounded" />
+          ) : monthChange ? (
+            <p
+              className={cn(
+                "font-heading text-[22px] font-semibold tabular-nums",
+                monthChange.absolute >= 0 ? "text-primary" : "text-destructive"
+              )}
+            >
+              {monthChange.absolute >= 0 ? "+" : ""}
+              {formatCurrency(monthChange.absolute)}
+            </p>
+          ) : (
+            <p className="text-muted-foreground font-heading text-[22px] font-semibold">
+              —
+            </p>
+          )}
+          <p
+            className={cn(
+              "mt-1.5 text-[11px]",
+              monthChange && monthChange.percent >= 0
+                ? "text-primary"
+                : monthChange
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+            )}
+          >
+            {monthChange
+              ? `${monthChange.percent >= 0 ? "+" : ""}${monthChange.percent.toFixed(1)}% vs ~30d ago`
+              : "Need more history"}
+          </p>
         </div>
       </div>
 
-      <section className="space-y-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-medium">Holdings</h2>
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
+        <div className="bg-card rounded-2xl border p-7">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-heading text-sm font-semibold">
+              Net worth over time
+            </h2>
+            <div className="bg-secondary flex gap-1 rounded-md p-0.5">
+              {(["1M", "6M", "1Y", "ALL"] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={cn(
+                    "rounded px-2.5 py-1 font-mono text-[11px] transition-colors",
+                    chartRange === r
+                      ? "border-primary/20 bg-card text-primary border"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => setChartRange(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="h-[260px]">
+            <NetWorthChart
+              data={chartSnapshots}
+              loading={historyForChart.isLoading}
+            />
+          </div>
+          {historyForChart.isError ? (
+            <p className="text-destructive mt-2 text-sm">
+              Could not load history.
+            </p>
+          ) : null}
+        </div>
+
+        <div className="bg-card rounded-2xl border p-7">
+          <div className="mb-6">
+            <h2 className="font-heading text-sm font-semibold">Allocation</h2>
+          </div>
+          <CategorySummaryList
+            totals={d?.categoryTotals}
+            total={d?.totalNetWorth ?? 0}
+            loading={loading}
+          />
+        </div>
+      </div>
+
+      <section className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-heading text-sm font-semibold">Holdings</h2>
+          <div className="flex flex-wrap gap-1">
             {CATEGORY_CHIPS.map(({ key, label }) => (
-              <Button
+              <button
                 key={key}
                 type="button"
-                size="sm"
-                variant={assetCategory === key ? "default" : "outline"}
+                className={cn(
+                  "rounded-md border border-transparent px-3 py-1.5 font-mono text-[11px] transition-colors",
+                  assetCategory === key
+                    ? "border-border bg-card text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
                 onClick={() => setAssetCategory(key)}
               >
                 {label}
-              </Button>
+              </button>
             ))}
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setAddTransactionOpen(true)}
-            >
-              Add transaction
-            </Button>
           </div>
         </div>
         <HoldingsGrid
           grouped={groupedForFilter}
-          loading={loading || assetsFiltered.isLoading}
+          totalNetWorth={d?.totalNetWorth ?? 0}
+          loading={loading}
           categoryFilter={assetCategory}
         />
       </section>

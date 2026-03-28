@@ -9,7 +9,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* Meridian reference: Instrument Serif (display), Syne (headings), DM Mono (body in .dark) */
+  --font-serif: var(--font-meridian-serif), ui-serif, Georgia, serif;
+  --font-heading: var(--font-meridian-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-meridian: var(--font-meridian-mono), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -84,39 +87,39 @@
   --sidebar-ring: oklch(0.55 0.12 154);
 }
 
-/* Dark: sampled from Documentation/References/color-reference-2026-03-26.png */
+/* Dark: Meridian net-worth reference (Documentation/References/networth-tracker.html) */
 .dark {
-  --background: oklch(0.182 0 0);
-  --foreground: oklch(0.93 0 0);
-  --card: oklch(0.245 0.039 262.6);
-  --card-foreground: oklch(0.93 0 0);
-  --popover: oklch(0.245 0.039 262.6);
-  --popover-foreground: oklch(0.93 0 0);
-  --primary: oklch(0.626 0.116 153.9);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.3 0.025 262);
-  --secondary-foreground: oklch(0.93 0 0);
-  --muted: oklch(0.28 0.02 262);
-  --muted-foreground: oklch(0.58 0 0);
-  --accent: oklch(0.32 0.03 262);
-  --accent-foreground: oklch(0.93 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.626 0.116 153.9);
-  --chart-1: oklch(0.626 0.116 153.9);
-  --chart-2: oklch(0.65 0.15 260);
-  --chart-3: oklch(0.74 0.115 79);
-  --chart-4: oklch(0.62 0.11 49);
-  --chart-5: oklch(0.58 0.06 270);
-  --sidebar: oklch(0.16 0 0);
-  --sidebar-foreground: oklch(0.93 0 0);
-  --sidebar-primary: oklch(0.626 0.116 153.9);
-  --sidebar-primary-foreground: oklch(0.12 0 0);
-  --sidebar-accent: oklch(0.26 0.03 262);
-  --sidebar-accent-foreground: oklch(0.93 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.626 0.116 153.9);
+  --background: #0a0c0f;
+  --foreground: #e8eaf0;
+  --card: #111318;
+  --card-foreground: #e8eaf0;
+  --popover: #111318;
+  --popover-foreground: #e8eaf0;
+  --primary: #c8f564;
+  --primary-foreground: #0a0c0f;
+  --secondary: #181c23;
+  --secondary-foreground: #e8eaf0;
+  --muted: #181c23;
+  --muted-foreground: #5a6070;
+  --accent: #181c23;
+  --accent-foreground: #c8f564;
+  --destructive: #f56464;
+  --border: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #c8f564;
+  --chart-1: #c8f564;
+  --chart-2: #64c8f5;
+  --chart-3: #f5a864;
+  --chart-4: #a89cf5;
+  --chart-5: #e8e0c8;
+  --sidebar: #0a0c0f;
+  --sidebar-foreground: #e8eaf0;
+  --sidebar-primary: #c8f564;
+  --sidebar-primary-foreground: #0a0c0f;
+  --sidebar-accent: #181c23;
+  --sidebar-accent-foreground: #e8eaf0;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: #c8f564;
 }
 
 @layer base {
@@ -128,5 +131,18 @@
   }
   html {
     @apply font-sans;
+  }
+  .dark body {
+    font-family: var(--font-meridian-mono), ui-monospace, monospace;
+  }
+  /* Subtle film grain — matches networth-tracker reference */
+  .dark body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
   }
 }

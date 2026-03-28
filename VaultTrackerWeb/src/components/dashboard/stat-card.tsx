@@ -19,12 +19,14 @@ export function StatCard({
 }) {
   if (variant === "hero") {
     return (
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-sm font-medium">{title}</p>
+      <div>
+        <p className="text-muted-foreground mb-2 text-[11px] uppercase tracking-[0.12em]">
+          {title}
+        </p>
         {loading ? (
-          <Skeleton className="h-12 w-56 max-w-full md:h-14" />
+          <Skeleton className="h-14 w-64 max-w-full md:h-[72px]" />
         ) : (
-          <p className="text-4xl font-semibold tracking-tight tabular-nums md:text-5xl">
+          <p className="font-serif text-5xl leading-none tracking-tighter text-foreground tabular-nums md:text-[64px]">
             {value}
           </p>
         )}

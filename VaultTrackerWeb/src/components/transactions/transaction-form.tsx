@@ -7,12 +7,11 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -30,6 +29,21 @@ import {
   isCashLike,
   toFormDefaults,
 } from "@/lib/transaction-schema";
+import { cn } from "@/lib/utils";
+
+const formLabel =
+  "text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
+
+const controlClass =
+  "min-h-10 rounded-lg border-border bg-secondary px-3.5 py-2.5 text-[13px] shadow-none focus-visible:border-primary/40 focus-visible:ring-3 focus-visible:ring-primary/30 dark:bg-secondary dark:focus-visible:ring-primary/40";
+
+const selectTriggerClass =
+  "h-auto min-h-10 w-full justify-between rounded-lg border-border bg-secondary px-3.5 py-2.5 text-[13px] shadow-none focus-visible:border-primary/40 focus-visible:ring-3 focus-visible:ring-primary/30 dark:bg-secondary data-[size=default]:h-auto dark:focus-visible:ring-primary/40";
+
+const TRANSACTION_TYPE_LABELS: Record<"buy" | "sell", string> = {
+  buy: "Buy",
+  sell: "Sell",
+};
 
 export function TransactionFormDialog({
   open,
@@ -111,21 +125,37 @@ export function TransactionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent
+        overlayClassName="bg-black/70 supports-backdrop-filter:backdrop-blur-md"
+        closeButtonClassName="top-6 right-6"
+        className={cn(
+          "max-h-[90vh] gap-0 overflow-y-auto rounded-[20px] border-white/12 p-8 pt-10 shadow-[0_40px_80px_rgba(0,0,0,0.6)] ring-white/12 sm:max-w-[460px]",
+          "data-open:duration-200 data-open:zoom-in-95 data-closed:duration-150"
+        )}
+      >
+        <DialogHeader className="gap-1.5 space-y-0 text-left">
+          <DialogTitle className="font-serif text-[26px] font-normal leading-tight tracking-tight">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-[11px] leading-snug text-muted-foreground">
+            {initial
+              ? "Update this transaction and linked account details."
+              : "Add a buy or sell and link it to an account."}
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-2">
-            <Label>Type</Label>
+        <form onSubmit={handleSubmit} className="mt-7 grid grid-cols-2 gap-x-4 gap-y-4">
+          <div className="flex flex-col gap-1.5">
+            <span className={formLabel}>Type</span>
             <Select
               value={form.watch("transaction_type")}
               onValueChange={(v) =>
                 form.setValue("transaction_type", v as "buy" | "sell")
               }
             >
-              <SelectTrigger>
-                <SelectValue />
+              <SelectTrigger className={selectTriggerClass}>
+                <SelectValue>
+                  {TRANSACTION_TYPE_LABELS[form.watch("transaction_type")]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="buy">Buy</SelectItem>
@@ -134,15 +164,15 @@ export function TransactionFormDialog({
             </Select>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Category</Label>
+          <div className="flex flex-col gap-1.5">
+            <span className={formLabel}>Category</span>
             <Select
               value={form.watch("category")}
               onValueChange={(v) =>
                 form.setValue("category", v as Category)
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className={selectTriggerClass}>
                 <SelectValue placeholder="Category">
                   {CATEGORY_LABELS[form.watch("category")]}
                 </SelectValue>
@@ -157,9 +187,9 @@ export function TransactionFormDialog({
             </Select>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Asset name</Label>
-            <Input {...form.register("asset_name")} />
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <span className={formLabel}>Asset name</span>
+            <Input className={controlClass} {...form.register("asset_name")} />
             {form.formState.errors.asset_name ? (
               <p className="text-destructive text-xs">
                 {form.formState.errors.asset_name.message}
@@ -168,9 +198,9 @@ export function TransactionFormDialog({
           </div>
 
           {needsSymbol(category) ? (
-            <div className="grid gap-2">
-              <Label>Symbol</Label>
-              <Input {...form.register("symbol")} />
+            <div className="col-span-2 flex flex-col gap-1.5">
+              <span className={formLabel}>Symbol</span>
+              <Input className={controlClass} {...form.register("symbol")} />
               {form.formState.errors.symbol ? (
                 <p className="text-destructive text-xs">
                   {form.formState.errors.symbol.message}
@@ -179,11 +209,19 @@ export function TransactionFormDialog({
             </div>
           ) : null}
 
-          <div className="grid gap-2">
-            <Label>
+          <div
+            className={cn(
+              "flex flex-col gap-1.5",
+              isCashLike(category)
+                ? "col-span-2"
+                : "col-span-2 sm:col-span-1"
+            )}
+          >
+            <span className={formLabel}>
               {isCashLike(category) ? "Amount ($)" : "Quantity"}
-            </Label>
+            </span>
             <Input
+              className={controlClass}
               type="number"
               step="any"
               {...form.register("quantity", { valueAsNumber: true })}
@@ -196,9 +234,10 @@ export function TransactionFormDialog({
           </div>
 
           {!isCashLike(category) ? (
-            <div className="grid gap-2">
-              <Label>Price per unit</Label>
+            <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
+              <span className={formLabel}>Price per unit</span>
               <Input
+                className={controlClass}
                 type="number"
                 step="any"
                 {...form.register("price_per_unit", { valueAsNumber: true })}
@@ -211,13 +250,13 @@ export function TransactionFormDialog({
             </div>
           ) : null}
 
-          <div className="grid gap-2">
-            <Label>Account name</Label>
-            <Input {...form.register("account_name")} />
+          <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
+            <span className={formLabel}>Account name</span>
+            <Input className={controlClass} {...form.register("account_name")} />
           </div>
 
-          <div className="grid gap-2">
-            <Label>Account type</Label>
+          <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
+            <span className={formLabel}>Account type</span>
             <Select
               value={form.watch("account_type")}
               onValueChange={(v) =>
@@ -227,7 +266,7 @@ export function TransactionFormDialog({
                 )
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className={selectTriggerClass}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -240,23 +279,32 @@ export function TransactionFormDialog({
             </Select>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Date</Label>
-            <Input type="date" {...form.register("date")} />
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <span className={formLabel}>Date</span>
+            <Input
+              className={controlClass}
+              type="date"
+              {...form.register("date")}
+            />
           </div>
 
-          <DialogFooter>
+          <div className="col-span-2 mt-2 flex gap-2.5">
             <Button
               type="button"
               variant="outline"
+              className="flex-1 border-border bg-transparent py-2.5 text-xs text-muted-foreground hover:border-white/20 hover:bg-transparent hover:text-foreground dark:hover:bg-transparent"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={pending}>
+            <Button
+              type="submit"
+              disabled={pending}
+              className="flex-[2] bg-primary py-2.5 text-xs font-medium text-primary-foreground hover:bg-[#d9ff6e] dark:hover:bg-[#d9ff6e]"
+            >
               {pending ? "Saving…" : "Save"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

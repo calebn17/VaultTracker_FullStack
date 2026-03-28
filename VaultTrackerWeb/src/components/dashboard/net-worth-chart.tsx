@@ -21,7 +21,7 @@ export function NetWorthChart({
   loading?: boolean;
 }) {
   if (loading) {
-    return <Skeleton className="h-[280px] w-full rounded-lg" />;
+    return <Skeleton className="h-[260px] w-full rounded-lg" />;
   }
 
   if (!data.length) {
@@ -38,23 +38,28 @@ export function NetWorthChart({
   }));
 
   return (
-    <div className="h-[280px] w-full">
+    <div className="h-full min-h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="nwFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.35} />
+              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.18} />
               <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid
+            strokeDasharray="4 4"
+            className="stroke-border/80"
+            vertical={false}
+          />
           <XAxis
             dataKey="t"
             type="number"
             domain={["dataMin", "dataMax"]}
             tickFormatter={(t) => format(new Date(t), "MMM d")}
-            className="text-xs"
-            stroke="var(--color-muted-foreground)"
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 10 }}
+            stroke="transparent"
+            tickLine={false}
           />
           <YAxis
             tickFormatter={(v) =>
@@ -63,8 +68,9 @@ export function NetWorthChart({
                 maximumFractionDigits: 1,
               }).format(v)
             }
-            className="text-xs"
-            stroke="var(--color-muted-foreground)"
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 10 }}
+            stroke="transparent"
+            tickLine={false}
             width={48}
           />
           <Tooltip
@@ -72,11 +78,11 @@ export function NetWorthChart({
               if (!active || !payload?.[0]) return null;
               const row = payload[0].payload as { date: string; value: number };
               return (
-                <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-sm shadow-md">
-                  <p className="text-muted-foreground text-xs">
+                <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 font-mono text-sm shadow-md">
+                  <p className="text-muted-foreground text-[10px]">
                     {format(new Date(row.date), "PP")}
                   </p>
-                  <p className="font-semibold">{formatCurrency(row.value)}</p>
+                  <p className="text-[13px] font-medium">{formatCurrency(row.value)}</p>
                 </div>
               );
             }}

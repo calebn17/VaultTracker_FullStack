@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
+import { SiteHeader } from "@/components/layout/site-header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { cn } from "@/lib/utils";
 
@@ -11,14 +11,12 @@ export function AppShell({
   contentClassName?: string;
 }) {
   return (
-    <div className="flex min-h-0 flex-1">
-      <div className="hidden h-full md:block">
-        <Sidebar />
-      </div>
-      <main className="min-h-0 flex-1 overflow-auto pb-20 md:pb-4">
+    <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+      <SiteHeader />
+      <main className="min-h-0 flex-1 overflow-auto pb-20 md:pb-6">
         <div
           className={cn(
-            "mx-auto max-w-6xl p-4 md:p-6",
+            "mx-auto max-w-[1400px] px-5 py-8 md:px-10",
             contentClassName
           )}
         >

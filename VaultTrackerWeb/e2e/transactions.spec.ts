@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 /**
  * Debug auth lives only in React memory. Use client navigation from /dashboard
- * (sidebar link) so the session survives; a full reload to /transactions would
+ * (header or bottom nav link) so the session survives; a full reload to /transactions would
  * clear it and bounce to /login.
  */
 async function debugLoginAndGoToTransactions(page: import("@playwright/test").Page) {
@@ -36,12 +36,14 @@ test.describe("Transactions", () => {
   });
 
   test("create valid buy shows toast and new row", async ({ page }) => {
-    const assetName = "Bitcoin";
+    const suffix = Date.now();
+    const assetName = `Bitcoin E2E ${suffix}`;
+    const symbol = `TB${suffix}`;
     await page.getByRole("button", { name: /add transaction/i }).click();
     const dialog = page.getByRole("dialog");
 
     await dialog.locator('input[name="asset_name"]').fill(assetName);
-    await dialog.locator('input[name="symbol"]').fill("BTC");
+    await dialog.locator('input[name="symbol"]').fill(symbol);
     await dialog.locator('input[name="quantity"]').fill("0.1");
     await dialog.locator('input[name="price_per_unit"]').fill("50000");
     await dialog.locator('input[name="account_name"]').fill("E2E Broker");
@@ -51,18 +53,22 @@ test.describe("Transactions", () => {
     await expect(page.getByText(/transaction added/i)).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByRole("cell", { name: assetName })).toBeVisible({
+    await expect(
+      page.getByRole("row").filter({ hasText: assetName })
+    ).toBeVisible({
       timeout: 20_000,
     });
   });
 
   test("delete shows confirmation and removes row", async ({ page }) => {
-    const assetName = "Ethereum";
+    const suffix = Date.now();
+    const assetName = `Ethereum E2E ${suffix}`;
+    const symbol = `ETH${suffix}`;
     await page.getByRole("button", { name: /add transaction/i }).click();
     const dialog = page.getByRole("dialog");
 
     await dialog.locator('input[name="asset_name"]').fill(assetName);
-    await dialog.locator('input[name="symbol"]').fill("Eth");
+    await dialog.locator('input[name="symbol"]').fill(symbol);
     await dialog.locator('input[name="quantity"]').fill("0.2");
     await dialog.locator('input[name="price_per_unit"]').fill("3000");
     await dialog.locator('input[name="account_name"]').fill("E2E Del");

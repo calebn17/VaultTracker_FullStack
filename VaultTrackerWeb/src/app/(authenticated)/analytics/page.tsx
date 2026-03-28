@@ -55,7 +55,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
+        Analytics
+      </h1>
 
       {analytics.isError ? (
         <p className="text-destructive text-sm">Failed to load analytics.</p>

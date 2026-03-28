@@ -55,7 +55,9 @@ export default function AccountsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Accounts</h1>
+        <h1 className="font-heading text-xl font-semibold tracking-tight">
+          Accounts
+        </h1>
         <Button type="button" onClick={() => setAddOpen(true)}>
           Add account
         </Button>
