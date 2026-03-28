@@ -38,7 +38,7 @@ export function NetWorthChart({
   }));
 
   return (
-    <div className="h-full min-h-[200px] w-full">
+    <div className="h-[260px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>

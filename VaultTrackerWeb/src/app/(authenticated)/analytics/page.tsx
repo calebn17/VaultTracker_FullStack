@@ -174,6 +174,11 @@ export default function AnalyticsPage() {
           data={history.data?.snapshots ?? []}
           loading={history.isLoading}
         />
+        {history.isError ? (
+          <p className="text-destructive text-sm">
+            Could not load net worth history.
+          </p>
+        ) : null}
       </section>
 
       <Card>
