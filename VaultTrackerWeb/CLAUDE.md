@@ -88,6 +88,7 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 | `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook |
 | `src/contexts/api-client-context.tsx` | `ApiClientProvider` + `useApiClient()` hook; reads base URL from env |
 | `src/lib/queries/` | One file per resource: `use-dashboard.ts`, `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-networth.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts` |
+| `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics and recent transactions (client filter on cached `useTransactions`); opened from `holdings-grid.tsx` |
 
 ### API Client Pattern
 
@@ -107,7 +108,7 @@ Unauthenticated routes: `/login` and `/` (redirects based on auth state).
 
 | Route | Purpose |
 |---|---|
-| `/dashboard` | Net worth chart, category bar, holdings grid, price refresh |
+| `/dashboard` | Net worth chart, category bar, holdings grid (asset row opens read-only asset detail modal), price refresh |
 | `/analytics` | Allocation donut, gain/loss performance |
 | `/transactions` | Sortable table, add/edit/delete, CSV export |
 | `/accounts` | Account CRUD |

@@ -6,6 +6,7 @@ import type { Category, HoldingItem } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { MERIDIAN_CATEGORY_HEX } from "@/components/dashboard/category-summary-list";
+import { AssetDetailDialog } from "@/components/dashboard/asset-detail-dialog";
 
 const ORDER: Category[] = [
   "crypto",
@@ -62,6 +63,10 @@ export function HoldingsGrid({
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(ORDER.map((k) => [k, true]))
   );
+  const [selectedHolding, setSelectedHolding] = useState<{
+    holding: HoldingItem;
+    category: Category;
+  } | null>(null);
 
   const categoriesToShow =
     categoryFilter === "all" ? ORDER : [categoryFilter];
@@ -129,9 +134,11 @@ export function HoldingsGrid({
           <div key={cat}>
             <button
               type="button"
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? "Collapse" : "Expand"} ${LABELS[cat]} holdings`}
               className={cn(
                 tableGrid,
-                "bg-secondary/80 border-border hover:bg-secondary w-full cursor-pointer border-b px-5 py-3 text-left transition-colors"
+                "bg-secondary/80 border-border hover:bg-secondary w-full cursor-pointer border-b px-5 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               )}
               onClick={() =>
                 setOpen((o) => ({ ...o, [cat]: !isOpen }))
@@ -187,11 +194,14 @@ export function HoldingsGrid({
                         : "0.0";
                     const iconLabel = h.symbol?.trim() || h.name;
                     return (
-                      <div
+                      <button
                         key={h.id}
+                        type="button"
+                        aria-label={`View details for ${h.name}`}
+                        onClick={() => setSelectedHolding({ holding: h, category: cat })}
                         className={cn(
                           tableGrid,
-                          "border-border hover:bg-foreground/[0.025] border-b px-5 py-3.5 text-sm last:border-0"
+                          "border-border hover:bg-foreground/[0.05] w-full cursor-pointer border-b px-5 py-3.5 text-left text-sm transition-colors outline-none last:border-0 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         )}
                       >
                         <div className="flex min-w-0 items-center gap-3">
@@ -217,13 +227,24 @@ export function HoldingsGrid({
                         <div className="text-muted-foreground hidden text-right text-[11px] md:block">
                           {h.symbol ?? "—"}
                         </div>
-                      </div>
+                      </button>
                     );
                   })
               : null}
           </div>
         );
       })}
+
+      {selectedHolding ? (
+        <AssetDetailDialog
+          holding={selectedHolding.holding}
+          category={selectedHolding.category}
+          open
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setSelectedHolding(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
