@@ -27,7 +27,7 @@ const LABELS: Record<Category, string> = {
 const tableGrid =
   "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr] gap-x-3 items-center";
 
-function AssetIcon({
+export function AssetIcon({
   label,
   color,
 }: {
