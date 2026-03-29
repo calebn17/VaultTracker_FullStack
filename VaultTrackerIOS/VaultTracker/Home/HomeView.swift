@@ -6,6 +6,21 @@
 //
 
 import SwiftUI
+import UIKit
+
+private enum HomeLedgerChrome {
+    private static var configuredSegmentedAppearance = false
+
+    static func configureNetWorthPeriodPickerAppearanceIfNeeded() {
+        guard !configuredSegmentedAppearance else { return }
+        configuredSegmentedAppearance = true
+        let seg = UISegmentedControl.appearance()
+        seg.selectedSegmentTintColor = UIColor(VTColors.primary)
+        seg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
+        seg.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
+        seg.backgroundColor = UIColor(VTColors.surface)
+    }
+}
 
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
@@ -23,20 +38,22 @@ struct HomeView: View {
                 if let errorMessage = viewModel.viewState.errorMessage {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.yellow)
+                            .foregroundStyle(VTColors.error)
                         Text(errorMessage)
-                            .font(.subheadline)
+                            .font(VTFonts.body)
+                            .foregroundStyle(VTColors.error)
                         Spacer()
                         Button {
                             viewModel.viewState.errorMessage = nil
                         } label: {
                             Image(systemName: "xmark")
+                                .foregroundStyle(VTColors.textSubdued)
                         }
                         .accessibilityIdentifier("dismissErrorButton")
                     }
                     .padding()
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(10)
+                    .background(VTColors.error.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .accessibilityIdentifier("errorBanner")
                 }
 
@@ -56,12 +73,14 @@ struct HomeView: View {
                 NetWorthChartView(snapshots: viewModel.snapshots)
                     .accessibilityIdentifier("netWorthChart")
 
-                Text("Net Worth")
-                    .font(.title2).bold()
+                Text("TOTAL NET WORTH")
+                    .font(VTFonts.sectionHeader)
+                    .foregroundStyle(VTColors.textSubdued)
                     .accessibilityIdentifier("netWorthTitleText")
 
                 Text(viewModel.viewState.totalNetworthValue.currencyFormat())
-                    .font(.system(size: 40, weight: .bold))
+                    .font(VTFonts.heroValue)
+                    .foregroundStyle(VTColors.textPrimary)
                     .accessibilityIdentifier("netWorthValueText")
 
                 if viewModel.viewState.totalNetworthValue > 0.0 {
@@ -80,6 +99,7 @@ struct HomeView: View {
                     Button("Clear Data", role: .destructive) {
                         showClearConfirmation = true
                     }
+                    .tint(VTColors.error)
                     .accessibilityIdentifier("clearDataButton")
                 }
 
@@ -91,6 +111,7 @@ struct HomeView: View {
                             Label("Refresh Prices", systemImage: "arrow.clockwise")
                         }
                         .disabled(viewModel.isRefreshingPrices)
+                        .tint(VTColors.primary)
                         .accessibilityIdentifier("refreshPricesButton")
 
                         Button {
@@ -98,6 +119,7 @@ struct HomeView: View {
                         } label: {
                             Label("Add Transaction", systemImage: "plus")
                         }
+                        .tint(VTColors.primary)
                         .accessibilityIdentifier("addTransactionButton")
                     }
                 }
@@ -114,8 +136,12 @@ struct HomeView: View {
             .task {
                 await viewModel.loadData()
             }
+            .onAppear {
+                HomeLedgerChrome.configureNetWorthPeriodPickerAppearanceIfNeeded()
+            }
         }
         .accessibilityIdentifier("homeScrollView")
+        .background(VTColors.background.ignoresSafeArea())
         .refreshable {
             await viewModel.loadData()
         }
@@ -134,8 +160,9 @@ struct HomeView: View {
         .overlay {
             if viewModel.viewState.isLoading {
                 ProgressView()
+                    .tint(VTColors.primary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.05))
+                    .background(VTColors.background.opacity(0.7))
                     .accessibilityIdentifier("loadingOverlay")
             }
         }
@@ -144,28 +171,20 @@ struct HomeView: View {
     private var filterBarView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                Button(action: {
+                Button {
                     viewModel.selectFilter(category: nil)
-                }) {
+                } label: {
                     Text("All")
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(viewModel.viewState.selectedFilter == nil ? Color.blue : Color(UIColor.secondarySystemBackground))
-                        .foregroundColor(viewModel.viewState.selectedFilter == nil ? .white : .primary)
-                        .cornerRadius(20)
                 }
+                .buttonStyle(FilterChipStyle(isSelected: viewModel.viewState.selectedFilter == nil))
                 .accessibilityIdentifier("filterAllButton")
                 ForEach(AssetCategory.allCases, id: \.self) { category in
-                    Button(action: {
+                    Button {
                         viewModel.selectFilter(category: category)
-                    }) {
+                    } label: {
                         Text(category.rawValue)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(viewModel.viewState.selectedFilter == category ? Color.blue : Color(UIColor.secondarySystemBackground))
-                            .foregroundColor(viewModel.viewState.selectedFilter == category ? .white : .primary)
-                            .cornerRadius(20)
                     }
+                    .buttonStyle(FilterChipStyle(isSelected: viewModel.viewState.selectedFilter == category))
                     .accessibilityIdentifier("filterButton_\(category.rawValue)")
                 }
             }
@@ -181,8 +200,8 @@ struct HomeView: View {
             assetBarSection(assetCategory: .realEstate)
             assetBarSection(assetCategory: .retirement)
         }
-        .background(Color(.systemGray5))
-        .cornerRadius(3)
+        .background(VTColors.surfaceLow)
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .accessibilityIdentifier("assetBreakdownBar")
     }
 
@@ -201,9 +220,9 @@ struct HomeView: View {
         let width = barWidth(for: assetValue)
 
         return Rectangle()
-            .fill(getAssetColor(assetCategory: assetCategory))
+            .fill(VTColors.categoryAccent(assetCategory))
             .frame(width: width, height: 12)
-            .cornerRadius(3)
+            .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
     }
 
     private func assetListSection(assetCategory: AssetCategory) -> some View {
@@ -213,24 +232,27 @@ struct HomeView: View {
         return VStack(spacing: 0) {
             HStack {
                 Circle()
-                    .fill(getAssetColor(assetCategory: assetCategory))
+                    .fill(VTColors.categoryAccent(assetCategory))
                     .frame(width: 10, height: 10)
 
                 Text(assetCategory.rawValue)
-                    .font(.body)
+                    .font(VTFonts.body)
+                    .foregroundStyle(VTColors.textPrimary)
 
                 Spacer()
 
                 if assetValue > 0.0 {
                     Text("\((assetValue / viewModel.viewState.totalNetworthValue * 100).twoDecimalString)%")
-                        .foregroundStyle(.green)
+                        .font(VTFonts.monoBody)
+                        .foregroundStyle(VTColors.primary)
                 }
 
                 Text(assetValue.currencyFormat())
-                    .font(.body)
-                    .bold()
+                    .font(VTFonts.monoLarge)
+                    .foregroundStyle(VTColors.textPrimary)
 
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .foregroundStyle(VTColors.textSubdued)
             }
             .padding()
             .contentShape(Rectangle())
@@ -246,22 +268,11 @@ struct HomeView: View {
             .accessibilityIdentifier("categorySection_\(assetCategory.rawValue)")
 
             if isExpanded {
-                Divider()
                 expandedDetailView(for: assetCategory)
             }
         }
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(10)
-    }
-
-    private func getAssetColor(assetCategory: AssetCategory) -> Color {
-        switch assetCategory {
-        case .crypto: return .cyan
-        case .stocks: return .blue
-        case .realEstate: return .pink
-        case .cash: return .green
-        case .retirement: return .purple
-        }
+        .background(VTColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func getAssetValue(assetCategory: AssetCategory) -> Double {
@@ -294,11 +305,14 @@ struct HomeView: View {
         ForEach(holdings, id: \.id) { holding in
             HStack {
                 Text(holding.symbol ?? holding.name)
-                    .font(.body)
+                    .font(VTFonts.monoBody)
+                    .foregroundStyle(VTColors.textPrimary)
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text(holding.currentValue.currencyFormat())
-                        .font(.body).bold()
+                        .font(VTFonts.monoLarge)
+                        .fontWeight(.bold)
+                        .foregroundStyle(VTColors.textPrimary)
 
                     let quantityString: String = switch category {
                     case .cash, .realEstate: ""
@@ -307,8 +321,8 @@ struct HomeView: View {
                     }
 
                     Text(quantityString)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                        .font(VTFonts.monoCaption)
+                        .foregroundStyle(VTColors.textSubdued)
                 }
             }
             .padding(.horizontal)
@@ -323,17 +337,20 @@ struct HomeView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(holding.name)
-                            .font(.headline)
+                            .font(VTFonts.monoBody)
+                            .foregroundStyle(VTColors.textPrimary)
                         if let symbol = holding.symbol {
                             Text(symbol)
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                                .font(VTFonts.monoCaption)
+                                .foregroundStyle(VTColors.textSubdued)
                         }
                     }
                     Spacer()
                     VStack(alignment: .trailing) {
                         Text(holding.currentValue.currencyFormat())
-                            .font(.body).bold()
+                            .font(VTFonts.monoLarge)
+                            .fontWeight(.bold)
+                            .foregroundStyle(VTColors.textPrimary)
 
                         let quantityString = viewModel.viewState.selectedFilter.map { filter -> String in
                             switch filter {
@@ -344,13 +361,13 @@ struct HomeView: View {
                         } ?? ""
 
                         Text(quantityString)
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                            .font(VTFonts.monoCaption)
+                            .foregroundStyle(VTColors.textSubdued)
                     }
                 }
                 .padding()
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(10)
+                .background(VTColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
     }

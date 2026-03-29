@@ -11,13 +11,13 @@ struct AssetCategoryView: View {
     private var assets: [Asset]
     private var viewModel: HomeViewModel
     private var category: AssetCategory
-    
+
     init(assets: [Asset], viewModel: HomeViewModel, category: AssetCategory) {
         self.assets = assets
         self.viewModel = viewModel
         self.category = category
     }
-    
+
     var body: some View {
         VStack(spacing: 6) {
             ForEach(assets) { asset in
@@ -26,41 +26,44 @@ struct AssetCategoryView: View {
         }
         .padding()
     }
-    
+
     @ViewBuilder
     private func assetListRow(asset: Asset) -> some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
                 let title = switch asset.category {
-                    case .crypto, .retirement, .stocks: asset.symbol
-                    case .cash: "Cash"
-                    case .realEstate: "Real Estate"
+                case .crypto, .retirement, .stocks: asset.symbol
+                case .cash: "Cash"
+                case .realEstate: "Real Estate"
                 }
-                
+
                 Text(title)
-                    .font(.headline)
+                    .font(VTFonts.monoBody)
+                    .foregroundStyle(VTColors.textPrimary)
 
                 if category == .crypto || category == .retirement || category == .stocks {
                     Text(asset.symbol)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .font(VTFonts.monoCaption)
+                        .foregroundStyle(VTColors.categoryAccent(category))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(alignment: .trailing, spacing: 8) {
                 Text(asset.currentValue.currencyFormat())
-                    .font(.headline)
+                    .font(VTFonts.monoLarge)
+                    .fontWeight(.bold)
+                    .foregroundStyle(VTColors.textPrimary)
                 if category == .crypto || category == .retirement || category == .stocks {
                     Text("\(asset.quantity.twoDecimalString)")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .font(VTFonts.monoCaption)
+                        .foregroundStyle(VTColors.textSubdued)
                 }
             }
             .frame(width: 120, alignment: .trailing)
         }
         .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(10)
+        .background(VTColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }
