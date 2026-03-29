@@ -204,3 +204,6 @@ Loaded from `.env` via pydantic-settings ([app/config.py](app/config.py)):
 | `ALPHA_VANTAGE_API_KEY` | (empty) | Stock quotes (`/prices`, refresh) |
 
 Database tables are created automatically via `Base.metadata.create_all` in the lifespan handler — there are no migration scripts.
+
+
+### TESTING
