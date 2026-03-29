@@ -3,17 +3,19 @@ import XCTest
 struct AddAssetPage {
     let app: XCUIApplication
 
-    var closeButton: XCUIElement { app.buttons["closeButton"] }
-    var saveButton: XCUIElement { app.buttons["saveButton"] }
-    var transactionTypePicker: XCUIElement { app.segmentedControls["transactionTypePicker"] }
-    var accountNameField: XCUIElement { app.textFields["accountNameField"] }
-    /// SwiftUI `Picker` in `Form` is exposed as `otherElements`, not `XCUIElementTypePicker`.
-    var accountTypePicker: XCUIElement { app.otherElements["accountTypePicker"] }
-    var categoryPicker: XCUIElement { app.buttons["categoryPicker"] }
-    var assetNameField: XCUIElement { app.textFields["assetNameField"] }
-    var symbolField: XCUIElement { app.textFields["symbolField"] }
-    var quantityField: XCUIElement { app.textFields["quantityField"] }
-    var pricePerUnitField: XCUIElement { app.textFields["pricePerUnitField"] }
+    var closeButton: XCUIElement { app.identified("closeButton") }
+    var saveButton: XCUIElement { app.identified("saveButton") }
+    var transactionTypePicker: XCUIElement { app.identified("transactionTypePicker") }
+    var accountNameField: XCUIElement { app.identified("accountNameField") }
+    /// SwiftUI `Picker` in `Form` is often exposed as `otherElements`, not `XCUIElementTypePicker`; identifier is stable.
+    var accountTypePicker: XCUIElement { app.identified("accountTypePicker") }
+    /// Horizontal category chip strip container (exposes `.isButton` for the first UI-test tap).
+    var categoryPicker: XCUIElement { app.identified("categoryPicker") }
+    var assetNameField: XCUIElement { app.identified("assetNameField") }
+    var symbolField: XCUIElement { app.identified("symbolField") }
+    var quantityField: XCUIElement { app.identified("quantityField") }
+    var pricePerUnitField: XCUIElement { app.identified("pricePerUnitField") }
+    var transactionDatePicker: XCUIElement { app.identified("transactionDatePicker") }
 
     @discardableResult
     func waitForScreen(timeout: TimeInterval = 5) -> Self {
@@ -62,8 +64,8 @@ struct AddAssetPage {
         return self
     }
 
-    /// Selects a category by visible label (e.g. `Cash`, `Crypto`).
-    /// Form `Picker` options appear as **buttons** in XCTest, not `staticTexts` (labels exist but are not hittable for tap).
+    /// Selects a category by the **visible accessibility label** on the chip (e.g. `Cash`, `Crypto`).
+    /// Matches `AssetCategory.rawValue.capitalized` from `AddAssetModalView` (e.g. `Stocks/Etfs` for stocks).
     @discardableResult
     func selectCategory(_ category: String) -> Self {
         categoryPicker.tap()

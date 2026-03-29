@@ -80,6 +80,12 @@ final class HomeTabUITests: XCTestCase {
         XCTAssertTrue(home.netWorthChart.waitForExistence(timeout: 5))
     }
 
+    func test_givenAuthenticated_whenHomeLoads_thenTotalNetWorthLabelCopyVisible() {
+        let home = HomePage(app: app)
+        XCTAssertTrue(home.netWorthTitle.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["TOTAL NET WORTH"].waitForExistence(timeout: 5))
+    }
+
     func test_givenHomeLoaded_whenPeriodChangedToWeekly_thenPickerReflectsSelection() {
         let home = HomePage(app: app)
         XCTAssertTrue(home.periodPicker.waitForExistence(timeout: 5))
@@ -118,7 +124,7 @@ final class HomeTabUITests: XCTestCase {
 
     func test_givenHomeLoaded_whenCategorySectionTapped_thenSectionExpandsOrCollapses() {
         let home = seedCashHoldingViaUI(app: app)
-        let section = home.categorySection(for: "Cash").firstMatch
+        let section = home.categorySection(for: "Cash")
         XCTAssertTrue(section.waitForExistence(timeout: 15))
         home.tapCategorySection(category: "Cash")
         XCTAssertTrue(section.exists)
@@ -149,7 +155,7 @@ final class AddAssetModalUITests: XCTestCase {
         let modal = home.tapAddTransaction().waitForScreen()
         XCTAssertTrue(modal.closeButton.exists)
         _ = modal.close()
-        let close = app.buttons["closeButton"]
+        let close = app.identified("closeButton")
         let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: close)
         XCTAssertEqual(XCTWaiter().wait(for: [dismissed], timeout: 5), .completed)
     }
@@ -189,7 +195,7 @@ final class AddAssetModalUITests: XCTestCase {
         modal.enterAmount("50")
         XCTAssertTrue(modal.saveButton.isEnabled)
         _ = modal.save().waitForLoad()
-        let close = app.buttons["closeButton"]
+        let close = app.identified("closeButton")
         let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: close)
         XCTAssertEqual(XCTWaiter().wait(for: [dismissed], timeout: 20), .completed)
     }
@@ -214,6 +220,11 @@ final class AnalyticsTabUITests: XCTestCase {
     func test_givenAnalyticsLoaded_whenDataPresent_thenAllocationSectionVisible() {
         let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen()
         XCTAssertTrue(analytics.allocationSection.waitForExistence(timeout: 10))
+    }
+
+    func test_givenAnalyticsLoaded_whenPerformancePresent_thenPerformanceHeaderVisible() {
+        let analytics = HomePage(app: app).tapAnalyticsTab().waitForScreen()
+        XCTAssertTrue(analytics.performanceSection.waitForExistence(timeout: 10))
     }
 }
 
