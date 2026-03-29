@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import Firebase
 
 @main
@@ -14,19 +15,23 @@ struct VaultTrackerApp: App {
     
     init() {
         FirebaseApp.configure()
+        Self.configureLedgerChrome()
     }
     
     var body: some Scene {
         WindowGroup {
-            switch authManager.authenticationState {
-            case .authenticating:
-                LoadingView()
-            case .authenticated:
-                mainView
-            case .unauthenticated:
-                LoginView()
-                    .environmentObject(authManager)
+            Group {
+                switch authManager.authenticationState {
+                case .authenticating:
+                    LoadingView()
+                case .authenticated:
+                    mainView
+                case .unauthenticated:
+                    LoginView()
+                        .environmentObject(authManager)
+                }
             }
+            .preferredColorScheme(.dark)
         }
     }
     
@@ -56,6 +61,32 @@ struct VaultTrackerApp: App {
                 Text("Profile")
             }
         }
+        .tint(VTColors.primary)
         .environmentObject(authManager)
+    }
+
+    private static func configureLedgerChrome() {
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = UIColor(VTColors.background)
+        let titleColor = UIColor(VTColors.textPrimary)
+        navAppearance.titleTextAttributes = [.foregroundColor: titleColor]
+        navAppearance.largeTitleTextAttributes = [.foregroundColor: titleColor]
+
+        let navBar = UINavigationBar.appearance()
+        navBar.standardAppearance = navAppearance
+        navBar.scrollEdgeAppearance = navAppearance
+        navBar.compactAppearance = navAppearance
+        navBar.tintColor = UIColor(VTColors.primary)
+
+        let tabAppearance = UITabBarAppearance()
+        tabAppearance.configureWithOpaqueBackground()
+        tabAppearance.backgroundColor = UIColor(VTColors.surfaceLow)
+
+        let tabBar = UITabBar.appearance()
+        tabBar.standardAppearance = tabAppearance
+        tabBar.scrollEdgeAppearance = tabAppearance
+        tabBar.unselectedItemTintColor = UIColor(VTColors.textSubdued)
+        tabBar.tintColor = UIColor(VTColors.primary)
     }
 }
