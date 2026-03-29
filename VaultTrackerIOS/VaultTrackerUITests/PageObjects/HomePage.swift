@@ -4,27 +4,27 @@ struct HomePage {
     let app: XCUIApplication
 
     /// Main vertical `ScrollView` (excludes the horizontal filter strip).
-    var homeScrollView: XCUIElement { app.scrollViews["homeScrollView"] }
+    var homeScrollView: XCUIElement { app.identified("homeScrollView") }
 
-    var netWorthTitle: XCUIElement { app.staticTexts["netWorthTitleText"] }
-    var netWorthValue: XCUIElement { app.staticTexts["netWorthValueText"] }
-    var netWorthChart: XCUIElement { app.otherElements["netWorthChart"] }
-    var periodPicker: XCUIElement { app.segmentedControls["netWorthPeriodPicker"] }
-    var assetBreakdownBar: XCUIElement { app.otherElements["assetBreakdownBar"] }
-    var addTransactionButton: XCUIElement { app.buttons["addTransactionButton"] }
-    var refreshPricesButton: XCUIElement { app.buttons["refreshPricesButton"] }
-    var clearDataButton: XCUIElement { app.buttons["clearDataButton"] }
-    var loadingOverlay: XCUIElement { app.otherElements["loadingOverlay"] }
-    var errorBanner: XCUIElement { app.otherElements["errorBanner"] }
-    var dismissErrorButton: XCUIElement { app.buttons["dismissErrorButton"] }
-    var allFilterButton: XCUIElement { app.buttons["filterAllButton"] }
+    var netWorthTitle: XCUIElement { app.identified("netWorthTitleText") }
+    var netWorthValue: XCUIElement { app.identified("netWorthValueText") }
+    var netWorthChart: XCUIElement { app.identified("netWorthChart") }
+    var periodPicker: XCUIElement { app.identified("netWorthPeriodPicker") }
+    var assetBreakdownBar: XCUIElement { app.identified("assetBreakdownBar") }
+    var addTransactionButton: XCUIElement { app.identified("addTransactionButton") }
+    var refreshPricesButton: XCUIElement { app.identified("refreshPricesButton") }
+    var clearDataButton: XCUIElement { app.identified("clearDataButton") }
+    var loadingOverlay: XCUIElement { app.identified("loadingOverlay") }
+    var errorBanner: XCUIElement { app.identified("errorBanner") }
+    var dismissErrorButton: XCUIElement { app.identified("dismissErrorButton") }
+    var allFilterButton: XCUIElement { app.identified("filterAllButton") }
 
     func filterButton(for category: String) -> XCUIElement {
-        app.buttons["filterButton_\(category)"]
+        app.identified("filterButton_\(category)")
     }
 
     func categorySection(for category: String) -> XCUIElement {
-        app.staticTexts["categorySection_\(category)"]
+        app.identified("categorySection_\(category)")
     }
 
     /// Swipes up on the home scroll view until `element` is hittable (on-screen), or `maxSwipes` is reached.
@@ -100,7 +100,7 @@ struct HomePage {
 
     @discardableResult
     func tapCategorySection(category: String) -> Self {
-        let section = categorySection(for: category).firstMatch
+        let section = categorySection(for: category)
         _ = scrollUntilHittable(section)
         section.tap()
         return self

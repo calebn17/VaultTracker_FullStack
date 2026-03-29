@@ -3,12 +3,14 @@ import XCTest
 struct AnalyticsPage {
     let app: XCUIApplication
 
-    var screen: XCUIElement { app.tables.firstMatch }
-    var title: XCUIElement { app.staticTexts["Analytics"] }
-    var loadingOverlay: XCUIElement { app.otherElements["analyticsLoadingOverlay"] }
-    var performanceSection: XCUIElement { app.otherElements["analyticsPerformanceSection"] }
-    var allocationSection: XCUIElement { app.staticTexts["analyticsAllocationSection"].firstMatch }
-    var errorRow: XCUIElement { app.staticTexts["analyticsErrorRow"] }
+    /// Root `List` for the Analytics tab (Digital Ledger uses `List` + hidden scroll background).
+    var screen: XCUIElement { app.identified("analyticsScreen") }
+
+    var title: XCUIElement { app.navigationBars.firstMatch.staticTexts["Analytics"] }
+    var loadingOverlay: XCUIElement { app.identified("analyticsLoadingOverlay") }
+    var performanceSection: XCUIElement { app.identified("analyticsPerformanceSection") }
+    var allocationSection: XCUIElement { app.identified("analyticsAllocationSection") }
+    var errorRow: XCUIElement { app.identified("analyticsErrorRow") }
 
     @discardableResult
     func waitForScreen(timeout: TimeInterval = 5) -> Self {

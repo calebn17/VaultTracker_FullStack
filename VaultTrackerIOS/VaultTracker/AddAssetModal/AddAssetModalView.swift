@@ -19,21 +19,139 @@ struct AddAssetModalView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             Form {
-                transactionTypeSection
-                accountSection
-                assetDetailsSection
-                saveButtonSection
+                Section {
+                    Picker("Transaction Type", selection: $formViewModel.transactionType) {
+                        ForEach(TransactionType.allCases, id: \.self) { type in
+                            Text(type.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(EdgeInsets())
+                    .accessibilityIdentifier("transactionTypePicker")
+                    .listRowBackground(VTColors.surface)
+                }
+
+                Section {
+                    TextField(
+                        formViewModel.selectedCategory != .realEstate ? "Account Name (e.g. Robinhood)" : "Property Address",
+                        text: $formViewModel.accountName
+                    )
+                    .foregroundStyle(VTColors.textPrimary)
+                    .accessibilityIdentifier("accountNameField")
+                    .listRowBackground(VTColors.surface)
+
+                    Picker(
+                        formViewModel.selectedCategory != .realEstate ? "Account Type" : "Property Type",
+                        selection: $formViewModel.accountType
+                    ) {
+                        ForEach(AccountType.allCases, id: \.self) { type in
+                            Text(type.rawValue)
+                        }
+                    }
+                    .accessibilityIdentifier("accountTypePicker")
+                    .listRowBackground(VTColors.surface)
+                } header: {
+                    Text("Account")
+                        .font(VTFonts.sectionHeader)
+                        .foregroundStyle(VTColors.textSubdued)
+                        .textCase(.uppercase)
+                }
+
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(AssetCategory.allCases, id: \.self) { category in
+                                Button {
+                                    formViewModel.selectedCategory = category
+                                } label: {
+                                    Text(category.pickerLabel)
+                                }
+                                .buttonStyle(FilterChipStyle(isSelected: formViewModel.selectedCategory == category))
+                            }
+                        }
+                        .padding(.vertical, 8)
+                        .accessibilityIdentifier("categoryPicker")
+                        .accessibilityAddTraits(.isButton)
+                    }
+                    .listRowBackground(VTColors.surface)
+
+                    TextField(formViewModel.selectedCategory != .realEstate ? "Name" : "Property Name", text: $formViewModel.name)
+                        .foregroundStyle(VTColors.textPrimary)
+                        .accessibilityIdentifier("assetNameField")
+                        .listRowBackground(VTColors.surface)
+
+                    if formViewModel.shouldShowSymbolField {
+                        TextField(
+                            "Symbol (e.g. BTC, VOO, etc)",
+                            text: $formViewModel.symbol
+                        )
+                        .textInputAutocapitalization(.characters)
+                        .foregroundStyle(VTColors.textPrimary)
+                        .accessibilityIdentifier("symbolField")
+                        .listRowBackground(VTColors.surface)
+
+                        TextField("Quantity", text: formViewModel.quantityBinding)
+                            .keyboardType(.decimalPad)
+                            .foregroundStyle(VTColors.textPrimary)
+                            .accessibilityIdentifier("quantityField")
+                            .listRowBackground(VTColors.surface)
+
+                        TextField("Price Per Unit", text: $formViewModel.pricePerUnit)
+                            .keyboardType(.decimalPad)
+                            .foregroundStyle(VTColors.textPrimary)
+                            .accessibilityIdentifier("pricePerUnitField")
+                            .listRowBackground(VTColors.surface)
+                    } else {
+                        TextField(formViewModel.selectedCategory == .cash ? "Amount" : "Equity", text: $formViewModel.pricePerUnit)
+                            .foregroundStyle(VTColors.textPrimary)
+                            .accessibilityIdentifier("pricePerUnitField")
+                            .listRowBackground(VTColors.surface)
+                    }
+
+                    DatePicker("Date", selection: $formViewModel.date)
+                        .tint(VTColors.primary)
+                        .accessibilityIdentifier("transactionDatePicker")
+                        .listRowBackground(VTColors.surface)
+                } header: {
+                    Text("Asset Details")
+                        .font(VTFonts.sectionHeader)
+                        .foregroundStyle(VTColors.textSubdued)
+                        .textCase(.uppercase)
+                }
+
+                Section {
+                    Button {
+                        Task {
+                            if let request = await formViewModel.save() {
+                                onSave(request)
+                                dismiss()
+                            }
+                        }
+                    } label: {
+                        Text("Save")
+                    }
+                    .buttonStyle(VTPrimaryButtonStyle(isEnabled: formViewModel.isFormValid))
+                    .disabled(!formViewModel.isFormValid)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(VTColors.background)
+                    .accessibilityIdentifier("saveButton")
+                }
             }
+            .scrollContentBackground(.hidden)
         }
+        .background(VTColors.background)
+        .presentationBackground(VTColors.background)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
+                Button {
                     dismiss()
-                }, label: {
-                    Label("Close Button", systemImage: "x.circle.fill")
-                })
+                } label: {
+                    Image(systemName: "x.circle.fill")
+                        .foregroundStyle(VTColors.textSubdued)
+                }
                 .accessibilityIdentifier("closeButton")
             }
         }
@@ -43,91 +161,6 @@ struct AddAssetModalView: View {
             }
         } message: {
             Text(formViewModel.alertMessage)
-        }
-    }
-
-    var transactionTypeSection: some View {
-        Picker("Transaction Type", selection: $formViewModel.transactionType) {
-            ForEach(TransactionType.allCases, id: \.self) { type in
-                Text(type.rawValue)
-            }
-        }
-        .pickerStyle(.segmented)
-        .listRowInsets(EdgeInsets())
-        .accessibilityIdentifier("transactionTypePicker")
-    }
-
-    var accountSection: some View {
-        Section("Account") {
-            TextField(
-                formViewModel.selectedCategory != .realEstate ? "Account Name (e.g. Robinhood)" : "Property Address",
-                text: $formViewModel.accountName
-            )
-            .accessibilityIdentifier("accountNameField")
-
-            Picker(
-                formViewModel.selectedCategory != .realEstate ? "Account Type" : "Property Type",
-                selection: $formViewModel.accountType
-            ) {
-                ForEach(AccountType.allCases, id: \.self) { type in
-                    Text(type.rawValue)
-                }
-            }
-            .accessibilityIdentifier("accountTypePicker")
-        }
-    }
-
-    var assetDetailsSection: some View {
-        Section(header: Text("Asset Details")) {
-            Picker("Category", selection: $formViewModel.selectedCategory) {
-                ForEach(AssetCategory.allCases, id: \.self) { category in
-                    Text(category.rawValue.capitalized)
-                }
-            }
-            .accessibilityIdentifier("categoryPicker")
-
-            TextField(formViewModel.selectedCategory != .realEstate ? "Name" : "Property Name", text: $formViewModel.name)
-                .accessibilityIdentifier("assetNameField")
-
-            if formViewModel.shouldShowSymbolField {
-                TextField(
-                    "Symbol (e.g. BTC, VOO, etc)",
-                    text: $formViewModel.symbol
-                )
-                .textInputAutocapitalization(.characters)
-                .accessibilityIdentifier("symbolField")
-
-                TextField("Quantity", text: formViewModel.quantityBinding)
-                    .keyboardType(.decimalPad)
-                    .accessibilityIdentifier("quantityField")
-
-                TextField("Price Per Unit", text: $formViewModel.pricePerUnit)
-                    .keyboardType(.decimalPad)
-                    .accessibilityIdentifier("pricePerUnitField")
-            } else {
-                TextField(formViewModel.selectedCategory == .cash ? "Amount" : "Equity", text: $formViewModel.pricePerUnit)
-                    .accessibilityIdentifier("pricePerUnitField")
-            }
-
-            DatePicker("Date", selection: $formViewModel.date)
-                .accessibilityIdentifier("transactionDatePicker")
-        }
-    }
-
-    var saveButtonSection: some View {
-        Section {
-            CustomButton(label: "Save", labelColor: .white, backgroundColor: formViewModel.isFormValid ? .blue : .gray) {
-                Task {
-                    if let request = await formViewModel.save() {
-                        onSave(request)
-                        dismiss()
-                    }
-                }
-            }
-            .disabled(!formViewModel.isFormValid)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .accessibilityIdentifier("saveButton")
         }
     }
 }

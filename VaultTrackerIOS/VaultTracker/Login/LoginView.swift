@@ -17,8 +17,8 @@ struct LoginView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding(.bottom, 50)
-                .foregroundColor(.white) // Ensure text is visible on dark background
-            
+                .foregroundStyle(VTColors.textPrimary)
+
             // Google Sign-In Button
             Button(action: {
                 Task {
@@ -37,9 +37,9 @@ struct LoginView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.white) // Changed to white for contrast
-                .foregroundColor(.black) // Changed to black for contrast
-                .cornerRadius(10)
+                .background(Color.white)
+                .foregroundStyle(.black)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(.horizontal)
             .accessibilityIdentifier("googleSignInButton")
@@ -62,9 +62,9 @@ struct LoginView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.white) // Changed to white for contrast
-                .foregroundColor(.black) // Changed to black for contrast
-                .cornerRadius(10)
+                .background(Color.black)
+                .foregroundStyle(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(.horizontal)
             .padding(.top, 10)
@@ -82,23 +82,17 @@ struct LoginView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.yellow.opacity(0.85))
-                .foregroundColor(.black)
-                .cornerRadius(10)
+                .background(VTColors.surfaceHigh)
+                .foregroundStyle(VTColors.primary)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(.horizontal)
             .padding(.bottom, 30)
             .accessibilityIdentifier("debugLoginButton")
 #endif
         }
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color(red: 1.0, green: 0.5, blue: 0.0), Color(red: 0.4, green: 0.2, blue: 0.0)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(VTColors.background.ignoresSafeArea())
     }
 }
 

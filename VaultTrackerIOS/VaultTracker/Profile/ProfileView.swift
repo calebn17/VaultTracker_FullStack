@@ -9,33 +9,37 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authManager: AuthManager
-    
+
     var body: some View {
         VStack {
             Spacer()
             Text("Welcome, \(authManager.user?.displayName ?? "User")!")
-                .font(.title)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(VTColors.textPrimary)
                 .padding()
-            
-            Button(action: {
+
+            Button {
                 do {
                     try authManager.signOut()
                 } catch {
                     print("Error signing out: \(error.localizedDescription)")
                 }
-            }) {
+            } label: {
                 Text("Sign Out")
-                    .padding()
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(VTColors.textPrimary)
                     .frame(maxWidth: .infinity)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .padding(.vertical, 14)
+                    .background(VTColors.error)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding()
             .accessibilityIdentifier("signOutButton")
-            
+
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(VTColors.background.ignoresSafeArea())
         .navigationTitle("Profile")
     }
 }

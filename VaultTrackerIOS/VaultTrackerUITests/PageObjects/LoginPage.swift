@@ -3,9 +3,10 @@ import XCTest
 struct LoginPage {
     let app: XCUIApplication
 
-    var googleSignInButton: XCUIElement { app.buttons["googleSignInButton"] }
-    var appleSignInButton: XCUIElement { app.buttons["appleSignInButton"] }
-    var debugLoginButton: XCUIElement { app.buttons["debugLoginButton"] }
+    var googleSignInButton: XCUIElement { app.identified("googleSignInButton") }
+    var appleSignInButton: XCUIElement { app.identified("appleSignInButton") }
+    var debugLoginButton: XCUIElement { app.identified("debugLoginButton") }
+    var loadingView: XCUIElement { app.identified("loadingView") }
 
     @discardableResult
     func waitForScreen(timeout: TimeInterval = 5) -> Self {

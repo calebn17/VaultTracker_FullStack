@@ -72,6 +72,10 @@
 		C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */; };
 		C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */; };
 		C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012E2F8D0001001B0001 /* ProfilePage.swift */; };
+		C3D100042E90000100ABC004 /* VTColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100012E90000100ABC001 /* VTColors.swift */; };
+		C3D100052E90000100ABC005 /* VTTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100022E90000100ABC002 /* VTTypography.swift */; };
+		C3D100062E90000100ABC006 /* VTComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100032E90000100ABC003 /* VTComponents.swift */; };
+		C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,6 +164,10 @@
 		C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetPage.swift; sourceTree = "<group>"; };
 		C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsPage.swift; sourceTree = "<group>"; };
 		C2E2012E2F8D0001001B0001 /* ProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePage.swift; sourceTree = "<group>"; };
+		C3D100012E90000100ABC001 /* VTColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTColors.swift; sourceTree = "<group>"; };
+		C3D100022E90000100ABC002 /* VTTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTTypography.swift; sourceTree = "<group>"; };
+		C3D100032E90000100ABC003 /* VTComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTComponents.swift; sourceTree = "<group>"; };
+		C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIApplication+Identified.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,6 +238,7 @@
 		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
 			isa = PBXGroup;
 			children = (
+				C3D100072E90000100ABC007 /* DesignSystem */,
 				AFEEE4672F62B371000A8ADD /* API */,
 				AF56EC362E2B200900253BE3 /* Loading */,
 				AF56EC332E29F71800253BE3 /* Profile */,
@@ -263,6 +272,7 @@
 			isa = PBXGroup;
 			children = (
 				C2E2012F2F8D0001001B0001 /* PageObjects */,
+				C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */,
 				AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */,
 				AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */,
 			);
@@ -429,6 +439,16 @@
 				C2E2012E2F8D0001001B0001 /* ProfilePage.swift */,
 			);
 			path = PageObjects;
+			sourceTree = "<group>";
+		};
+		C3D100072E90000100ABC007 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				C3D100012E90000100ABC001 /* VTColors.swift */,
+				C3D100022E90000100ABC002 /* VTTypography.swift */,
+				C3D100032E90000100ABC003 /* VTComponents.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -608,6 +628,9 @@
 				AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */,
 				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
 				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
+				C3D100042E90000100ABC004 /* VTColors.swift in Sources */,
+				C3D100052E90000100ABC005 /* VTTypography.swift in Sources */,
+				C3D100062E90000100ABC006 /* VTComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -640,6 +663,7 @@
 				C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */,
 				C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */,
 				C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */,
+				C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -19,13 +19,21 @@ struct NetWorthChartView: View {
                 y: .value("Net Worth", snapshot.value)
             )
             .interpolationMethod(.catmullRom)
+            .foregroundStyle(VTColors.primary)
+            .lineStyle(StrokeStyle(lineWidth: 2))
 
             AreaMark(
                 x: .value("Date", snapshot.date),
                 y: .value("Net Worth", snapshot.value)
             )
             .interpolationMethod(.catmullRom)
-            .foregroundStyle(LinearGradient(gradient: Gradient(colors: [.blue.opacity(0.4), .clear]), startPoint: .top, endPoint: .bottom))
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [VTColors.primary.opacity(0.10), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
         }
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)

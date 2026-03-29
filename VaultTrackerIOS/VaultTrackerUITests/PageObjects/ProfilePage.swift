@@ -3,7 +3,7 @@ import XCTest
 struct ProfilePage {
     let app: XCUIApplication
 
-    var signOutButton: XCUIElement { app.buttons["signOutButton"] }
+    var signOutButton: XCUIElement { app.identified("signOutButton") }
 
     @discardableResult
     func waitForScreen(timeout: TimeInterval = 5) -> Self {
