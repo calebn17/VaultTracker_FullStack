@@ -17,8 +17,6 @@
 		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
 		AF4336642E0CDFE800AFC1A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */; };
 		AF4336672E0CDFE800AFC1A0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */; };
-		AF43367B2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */; };
-		AF43367D2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */; };
 		AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */; };
 		AF43368C2E0CE2BE00AFC1A0 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */; };
 		AF4336922E0CE32000AFC1A0 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4336912E0CE32000AFC1A0 /* HomeView.swift */; };
@@ -76,6 +74,12 @@
 		C3D100052E90000100ABC005 /* VTTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100022E90000100ABC002 /* VTTypography.swift */; };
 		C3D100062E90000100ABC006 /* VTComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100032E90000100ABC003 /* VTComponents.swift */; };
 		C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */; };
+		E1B201022F8D0001001B0001 /* BaseTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201012F8D0001001B0001 /* BaseTestCase.swift */; };
+		E1B201042F8D0001001B0001 /* LoginUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201032F8D0001001B0001 /* LoginUITests.swift */; };
+		E1B201062F8D0001001B0001 /* HomeTabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201052F8D0001001B0001 /* HomeTabUITests.swift */; };
+		E1B201082F8D0001001B0001 /* AddAssetModalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201072F8D0001001B0001 /* AddAssetModalUITests.swift */; };
+		E1B2010A2F8D0001001B0001 /* AnalyticsTabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201092F8D0001001B0001 /* AnalyticsTabUITests.swift */; };
+		E1B2010C2F8D0001001B0001 /* ProfileTabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B2010B2F8D0001001B0001 /* ProfileTabUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -109,8 +113,6 @@
 		AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AF43366C2E0CDFE900AFC1A0 /* VaultTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF4336762E0CDFE900AFC1A0 /* VaultTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerUITests.swift; sourceTree = "<group>"; };
-		AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		AF4336912E0CE32000AFC1A0 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -273,8 +275,12 @@
 			children = (
 				C2E2012F2F8D0001001B0001 /* PageObjects */,
 				C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */,
-				AF43367A2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift */,
-				AF43367C2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift */,
+				E1B201012F8D0001001B0001 /* BaseTestCase.swift */,
+				E1B201032F8D0001001B0001 /* LoginUITests.swift */,
+				E1B201052F8D0001001B0001 /* HomeTabUITests.swift */,
+				E1B201072F8D0001001B0001 /* AddAssetModalUITests.swift */,
+				E1B201092F8D0001001B0001 /* AnalyticsTabUITests.swift */,
+				E1B2010B2F8D0001001B0001 /* ProfileTabUITests.swift */,
 			);
 			path = VaultTrackerUITests;
 			sourceTree = "<group>";
@@ -656,8 +662,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF43367D2E0CDFE900AFC1A0 /* VaultTrackerUITestsLaunchTests.swift in Sources */,
-				AF43367B2E0CDFE900AFC1A0 /* VaultTrackerUITests.swift in Sources */,
+				E1B201022F8D0001001B0001 /* BaseTestCase.swift in Sources */,
+				E1B201042F8D0001001B0001 /* LoginUITests.swift in Sources */,
+				E1B201062F8D0001001B0001 /* HomeTabUITests.swift in Sources */,
+				E1B201082F8D0001001B0001 /* AddAssetModalUITests.swift in Sources */,
+				E1B2010A2F8D0001001B0001 /* AnalyticsTabUITests.swift in Sources */,
+				E1B2010C2F8D0001001B0001 /* ProfileTabUITests.swift in Sources */,
 				C2E201302F8D0001001B0001 /* LoginPage.swift in Sources */,
 				C2E201312F8D0001001B0001 /* HomePage.swift in Sources */,
 				C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */,
