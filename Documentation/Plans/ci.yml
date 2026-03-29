@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      ios: ${{ steps.filter.outputs.ios }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'VaultTrackerAPI/**'
+            ios:
+              - 'VaultTrackerIOS/**'
+            web:
+              - 'VaultTrackerWeb/**'
+
+  test-api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        working-directory: VaultTrackerAPI
+        run: pip install -r requirements.txt
+      - name: Run tests
+        working-directory: VaultTrackerAPI
+        run: python -m pytest tests/ -v
+
+  test-ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        working-directory: VaultTrackerIOS
+        run: |
+          xcodebuild test \
+            -project VaultTracker.xcodeproj \
+            -testPlan VaultTracker \
+            -scheme VaultTracker \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath TestResults.xcresult
+
+  test-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: VaultTrackerWeb
+        run: npm ci
+      - name: Run tests
+        working-directory: VaultTrackerWeb
+        run: npm test
