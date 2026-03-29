@@ -82,9 +82,10 @@ No manual change needed before archiving — the switch is compile-time (`#if DE
 
 ### Unit / Integration Tests (`VaultTrackerTests/`)
 
-- **Unit tests** use Swift Testing (`@Test`, `#expect`).
+- **Unit tests** use Swift Testing (`@Test`, `#expect`). ViewModel coverage includes `HomeViewModelTests`, `AnalyticsViewModelTests`, and `AddAssetFormViewModelTests` (validation / request encoding without the network).
 - **Integration tests** (`APIIntegrationTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`) hit a real local API with debug auth — the API server must be running with `DEBUG_AUTH_ENABLED=true`.
-- `MockDataService.swift` is the test double for `DataServiceProtocol`; add stubs there when new protocol methods are declared.
+- `MockDataService.swift` is the test double for `DataServiceProtocol`; add stubs there when new protocol methods are declared. For analytics VM tests it exposes `analyticsStub`, `analyticsError`, and `fetchAnalyticsCallCount` (mirrors the dashboard / refresh-prices patterns).
+- **Inventory** (Swift `@Test` in `VaultTrackerTests/`): ~96 unit cases across mappers, codable, errors, and view models; 20 integration-tagged cases. See [Documentation/Plans/2026-03-29-ios-test-plan.md](../Documentation/Plans/2026-03-29-ios-test-plan.md) for the coverage map and CI split (unit vs integration vs UI).
 
 ### UI Tests (`VaultTrackerUITests/`)
 
@@ -115,7 +116,7 @@ Run UI tests via **Xcode → Product → Test** (select `VaultTrackerUITests` sc
 | New data operation | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock |
 | New domain type | `Models/` |
 | New API model | `API/Models/` |
-| New UI test | Add page object in `VaultTrackerUITests/PageObjects/`, add test in `VaultTrackerUITests.swift` |
+| New UI test | Add page object in `VaultTrackerUITests/PageObjects/`; add cases in the matching `*UITests.swift` (subclass `BaseTestCase` for shared `launchApp` / `loginWithDebug` / `seedCashHoldingViaUI`) |
 | Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift` (`Color(hex:)`), `MainView/VaultTrackerApp.swift`, then feature views (Home, Add Asset, Analytics, Profile, etc.) |
 
 ## Refactor Plan Status

@@ -65,6 +65,8 @@
 		B2E108072F8A0001001B0004 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */; };
 		C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */; };
 		C2E201032F8C0001001C0002 /* APIModelsCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */; };
+		E2B301022F8E0001001E0001 /* AnalyticsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B301012F8E0001001E0001 /* AnalyticsViewModelTests.swift */; };
+		E2B301042F8E0001001E0001 /* AddAssetFormViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */; };
 		C2E201302F8D0001001B0001 /* LoginPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012A2F8D0001001B0001 /* LoginPage.swift */; };
 		C2E201312F8D0001001B0001 /* HomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012B2F8D0001001B0001 /* HomePage.swift */; };
 		C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */; };
@@ -161,6 +163,8 @@
 		B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
 		C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMapperTests.swift; sourceTree = "<group>"; };
 		C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModelsCodableTests.swift; sourceTree = "<group>"; };
+		E2B301012F8E0001001E0001 /* AnalyticsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModelTests.swift; sourceTree = "<group>"; };
+		E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetFormViewModelTests.swift; sourceTree = "<group>"; };
 		C2E2012A2F8D0001001B0001 /* LoginPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginPage.swift; sourceTree = "<group>"; };
 		C2E2012B2F8D0001001B0001 /* HomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePage.swift; sourceTree = "<group>"; };
 		C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetPage.swift; sourceTree = "<group>"; };
@@ -170,6 +174,12 @@
 		C3D100022E90000100ABC002 /* VTTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTTypography.swift; sourceTree = "<group>"; };
 		C3D100032E90000100ABC003 /* VTComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTComponents.swift; sourceTree = "<group>"; };
 		C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIApplication+Identified.swift"; sourceTree = "<group>"; };
+		E1B201012F8D0001001B0001 /* BaseTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseTestCase.swift; sourceTree = "<group>"; };
+		E1B201032F8D0001001B0001 /* LoginUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginUITests.swift; sourceTree = "<group>"; };
+		E1B201052F8D0001001B0001 /* HomeTabUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTabUITests.swift; sourceTree = "<group>"; };
+		E1B201072F8D0001001B0001 /* AddAssetModalUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetModalUITests.swift; sourceTree = "<group>"; };
+		E1B201092F8D0001001B0001 /* AnalyticsTabUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsTabUITests.swift; sourceTree = "<group>"; };
+		E1B2010B2F8D0001001B0001 /* ProfileTabUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTabUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -330,9 +340,11 @@
 		AF4D44782F694B6D0055FF21 /* VaultTrackerTests */ = {
 			isa = PBXGroup;
 			children = (
+				E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */,
 				AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */,
 				AF7FFD1A2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift */,
 				AF7FFD182F69625B008F1008 /* APIIntegrationTests.swift */,
+				E2B301012F8E0001001E0001 /* AnalyticsViewModelTests.swift */,
 				AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */,
 				AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */,
 				AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */,
@@ -648,6 +660,8 @@
 				AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */,
 				AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */,
 				AF7FFD1D2F69651B008F1008 /* HomeViewModelIntegrationTests.swift in Sources */,
+				E2B301022F8E0001001E0001 /* AnalyticsViewModelTests.swift in Sources */,
+				E2B301042F8E0001001E0001 /* AddAssetFormViewModelTests.swift in Sources */,
 				C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */,
 				C2E201032F8C0001001C0002 /* APIModelsCodableTests.swift in Sources */,
 				AF4D447D2F694B6D0055FF21 /* MockDataService.swift in Sources */,

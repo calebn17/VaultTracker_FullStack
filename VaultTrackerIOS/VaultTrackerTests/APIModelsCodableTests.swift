@@ -79,6 +79,67 @@ struct APIModelsCodableTests {
         #expect(decoded.errors.isEmpty)
     }
 
+    @Test func accountResponseDecodesSnakeCaseKeys() throws {
+        let json = """
+        {
+          "id": "acct-1",
+          "user_id": "user-1",
+          "name": "Chase Checking",
+          "account_type": "bank",
+          "created_at": "2026-01-01T00:00:00Z"
+        }
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let account = try decoder.decode(APIAccountResponse.self, from: json)
+
+        #expect(account.name == "Chase Checking")
+        #expect(account.accountType == "bank")
+        #expect(account.id == "acct-1")
+    }
+
+    @Test func assetResponseDecodesSnakeCaseKeys() throws {
+        let json = """
+        {
+          "id": "asset-1",
+          "user_id": "user-1",
+          "name": "Bitcoin",
+          "symbol": "BTC",
+          "category": "crypto",
+          "quantity": 0.5,
+          "current_value": 30000.0,
+          "last_updated": "2026-03-01T00:00:00Z"
+        }
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let asset = try decoder.decode(APIAssetResponse.self, from: json)
+
+        #expect(asset.name == "Bitcoin")
+        #expect(asset.symbol == "BTC")
+        #expect(asset.category == "crypto")
+        #expect(asset.quantity == 0.5)
+        #expect(asset.currentValue == 30_000)
+    }
+
+    @Test func netWorthHistoryResponseDecodesFromJSON() throws {
+        let json = """
+        {
+          "snapshots": [
+            { "date": "2026-01-15T00:00:00Z", "value": 50000.0 },
+            { "date": "2026-02-15T00:00:00Z", "value": 75000.0 }
+          ]
+        }
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let history = try decoder.decode(APINetWorthHistoryResponse.self, from: json)
+
+        #expect(history.snapshots.count == 2)
+        #expect(history.snapshots[0].value == 50_000)
+        #expect(history.snapshots[1].value == 75_000)
+    }
+
     @Test func enrichedTransactionDecodesNestedAssetAndAccount() throws {
         let json = """
         {

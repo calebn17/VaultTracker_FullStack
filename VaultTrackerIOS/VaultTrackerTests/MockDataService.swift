@@ -39,10 +39,14 @@ final class MockDataService: DataServiceProtocol {
             currentValue: 0
         )
     )
+    var analyticsError: Error?
+    private(set) var fetchAnalyticsCallCount = 0
     var refreshPricesStub = APIPriceRefreshResult(updated: [], skipped: [], errors: [])
 
     func fetchAnalytics() async throws -> APIAnalyticsResponse {
-        analyticsStub
+        fetchAnalyticsCallCount += 1
+        if let error = analyticsError { throw error }
+        return analyticsStub
     }
 
     func refreshPrices() async throws -> APIPriceRefreshResult {
