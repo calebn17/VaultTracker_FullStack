@@ -65,7 +65,7 @@ struct AddAssetPage {
     }
 
     /// Selects a category by the **visible accessibility label** on the chip (e.g. `Cash`, `Crypto`).
-    /// Matches `AssetCategory.rawValue.capitalized` from `AddAssetModalView` (e.g. `Stocks/Etfs` for stocks).
+    /// Use `AssetCategory.pickerLabel` / `rawValue` (e.g. `Stocks/ETFs`); never `.capitalized` on `rawValue`.
     @discardableResult
     func selectCategory(_ category: String) -> Self {
         categoryPicker.tap()

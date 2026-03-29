@@ -13,6 +13,10 @@ public enum AssetCategory: String, Codable, CaseIterable {
     case realEstate = "Real Estate"
     case cash = "Cash"
     case retirement = "Retirement"
+
+    /// Picker / chip label and UI-test button title. Same as `rawValue` — do **not** use `rawValue.capitalized`,
+    /// which lowercases after `/` and yields `"Stocks/Etfs"` instead of `"Stocks/ETFs"`.
+    public var pickerLabel: String { rawValue }
 }
 
 struct Asset: Sendable, Identifiable {

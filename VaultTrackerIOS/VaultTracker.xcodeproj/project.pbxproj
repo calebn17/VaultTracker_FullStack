@@ -14,6 +14,7 @@
 		AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22B2E1E23FD005FFB77 /* Account.swift */; };
 		AF07A22E2E1E24AB005FFB77 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A22D2E1E24AB005FFB77 /* Transaction.swift */; };
 		AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF07A2312E1E25EF005FFB77 /* DataService.swift */; };
+		AF1B6DAA2F78F7B700B4A727 /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = AF1B6DA92F78F75200B4A727 /* TestPlan.xctestplan */; };
 		AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */; };
 		AF4336642E0CDFE800AFC1A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */; };
 		AF4336672E0CDFE800AFC1A0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF4336662E0CDFE800AFC1A0 /* Preview Assets.xcassets */; };
@@ -72,10 +73,10 @@
 		C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */; };
 		C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */; };
 		C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E2012E2F8D0001001B0001 /* ProfilePage.swift */; };
-		C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */; };
 		C3D100042E90000100ABC004 /* VTColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100012E90000100ABC001 /* VTColors.swift */; };
 		C3D100052E90000100ABC005 /* VTTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100022E90000100ABC002 /* VTTypography.swift */; };
 		C3D100062E90000100ABC006 /* VTComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D100032E90000100ABC003 /* VTComponents.swift */; };
+		C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +104,7 @@
 		AF07A22B2E1E23FD005FFB77 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		AF07A22D2E1E24AB005FFB77 /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		AF07A2312E1E25EF005FFB77 /* DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataService.swift; sourceTree = "<group>"; };
+		AF1B6DA92F78F75200B4A727 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		AF43365A2E0CDFE700AFC1A0 /* VaultTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaultTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF43365D2E0CDFE700AFC1A0 /* VaultTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTrackerApp.swift; sourceTree = "<group>"; };
 		AF4336632E0CDFE800AFC1A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -164,10 +166,10 @@
 		C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetPage.swift; sourceTree = "<group>"; };
 		C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsPage.swift; sourceTree = "<group>"; };
 		C2E2012E2F8D0001001B0001 /* ProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePage.swift; sourceTree = "<group>"; };
-		C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIApplication+Identified.swift"; sourceTree = "<group>"; };
 		C3D100012E90000100ABC001 /* VTColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTColors.swift; sourceTree = "<group>"; };
 		C3D100022E90000100ABC002 /* VTTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTTypography.swift; sourceTree = "<group>"; };
 		C3D100032E90000100ABC003 /* VTComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTComponents.swift; sourceTree = "<group>"; };
+		C3D200012E90000200DE001 /* XCUIApplication+Identified.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIApplication+Identified.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +219,7 @@
 		AF4336512E0CDFE700AFC1A0 = {
 			isa = PBXGroup;
 			children = (
+				AF1B6DA92F78F75200B4A727 /* TestPlan.xctestplan */,
 				AF5127D62F738D8C00B22755 /* VaultTracker.xctestplan */,
 				AF43365C2E0CDFE700AFC1A0 /* VaultTracker */,
 				AF4D44782F694B6D0055FF21 /* VaultTrackerTests */,
@@ -233,16 +236,6 @@
 				AF4336762E0CDFE900AFC1A0 /* VaultTrackerUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		C3D100072E90000100ABC007 /* DesignSystem */ = {
-			isa = PBXGroup;
-			children = (
-				C3D100012E90000100ABC001 /* VTColors.swift */,
-				C3D100022E90000100ABC002 /* VTTypography.swift */,
-				C3D100032E90000100ABC003 /* VTComponents.swift */,
-			);
-			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 		AF43365C2E0CDFE700AFC1A0 /* VaultTracker */ = {
@@ -451,6 +444,16 @@
 			path = PageObjects;
 			sourceTree = "<group>";
 		};
+		C3D100072E90000100ABC007 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				C3D100012E90000100ABC001 /* VTColors.swift */,
+				C3D100022E90000100ABC002 /* VTTypography.swift */,
+				C3D100032E90000100ABC003 /* VTComponents.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -576,6 +579,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF1B6DAA2F78F7B700B4A727 /* TestPlan.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

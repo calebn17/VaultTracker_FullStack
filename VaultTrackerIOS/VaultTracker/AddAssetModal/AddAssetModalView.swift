@@ -66,7 +66,7 @@ struct AddAssetModalView: View {
                                 Button {
                                     formViewModel.selectedCategory = category
                                 } label: {
-                                    Text(category.rawValue.capitalized)
+                                    Text(category.pickerLabel)
                                 }
                                 .buttonStyle(FilterChipStyle(isSelected: formViewModel.selectedCategory == category))
                             }
