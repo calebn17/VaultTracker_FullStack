@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onyx Wealth | Assets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary": "#ffffff",
+                        "tertiary-container": "#ffdcc2",
+                        "on-tertiary-fixed-variant": "#6d3a00",
+                        "on-primary-fixed": "#141f00",
+                        "on-tertiary-fixed": "#2e1500",
+                        "surface-container-lowest": "#0c0e11",
+                        "inverse-primary": "#4c6700",
+                        "surface-container": "#1e2023",
+                        "surface-variant": "#333538",
+                        "surface-container-low": "#1a1c1f",
+                        "on-secondary-fixed-variant": "#004d66",
+                        "inverse-on-surface": "#2f3034",
+                        "primary-fixed-dim": "#aad548",
+                        "surface-dim": "#111317",
+                        "primary-fixed": "#c5f261",
+                        "outline": "#8e937e",
+                        "secondary": "#70d2ff",
+                        "on-surface-variant": "#c4c9b2",
+                        "on-background": "#e2e2e6",
+                        "on-primary": "#263500",
+                        "secondary-fixed": "#c0e8ff",
+                        "on-primary-container": "#516e00",
+                        "surface-tint": "#aad548",
+                        "on-secondary-fixed": "#001e2b",
+                        "error": "#ffb4ab",
+                        "on-surface": "#e2e2e6",
+                        "surface-container-high": "#282a2d",
+                        "on-secondary": "#003547",
+                        "background": "#111317",
+                        "secondary-fixed-dim": "#70d2ff",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e2e2e6",
+                        "secondary-container": "#2b9bc6",
+                        "primary-container": "#c5f261",
+                        "on-secondary-container": "#002e3e",
+                        "outline-variant": "#444937",
+                        "surface-bright": "#37393d",
+                        "surface-container-highest": "#333538",
+                        "on-tertiary-container": "#925619",
+                        "on-primary-fixed-variant": "#384e00",
+                        "tertiary-fixed-dim": "#ffb77a",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdcc2",
+                        "error-container": "#93000a",
+                        "surface": "#111317",
+                        "on-tertiary": "#4c2700",
+                        "primary": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mono-data {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#111317] dark:bg-[#111317] font-['Space_Grotesk'] tracking-tight border-r border-white/5 py-8 px-4 z-50">
+<div class="mb-10 px-4">
+<h1 class="text-xl font-bold text-white tracking-widest uppercase">Onyx Wealth</h1>
+<p class="text-[10px] text-gray-500 tracking-[0.2em] uppercase mt-1">Private Ledger</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-white transition-colors transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#C5F261] font-bold border-r-2 border-[#C5F261] bg-white/5 transition-all duration-200 scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-medium">Assets</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-white transition-colors transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-medium">History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-white transition-colors transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4">
+<button class="w-full bg-primary-fixed text-on-primary font-bold py-3 rounded-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-xl" data-icon="add">add</span>
+<span class="text-sm">Add Asset</span>
+</button>
+<div class="flex items-center gap-3 mt-8 pt-6 border-t border-white/5">
+<img alt="User Avatar" class="w-10 h-10 rounded-full bg-surface-container" data-alt="close-up professional portrait of a tech executive with minimalist lighting and dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbijxlvtQcVO3Jv38lIer3o0cFcHmKfLk2BqM7Pov4t_9PDOBbszdz3wiY11KqonbobwhwHfi-C8v7kF7JoidtyKQpf_I8IqNo0Xp-STpq4wtkmyggX8Xsx7AnsdUKRcKAblD0RVaebNROLAg0-Qf4LL_fvIpDTeUaVzLBwoWciuJj9l90rXZtLSzG0wporIyPIuqh2AeaFHJog8G5iN0CcCZzolLhXt_rr3HGTnw7friih4mV_x4Gtk1lxn0EgdYiyRGl7n_Z7Q"/>
+<div class="overflow-hidden">
+<p class="text-white text-sm font-bold truncate">Alexander Onyx</p>
+<p class="text-gray-500 text-xs truncate">Premium Tier</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopNavBar Component -->
+<header class="sticky top-0 z-40 w-full bg-[#111317]/80 backdrop-blur-xl flex justify-between items-center h-16 px-8 ml-0">
+<div class="relative w-96 group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary-fixed transition-colors" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-2 text-sm text-on-surface focus:ring-1 focus:ring-[#C5F261]/30 transition-all placeholder:text-gray-600" placeholder="Search assets, tickers, or locations..." type="text"/>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4 text-gray-400">
+<button class="hover:text-[#C5F261] transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:text-[#C5F261] transition-colors"><span class="material-symbols-outlined" data-icon="help_outline">help_outline</span></button>
+</div>
+</div>
+<div class="bg-gradient-to-r from-transparent via-white/5 to-transparent h-[1px] w-full absolute bottom-0 left-0"></div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 space-y-10">
+<!-- Hero Header -->
+<section class="flex justify-between items-end">
+<div>
+<span class="text-primary-fixed font-headline text-sm tracking-widest uppercase mb-2 block">Total Portfolio</span>
+<h2 class="text-6xl font-headline font-bold text-white mono-data tracking-tight">$4,892,104<span class="text-3xl text-gray-500 font-light italic ml-2">.82</span></h2>
+<div class="flex items-center gap-3 mt-4">
+<span class="flex items-center gap-1 text-primary-fixed bg-primary-fixed/10 px-3 py-1 rounded-full text-xs font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                            +12.4%
+                        </span>
+<span class="text-on-surface-variant text-xs font-label uppercase tracking-widest">Last 24 Hours: +$54,201.00</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-6 py-2 bg-surface-container hover:bg-surface-container-high text-white text-sm rounded-full transition-all">Export Report</button>
+<button class="px-6 py-2 bg-primary-fixed text-on-primary font-bold text-sm rounded-full transition-all hover:shadow-[0_0_20px_rgba(197,242,97,0.3)]">Allocation View</button>
+</div>
+</section>
+<!-- Asset Class Bento Grid -->
+<section class="grid grid-cols-12 gap-6">
+<!-- Category: Stocks -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-low rounded-xl p-6 transition-all border border-white/5 hover:border-primary-fixed/20">
+<div class="flex justify-between items-center mb-8">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl" data-icon="show_chart">show_chart</span>
+</div>
+<div>
+<h3 class="font-headline text-xl text-white">Equities &amp; ETFs</h3>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Managed Portfolio</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-2xl font-bold mono-data text-white">$2,105,400</p>
+<p class="text-xs text-primary-fixed mono-data">+1.42%</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="grid grid-cols-12 text-[10px] uppercase tracking-widest text-gray-500 px-2">
+<div class="col-span-5">Asset</div>
+<div class="col-span-3 text-right">Balance</div>
+<div class="col-span-2 text-right">Price</div>
+<div class="col-span-2 text-right">24h</div>
+</div>
+<div class="divide-y divide-white/5">
+<!-- Stock Row 1 -->
+<div class="grid grid-cols-12 items-center py-4 px-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer group">
+<div class="col-span-5 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">AAPL</div>
+<div>
+<p class="text-sm font-medium text-white group-hover:text-primary-fixed transition-colors">Apple Inc.</p>
+<p class="text-[10px] text-gray-500">2,450 Units</p>
+</div>
+</div>
+<div class="col-span-3 text-right mono-data text-sm text-white">$458,150</div>
+<div class="col-span-2 text-right mono-data text-sm text-gray-400">$187.00</div>
+<div class="col-span-2 text-right mono-data text-sm text-primary-fixed">+0.8%</div>
+</div>
+<!-- Stock Row 2 -->
+<div class="grid grid-cols-12 items-center py-4 px-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer group">
+<div class="col-span-5 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">VOO</div>
+<div>
+<p class="text-sm font-medium text-white group-hover:text-primary-fixed transition-colors">Vanguard S&amp;P 500</p>
+<p class="text-[10px] text-gray-500">1,820 Units</p>
+</div>
+</div>
+<div class="col-span-3 text-right mono-data text-sm text-white">$819,000</div>
+<div class="col-span-2 text-right mono-data text-sm text-gray-400">$450.00</div>
+<div class="col-span-2 text-right mono-data text-sm text-primary-fixed">+1.2%</div>
+</div>
+<!-- Stock Row 3 -->
+<div class="grid grid-cols-12 items-center py-4 px-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer group">
+<div class="col-span-5 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">NVDA</div>
+<div>
+<p class="text-sm font-medium text-white group-hover:text-primary-fixed transition-colors">NVIDIA Corp</p>
+<p class="text-[10px] text-gray-500">800 Units</p>
+</div>
+</div>
+<div class="col-span-3 text-right mono-data text-sm text-white">$720,000</div>
+<div class="col-span-2 text-right mono-data text-sm text-gray-400">$900.00</div>
+<div class="col-span-2 text-right mono-data text-sm text-primary-fixed">+4.5%</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Category: Crypto (Vertical Visual) -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+<div class="bg-surface-container-low rounded-xl p-6 border border-white/5 relative overflow-hidden h-full">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed-dim/5 blur-3xl -mr-16 -mt-16"></div>
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-tertiary-fixed-dim/10 flex items-center justify-center text-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-3xl" data-icon="currency_bitcoin">currency_bitcoin</span>
+</div>
+<div>
+<h3 class="font-headline text-xl text-white">Digital Assets</h3>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Decentralized</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-2xl font-bold mono-data text-white">$432,104</p>
+<p class="text-xs text-error mono-data">-2.14%</p>
+</div>
+</div>
+<!-- Mini Pulse Sparkline Concept -->
+<div class="h-24 w-full mb-6 flex items-end gap-1">
+<div class="flex-1 bg-surface-container-highest h-[40%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[60%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[55%] rounded-t-sm"></div>
+<div class="flex-1 bg-surface-container-highest h-[80%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary-fixed/40 h-[90%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary-fixed/60 h-[75%] rounded-t-sm"></div>
+<div class="flex-1 bg-primary-fixed h-full rounded-t-sm"></div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center p-3 bg-white/5 rounded-lg group cursor-pointer hover:bg-white/10 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-[#F7931A] flex items-center justify-center text-[8px] text-white font-bold">BTC</div>
+<span class="text-sm font-medium">Bitcoin</span>
+</div>
+<span class="mono-data text-sm">$320,500</span>
+</div>
+<div class="flex justify-between items-center p-3 bg-white/5 rounded-lg group cursor-pointer hover:bg-white/10 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-[#627EEA] flex items-center justify-center text-[8px] text-white font-bold">ETH</div>
+<span class="text-sm font-medium">Ethereum</span>
+</div>
+<span class="mono-data text-sm">$95,200</span>
+</div>
+<div class="flex justify-between items-center p-3 bg-white/5 rounded-lg group cursor-pointer hover:bg-white/10 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-[#26A17B] flex items-center justify-center text-[8px] text-white font-bold">USDT</div>
+<span class="text-sm font-medium">Tether</span>
+</div>
+<span class="mono-data text-sm">$16,404</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Category: Real Estate (Horizontal Span) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-xl p-6 border border-white/5 flex gap-8">
+<div class="flex-1">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-3xl" data-icon="domain">domain</span>
+</div>
+<div>
+<h3 class="font-headline text-xl text-white">Real Estate</h3>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Physical Assets</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-white/5 rounded-lg flex justify-between items-center">
+<div>
+<p class="text-sm font-medium text-white">Manhattan Penthouse</p>
+<p class="text-[10px] text-gray-500 uppercase">Primary Residence</p>
+</div>
+<div class="text-right">
+<p class="text-sm mono-data text-white">$1,850,000</p>
+<p class="text-[10px] text-primary-fixed font-bold uppercase tracking-tighter">Est. +4.2% YoY</p>
+</div>
+</div>
+<div class="p-4 bg-white/5 rounded-lg flex justify-between items-center">
+<div>
+<p class="text-sm font-medium text-white">Aspen Chalet</p>
+<p class="text-[10px] text-gray-500 uppercase">Vacation Home</p>
+</div>
+<div class="text-right">
+<p class="text-sm mono-data text-white">$425,000</p>
+<p class="text-[10px] text-gray-500 uppercase">Equity Only</p>
+</div>
+</div>
+</div>
+</div>
+<div class="w-1/3 relative rounded-lg overflow-hidden hidden xl:block">
+<img class="absolute inset-0 w-full h-full object-cover grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700" data-alt="high-end luxury skyscraper architecture at dusk with sleek glass panels and warm interior lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa_-NZG1aqjsgXHIo-pCuKKDYJ6yfMUwU_aqj_gqdoACTY3CVbwMWI6DYYIBgpG4ouzu5a08Ni5mQ7ckewfD-v4_WqD9bTBMizo0z1x5F_XJ-FeCAjJ4c-qCph5N2ufvKEu8g4eUoIdiBFkXm1nU5jRbNOxdomXt4_9oSuOAOuBme4DcdqXQAcv9NOQ50jYxI7irka4mGapQJhWtF0zixEeiUyNw5ZelYzf1Teth4JCf4qfsd3RQ7tBgsCIhjQy_Ft76lToq3VBg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-[10px] text-white font-bold uppercase tracking-widest">Total Value</p>
+<p class="text-xl font-bold mono-data text-primary-fixed">$2,275,000</p>
+</div>
+</div>
+</div>
+<!-- Category: Cash -->
+<div class="col-span-12 lg:col-span-4 bg-[#C5F261] rounded-xl p-6 text-[#263500] flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-[#263500]/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" data-icon="payments">payments</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest bg-[#263500]/10 px-2 py-1 rounded">High Yield</span>
+</div>
+<h3 class="font-headline text-xl font-bold">Liquidity &amp; Cash</h3>
+<p class="text-sm opacity-80 mt-1">Available for deployment</p>
+</div>
+<div class="mt-8">
+<p class="text-4xl font-bold mono-data tracking-tight">$79,600</p>
+<div class="flex justify-between items-end mt-2">
+<p class="text-xs font-bold uppercase">4.50% APY</p>
+<button class="bg-[#263500] text-primary-fixed px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#1a2500] transition-colors">Transfer</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Asset History / Performance Ticker (Floating Style) -->
+<section class="bg-surface-container-low rounded-xl border border-white/5 overflow-hidden">
+<div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+<h4 class="font-headline text-sm font-bold text-white uppercase tracking-widest">Recent Performance Attribution</h4>
+<div class="flex gap-4">
+<button class="text-xs text-primary-fixed font-bold uppercase tracking-widest">Day</button>
+<button class="text-xs text-gray-500 hover:text-white transition-colors uppercase tracking-widest">Week</button>
+<button class="text-xs text-gray-500 hover:text-white transition-colors uppercase tracking-widest">Month</button>
+</div>
+</div>
+<div class="grid grid-cols-4 divide-x divide-white/5">
+<div class="p-6 text-center">
+<p class="text-[10px] text-gray-500 uppercase mb-1">Growth Engine</p>
+<p class="text-lg font-bold text-white">NVIDIA Corp</p>
+<p class="text-sm text-primary-fixed mono-data">+$32,400</p>
+</div>
+<div class="p-6 text-center">
+<p class="text-[10px] text-gray-500 uppercase mb-1">Top Loser</p>
+<p class="text-lg font-bold text-white">Bitcoin</p>
+<p class="text-sm text-error mono-data">-$6,120</p>
+</div>
+<div class="p-6 text-center">
+<p class="text-[10px] text-gray-500 uppercase mb-1">Yield Earned</p>
+<p class="text-lg font-bold text-white">Onyx Cash</p>
+<p class="text-sm text-primary-fixed mono-data">+$310</p>
+</div>
+<div class="p-6 text-center">
+<p class="text-[10px] text-gray-500 uppercase mb-1">New Inflow</p>
+<p class="text-lg font-bold text-white">Real Estate</p>
+<p class="text-sm text-secondary mono-data">$0.00</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

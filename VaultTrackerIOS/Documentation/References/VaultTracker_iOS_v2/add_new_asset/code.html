@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-bright": "#37393d",
+              "surface-container-high": "#282a2d",
+              "surface": "#111317",
+              "tertiary-fixed-dim": "#ffb77a",
+              "surface-container-low": "#1a1c1f",
+              "error-container": "#93000a",
+              "inverse-primary": "#4c6700",
+              "tertiary-container": "#ffdcc2",
+              "surface-tint": "#aad548",
+              "surface-container": "#1e2023",
+              "primary-fixed-dim": "#aad548",
+              "surface-container-highest": "#333538",
+              "on-surface": "#e2e2e6",
+              "on-primary-container": "#516e00",
+              "background": "#111317",
+              "outline-variant": "#444937",
+              "on-secondary-container": "#002e3e",
+              "primary-fixed": "#c5f261",
+              "secondary": "#70d2ff",
+              "secondary-fixed-dim": "#70d2ff",
+              "on-secondary": "#003547",
+              "primary-container": "#c5f261",
+              "on-tertiary-fixed": "#2e1500",
+              "secondary-container": "#2b9bc6",
+              "surface-container-lowest": "#0c0e11",
+              "on-primary-fixed": "#141f00",
+              "primary": "#ffffff",
+              "inverse-on-surface": "#2f3034",
+              "secondary-fixed": "#c0e8ff",
+              "surface-variant": "#333538",
+              "on-error-container": "#ffdad6",
+              "on-error": "#690005",
+              "on-tertiary-container": "#925619",
+              "on-tertiary": "#4c2700",
+              "on-secondary-fixed": "#001e2b",
+              "on-tertiary-fixed-variant": "#6d3a00",
+              "on-surface-variant": "#c4c9b2",
+              "inverse-surface": "#e2e2e6",
+              "on-primary-fixed-variant": "#384e00",
+              "outline": "#8e937e",
+              "on-secondary-fixed-variant": "#004d66",
+              "tertiary": "#ffffff",
+              "surface-dim": "#111317",
+              "error": "#ffb4ab",
+              "on-background": "#e2e2e6",
+              "on-primary": "#263500",
+              "tertiary-fixed": "#ffdcc2"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mono-data {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<div class="min-h-screen flex flex-col bg-surface overflow-hidden relative">
+<!-- Subtle Ambient Background Texture -->
+<div class="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
+<div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary-fixed blur-[120px] rounded-full opacity-10"></div>
+<div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] bg-secondary blur-[100px] rounded-full opacity-5"></div>
+</div>
+<!-- Header: TopAppBar logic applied for a Close/Action shell -->
+<header class="sticky top-0 w-full z-50 bg-[#111317]/40 backdrop-blur-xl flex justify-between items-center px-6 py-6 w-full">
+<h1 class="font-headline font-bold text-white tracking-tighter text-2xl">Add Asset</h1>
+<button class="hover:opacity-80 transition-opacity active:scale-95 duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined text-3xl">close</span>
+</button>
+</header>
+<!-- Main Form Canvas -->
+<main class="flex-1 flex flex-col max-w-2xl mx-auto w-full px-6 pt-4 pb-12 relative z-10">
+<!-- Category Selector -->
+<section class="mb-12">
+<span class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] mb-4 block">Select Category</span>
+<div class="flex flex-wrap gap-3">
+<!-- Selected State: Stocks (Blue Highlight per prompt) -->
+<button class="px-6 py-2.5 rounded-full bg-secondary text-on-secondary font-label text-sm font-semibold transition-all shadow-[0_0_20px_rgba(112,210,255,0.2)]">
+                        Stocks
+                    </button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-label text-sm hover:text-on-surface transition-colors">
+                        Crypto
+                    </button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-label text-sm hover:text-on-surface transition-colors">
+                        Real Estate
+                    </button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-label text-sm hover:text-on-surface transition-colors">
+                        Cash
+                    </button>
+</div>
+</section>
+<!-- Major Input: Value (Visual Hierarchy Focus) -->
+<section class="mb-12">
+<label class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] mb-2 block">Current Value</label>
+<div class="relative group">
+<span class="absolute left-0 top-1/2 -translate-y-1/2 text-primary-fixed font-headline text-3xl md:text-4xl">$</span>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary-fixed focus:ring-0 font-headline text-5xl md:text-7xl mono-data text-white pl-8 md:pl-12 py-4 placeholder:text-surface-container-highest transition-all duration-500" placeholder="0.00" type="text" value="38,600"/>
+<span class="absolute right-0 bottom-6 text-on-surface-variant font-label tracking-widest text-sm uppercase">USD</span>
+</div>
+</section>
+<!-- Input Grid -->
+<div class="grid grid-cols-1 gap-8 mb-16">
+<!-- Ticker / Name -->
+<div class="space-y-2">
+<label class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] block">Ticker / Name</label>
+<div class="bg-surface-container-low/50 rounded-xl p-1 focus-within:ring-1 focus-within:ring-primary-fixed/20 transition-all">
+<input class="w-full bg-transparent border-0 focus:ring-0 text-white font-headline text-xl p-4 placeholder:text-on-surface-variant/30" placeholder="Enter Symbol" type="text" value="NVDA"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Cost Basis -->
+<div class="space-y-2">
+<label class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] block">Cost Basis (Optional)</label>
+<div class="bg-surface-container-low/50 rounded-xl p-1">
+<input class="w-full bg-transparent border-0 focus:ring-0 text-white font-headline text-xl mono-data p-4 placeholder:text-on-surface-variant/30" placeholder="$ 0.00" type="text"/>
+</div>
+</div>
+<!-- Note / Account -->
+<div class="space-y-2">
+<label class="text-on-surface-variant font-label text-[10px] uppercase tracking-[0.2em] block">Note / Account</label>
+<div class="bg-surface-container-low/50 rounded-xl p-1">
+<input class="w-full bg-transparent border-0 focus:ring-0 text-white font-body text-lg p-4 placeholder:text-on-surface-variant/30" placeholder="e.g. Savings" type="text" value="Roth IRA"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Descriptive Image / Decorative Visual -->
+<div class="mt-auto mb-8 rounded-2xl overflow-hidden h-32 relative">
+<img class="w-full h-full object-cover opacity-40 mix-blend-screen" data-alt="abstract close-up of glass prisms refracting light into soft cyan and neon lime gradients against a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBR-MKzDmXTg18xIP1UvYJx6u5x39fX-YNWhM5GrgzzMqnZutXFFf-tm3jHWlYFwDxfz-zAru58jMXiyviFaFcJYRueRXgfCUoHRR9ovOnzWZD4HgptWbef2UlnYTSTQPEZS8ATCi03Q0YdUsljGinF9nPLMDBJ439bHQPjROUBDSIotpqjNBsz_zGhDwokSa2pLly8MFDJdt-8XTiFSI7P169p8jNbprHNGBWJFBfdz4uFEZfwJ-21TcmjN7tOlG9T0XT2FTbtzQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-5 rounded-full bg-gradient-to-br from-[#C5F261] to-[#AAD548] text-[#141f00] font-headline font-bold text-lg tracking-tight shadow-[0_10px_30px_rgba(197,242,97,0.2)] hover:shadow-[0_15px_40px_rgba(197,242,97,0.3)] active:scale-[0.98] transition-all duration-300">
+                Add Asset
+            </button>
+</main>
+<!-- No Bottom Nav as per "Clean, focused layout without a bottom nav bar" instruction -->
+</div>
+</body></html>
