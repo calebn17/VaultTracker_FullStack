@@ -33,6 +33,9 @@
             reference = "container:VaultTracker/TestPlans/VaultTracker.xctestplan"
             default = "YES">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:VaultTrackerUnitTests.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

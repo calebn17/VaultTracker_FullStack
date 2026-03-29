@@ -76,4 +76,23 @@ Build and run via Xcode (`VaultTrackerIOS/VaultTracker.xcodeproj`). Tests run wi
 ```bash
 npm run dev    # Dev server at localhost:3000
 npm run build  # Production build
+npm test       # Same as CI: Vitest (`vitest run`)
 ```
+
+## GitHub Actions CI
+
+Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Full rationale and future extensions: [`Documentation/Plans/2026-03-29-ci-cd-testing-design.md`](Documentation/Plans/2026-03-29-ci-cd-testing-design.md).
+
+**Triggers:** `pull_request` and `push` to `main`.
+
+**Layout:** A `changes` job on `ubuntu-latest` uses [`dorny/paths-filter@v3`](https://github.com/dorny/paths-filter) to set `api` / `ios` / `web` flags from paths under `VaultTrackerAPI/**`, `VaultTrackerIOS/**`, and `VaultTrackerWeb/**`. Each test job runs on `macos-latest` only when its flag is true; jobs are independent and can run in parallel.
+
+**Root-only edits** (e.g. `CLAUDE.md`, `.github/workflows/ci.yml`) match no path filter, so all test jobs are skipped by design.
+
+| Job | What runs |
+|-----|-----------|
+| `test-api` | Python 3.11, `pip install -r requirements.txt`, `python -m pytest tests/ -v` in `VaultTrackerAPI/` (no secrets; SQLite tests). |
+| `test-ios` | `xcodebuild test` in `VaultTrackerIOS/`: project `VaultTracker.xcodeproj`, scheme `VaultTracker`, test plan `VaultTracker`, destination `platform=iOS Simulator,name=iPhone 17,OS=latest`, `TestResults.xcresult`. Unit tests only. |
+| `test-web` | Node 20, `npm ci`, `npm test` in `VaultTrackerWeb/` (Vitest). |
+
+**Planned extensions** (not in the workflow yet): Playwright e2e for web; XCUITest job for `VaultTrackerUITests` — see the design doc.

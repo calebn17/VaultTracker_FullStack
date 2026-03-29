@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "4D4B975B-D071-4468-9EB4-D7AB4D89F0D3",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : {
+        "suites" : [
+          {
+            "name" : "AddAssetFormViewModelIntegrationTests"
+          },
+          {
+            "name" : "APIIntegrationTests"
+          },
+          {
+            "name" : "HomeViewModelIntegrationTests"
+          }
+        ]
+      },
+      "target" : {
+        "containerPath" : "container:VaultTracker.xcodeproj",
+        "identifier" : "AF43366B2E0CDFE900AFC1A0",
+        "name" : "VaultTrackerTests"
+      }
+    }
+  ],
+  "version" : 2
+}

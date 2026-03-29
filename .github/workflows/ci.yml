@@ -53,9 +53,9 @@ jobs:
         run: |
           xcodebuild test \
             -project VaultTracker.xcodeproj \
-            -testPlan VaultTracker \
+            -testPlan VaultTrackerUnitTests \
             -scheme VaultTracker \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -resultBundlePath TestResults.xcresult
 
   test-web:
