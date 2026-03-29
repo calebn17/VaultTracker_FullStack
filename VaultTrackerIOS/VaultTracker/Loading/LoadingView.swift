@@ -8,24 +8,17 @@ struct LoadingView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding(.bottom, 50)
-                .foregroundColor(.white)
+                .foregroundStyle(VTColors.textPrimary)
             
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .progressViewStyle(CircularProgressViewStyle(tint: VTColors.primary))
                 .scaleEffect(1.5)
-            
+
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityIdentifier("loadingView")
-        .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color(red: 1.0, green: 0.5, blue: 0.0), Color(red: 0.4, green: 0.2, blue: 0.0)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        )
+        .background(VTColors.background.ignoresSafeArea())
     }
 }
 
