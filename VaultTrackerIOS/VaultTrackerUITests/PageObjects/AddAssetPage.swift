@@ -64,8 +64,9 @@ struct AddAssetPage {
         return self
     }
 
-    /// Selects a category by the **visible accessibility label** on the chip (e.g. `Cash`, `Crypto`).
-    /// Use `AssetCategory.pickerLabel` / `rawValue` (e.g. `Stocks/ETFs`); never `.capitalized` on `rawValue`.
+    /// Selects a category by visible label — use `AssetCategory.pickerLabel` / `rawValue` (e.g. `Cash`, `Crypto`, `Stocks/ETFs`).
+    /// Do not assume `.capitalized` on `rawValue`; it breaks `Stocks/ETFs` → `Stocks/Etfs`.
+    /// Form `Picker` options appear as **buttons** in XCTest, not `staticTexts` (labels exist but are not hittable for tap).
     @discardableResult
     func selectCategory(_ category: String) -> Self {
         categoryPicker.tap()

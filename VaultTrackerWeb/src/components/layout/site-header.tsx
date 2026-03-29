@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 const links = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/analytics", label: "Charts", icon: PieChart },
+  { href: "/analytics", label: "Analytics", icon: PieChart },
   { href: "/transactions", label: "Transactions", icon: ListOrdered },
   { href: "/accounts", label: "Accounts", icon: Wallet },
 ] as const;

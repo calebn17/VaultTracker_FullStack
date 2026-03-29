@@ -36,5 +36,6 @@ VaultTrackerWeb/*.tsbuildinfo
 
 # Environments
 .env
+VaultTrackerAPI/.env
 .venv
 venv/
