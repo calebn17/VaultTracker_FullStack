@@ -349,15 +349,14 @@ export default function DashboardPage() {
         defaultCategory={
           assetCategory === "all" ? undefined : assetCategory
         }
-        onSubmit={(payload) => {
-          createTx.mutate(payload, {
-            onSuccess: () => {
-              toast.success("Transaction added");
-              setAddTransactionOpen(false);
-            },
-            onError: (e) =>
-              toast.error(e instanceof Error ? e.message : "Create failed"),
-          });
+        onSubmit={async (payload) => {
+          try {
+            await createTx.mutateAsync(payload);
+            toast.success("Transaction added");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Create failed");
+            throw e;
+          }
         }}
       />
     </div>

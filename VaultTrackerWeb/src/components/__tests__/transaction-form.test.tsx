@@ -159,6 +159,121 @@ describe("TransactionFormDialog", () => {
     );
   });
 
+  it("calls onOpenChange(false) after onSubmit resolves successfully", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TransactionFormDialog
+        open
+        onOpenChange={onOpenChange}
+        initial={null}
+        title="Add transaction"
+        onSubmit={onSubmit}
+      />
+    );
+
+    await user.clear(fieldByName("asset_name"));
+    await user.type(fieldByName("asset_name"), "Bitcoin");
+    await user.clear(fieldByName("symbol"));
+    await user.type(fieldByName("symbol"), "btc");
+    await user.clear(fieldByName("quantity"));
+    await user.type(fieldByName("quantity"), "2");
+    await user.clear(fieldByName("price_per_unit"));
+    await user.type(fieldByName("price_per_unit"), "10");
+    await user.clear(fieldByName("account_name"));
+    await user.type(fieldByName("account_name"), "Main");
+
+    const dateInput = fieldByName("date");
+    await user.clear(dateInput);
+    await user.type(dateInput, "2024-03-10");
+
+    await user.click(
+      within(getDialog()).getByRole("button", { name: /^Save$/ })
+    );
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it("does not call onOpenChange(false) when onSubmit rejects", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onSubmit = vi.fn().mockRejectedValue(new Error("network"));
+    render(
+      <TransactionFormDialog
+        open
+        onOpenChange={onOpenChange}
+        initial={null}
+        title="Add transaction"
+        onSubmit={onSubmit}
+      />
+    );
+
+    await user.clear(fieldByName("asset_name"));
+    await user.type(fieldByName("asset_name"), "Bitcoin");
+    await user.clear(fieldByName("symbol"));
+    await user.type(fieldByName("symbol"), "btc");
+    await user.clear(fieldByName("quantity"));
+    await user.type(fieldByName("quantity"), "2");
+    await user.clear(fieldByName("price_per_unit"));
+    await user.type(fieldByName("price_per_unit"), "10");
+    await user.clear(fieldByName("account_name"));
+    await user.type(fieldByName("account_name"), "Main");
+
+    const dateInput = fieldByName("date");
+    await user.clear(dateInput);
+    await user.type(dateInput, "2024-03-10");
+
+    await user.click(
+      within(getDialog()).getByRole("button", { name: /^Save$/ })
+    );
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it("Cancel button calls onOpenChange(false)", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <TransactionFormDialog
+        open
+        onOpenChange={onOpenChange}
+        initial={null}
+        title="Add transaction"
+        onSubmit={() => {}}
+      />
+    );
+
+    await user.click(
+      within(getDialog()).getByRole("button", { name: /cancel/i })
+    );
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("Save button is disabled and shows 'Saving…' when pending is true", () => {
+    render(
+      <TransactionFormDialog
+        open
+        onOpenChange={() => {}}
+        initial={null}
+        title="Add transaction"
+        onSubmit={() => {}}
+        pending
+      />
+    );
+
+    const saveBtn = within(getDialog()).getByRole("button", { name: /saving/i });
+    expect(saveBtn).toBeDisabled();
+    // Verify the label changed from "Save" to "Saving…" — not just disabled
+    expect(saveBtn).toHaveTextContent("Saving…");
+  });
+
   it("pre-fills fields from an existing transaction", () => {
     const tx: EnrichedTransaction = {
       id: "t1",

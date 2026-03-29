@@ -34,12 +34,15 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 | Area | Location |
 |------|----------|
 | Unit | `src/lib/__tests__/*.test.ts` |
+| React Query hooks | `src/lib/queries/__tests__/*.test.tsx` |
 | Components / context | `src/components/__tests__/`, `src/contexts/__tests__/` |
-| E2E | `e2e/*.spec.ts` |
+| E2E | `e2e/*.spec.ts` (e.g. `auth.spec.ts`, `transactions.spec.ts`, `dashboard.spec.ts`, `accounts.spec.ts`) |
+
+**Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
 
 **Playwright** (`playwright.config.ts`): `testDir` is `./e2e`, `baseURL` `http://localhost:3000`, `webServer` runs `npm run dev` unless `CI` is set (see `reuseExistingServer`). Install browsers once: `npx playwright install --with-deps chromium`.
 
-**E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` should go through **client navigation** (e.g. click the sidebar link **Transactions** after landing on `/dashboard`).
+**E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` or `/accounts` should use **client navigation** (e.g. sidebar links **Transactions** / **Accounts**). To return to the dashboard from another route, use the **Home** link (not `page.goto("/dashboard")`).
 
 **E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser.
 

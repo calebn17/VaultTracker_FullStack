@@ -69,7 +69,7 @@ export function TransactionFormDialog({
     account_name: string;
     account_type: import("@/types/api").AccountType;
     date?: string;
-  }) => void;
+  }) => void | Promise<void>;
   pending?: boolean;
   title: string;
 }) {
@@ -105,7 +105,7 @@ export function TransactionFormDialog({
     }
   }, [category, form]);
 
-  const handleSubmit = form.handleSubmit((values) => {
+  const handleSubmit = form.handleSubmit(async (values) => {
     const cashLike = isCashLike(values.category);
     const payload = {
       transaction_type: values.transaction_type,
@@ -120,7 +120,12 @@ export function TransactionFormDialog({
       account_type: values.account_type,
       date: new Date(values.date + "T12:00:00.000Z").toISOString(),
     };
-    onSubmit(payload);
+    try {
+      await Promise.resolve(onSubmit(payload));
+      onOpenChange(false);
+    } catch {
+      /* Parent handles errors (e.g. toast); keep dialog open */
+    }
   });
 
   return (

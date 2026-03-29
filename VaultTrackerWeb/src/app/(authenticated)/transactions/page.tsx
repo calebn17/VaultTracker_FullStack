@@ -73,15 +73,14 @@ export default function TransactionsPage() {
         initial={null}
         title="Add transaction"
         pending={createTx.isPending}
-        onSubmit={(payload) => {
-          createTx.mutate(payload, {
-            onSuccess: () => {
-              toast.success("Transaction added");
-              setAddOpen(false);
-            },
-            onError: (e) =>
-              toast.error(e instanceof Error ? e.message : "Create failed"),
-          });
+        onSubmit={async (payload) => {
+          try {
+            await createTx.mutateAsync(payload);
+            toast.success("Transaction added");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Create failed");
+            throw e;
+          }
         }}
       />
 
@@ -91,19 +90,17 @@ export default function TransactionsPage() {
         initial={editRow}
         title="Edit transaction"
         pending={updateTx.isPending}
-        onSubmit={(payload) => {
-          if (!editRow) return;
-          updateTx.mutate(
-            { id: editRow.id, data: payload },
-            {
-              onSuccess: () => {
-                toast.success("Transaction updated");
-                setEditRow(null);
-              },
-              onError: (e) =>
-                toast.error(e instanceof Error ? e.message : "Update failed"),
-            }
-          );
+        onSubmit={async (payload) => {
+          if (!editRow) {
+            throw new Error("No transaction to update");
+          }
+          try {
+            await updateTx.mutateAsync({ id: editRow.id, data: payload });
+            toast.success("Transaction updated");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Update failed");
+            throw e;
+          }
         }}
       />
 
