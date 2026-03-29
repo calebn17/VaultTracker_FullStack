@@ -30,10 +30,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:VaultTracker/TestPlans/VaultTracker.xctestplan">
-         </TestPlanReference>
-         <TestPlanReference
-            reference = "container:TestPlan.xctestplan"
+            reference = "container:VaultTracker/TestPlans/VaultTracker.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
