@@ -6,7 +6,8 @@ Portfolio tracker that shows net worth, asset holdings, analytics, and transacti
 
 ```
 VaultTracker/
-├── MainView/           # App entry point, root TabView (Home / Analytics / Profile), auth state switch
+├── DesignSystem/       # Digital Ledger tokens: VTColors, VTFonts (VTTypography.swift), VTComponents (button/chip/surface)
+├── MainView/           # App entry point, root TabView (Home / Analytics / Profile), auth state switch; forces dark + nav/tab chrome
 ├── Login/              # Google / Apple sign-in screen
 ├── Loading/            # Splash screen during Firebase auth check
 ├── Home/               # Dashboard: net worth, category breakdown, history chart, price refresh
@@ -17,11 +18,17 @@ VaultTracker/
 ├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy)
 ├── Models/             # Domain value types (Asset, Transaction, Account, etc.)
 ├── Custom UI Components/ # Reusable SwiftUI primitives (CustomButton, CustomTextField)
-├── Utils/              # Extensions (Double formatting), UIKit bridges
+├── Utils/              # Extensions (Double formatting, `Color(hex:)`), UIKit bridges
 └── Assets.xcassets     # Image and color assets
 ```
 
 Each directory has its own `CLAUDE.md` with feature-specific context.
+
+## Design system (Digital Ledger)
+
+- **Spec:** [Documentation/Plans/2026-03-28-digital-ledger-redesign-design.md](../Documentation/Plans/2026-03-28-digital-ledger-redesign-design.md) — color/type/component rules and screen checklist (view-only; keep `accessibilityIdentifier` values stable).
+- **Theme:** Dark-only via `.preferredColorScheme(.dark)` on the root in `VaultTrackerApp`; global `UINavigationBar` / `UITabBar` (and `UISegmentedControl` for the home period picker) are configured there or on first `HomeView` appearance to match `VTColors`.
+- **Tokens:** `VTColors` (including `categoryAccent(_:)` for dashboard keys), `VTFonts` in `VTTypography.swift`, reusable styles in `VTComponents` (`VTPrimaryButtonStyle`, `FilterChipStyle`, `SurfaceCardModifier` / `.vtSurfaceCard()`).
 
 ## Architecture
 
@@ -92,6 +99,7 @@ Tests use a **page object pattern** — each screen has a `struct` in `PageObjec
 | `ProfilePage` | Profile tab |
 
 - Tests follow BDD naming: `test_given<state>_when<action>_then<outcome>`.
+- Page objects resolve elements with `XCUIApplication.identified(_:)` (`XCUIApplication+Identified.swift`) so SwiftUI controls are found by `accessibilityIdentifier` regardless of XCTest element type.
 - Launch argument `-UI-Testing` signals debug auth mode; the app skips real Firebase and uses the debug token.
 - UI tests that create data (`seedCashHoldingViaUI`) require the local API server with `DEBUG_AUTH_ENABLED=true` and `DEBUG_AUTH_ENABLED=true`.
 - Accessibility identifiers (e.g. `homeScrollView`, `netWorthTitleText`, `addTransactionButton`) are the stable query targets — do not change them without updating the matching page object.
@@ -108,6 +116,7 @@ Run UI tests via **Xcode → Product → Test** (select `VaultTrackerUITests` sc
 | New domain type | `Models/` |
 | New API model | `API/Models/` |
 | New UI test | Add page object in `VaultTrackerUITests/PageObjects/`, add test in `VaultTrackerUITests.swift` |
+| Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift` (`Color(hex:)`), `MainView/VaultTrackerApp.swift`, then feature views (Home, Add Asset, Analytics, Profile, etc.) |
 
 ## Refactor Plan Status
 
