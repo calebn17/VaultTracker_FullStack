@@ -87,10 +87,18 @@ Each seam above is a testable boundary. ViewModels are injected with `DataServic
 3. **`TransactionMapper`** — 3 tests only cover buy+stocks, sell+cash, and array ordering. Missing: `realEstate`, `retirement`, explicit sell type assertion.
 4. **`APIModels Codable`** — `APIAccountResponse`, `APIAssetResponse`, `APINetWorthHistoryResponse` have no decode tests.
 
-### P3 — Out of scope for this plan
+### P3 — Explicitly deferred (not done in this plan, documented reason)
 
-- `AuthManager` — requires Firebase mock setup; deferred to a future plan.
-- UI tests for analytics data values — adds fragility without proportional coverage value.
+- **`AuthManager`** — deferred because testing Firebase auth state transitions requires mocking
+  `Auth.auth().onAuthStateChanged` and the `NotificationCenter` post in Swift Testing, which needs
+  a proper Firebase mock library (e.g. `FirebaseAuthMock`) not yet in the project. This is a real
+  dependency to add; it is **not optional**, just scheduled for a follow-up plan once the mock
+  infrastructure exists.
+- **Analytics UI data values** — UI tests asserting specific dollar figures become brittle when
+  backend seed data changes. The right fix is a sealed test environment with fixed seed data, which
+  is a larger infrastructure change. Deferred until CI has a reproducible data fixture.
+
+> **These are gaps, not permanent exclusions.** Each should become P1 in the next testing plan.
 
 ---
 

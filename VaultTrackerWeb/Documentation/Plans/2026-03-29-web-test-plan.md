@@ -95,11 +95,28 @@ Each seam is a testable boundary:
 5. **`StatCard`** — Simple component, easy to test, currently zero tests.
 6. **`TransactionForm` edge cases** — Error on submit and reset after success not tested.
 
-### Out of scope
+### P4 — Explicitly deferred (not done in this plan, documented reason)
+
+- **Remaining React Query hooks** (`use-dashboard`, `use-networth`, `use-analytics`, `use-prices`,
+  `use-assets`, `use-user`) — The plan identified all 8 hooks as P1 but only implemented tests for
+  the 2 with meaningful mutation complexity (`use-transactions`, `use-accounts`). The remaining 6
+  are simple `useQuery` wrappers; the test pattern is identical to `useTransactions` and
+  `useAccounts`. They should be added in the next pass — they are quick to write and close real
+  gaps (wrong URL, wrong query key).
+- **`/analytics` page E2E** — Not addressed in this plan. The analytics page has zero test coverage
+  at any layer. A Playwright spec should follow the same `debugLoginAndGoTo` pattern as
+  `accounts.spec.ts` and verify: hero metrics visible, category cards visible, price lookup returns
+  a result.
+- **`/profile` page E2E** — Sign-out is indirectly covered by `auth.spec.ts` but theme toggle and
+  "Delete all data" have no E2E tests.
+
+### Permanently out of scope
 
 - shadcn UI primitives (`src/components/ui/`) — library components, not app logic
-- Static layout (`site-header`, `mobile-nav`, `app-shell`) — no meaningful logic
+- Static layout (`site-header`, `mobile-nav`, `app-shell`) — no meaningful testable logic
 - Recharts chart rendering — visual only, requires snapshot tooling
+
+> **The P4 items are gaps, not permanent exclusions.** Each should become P1 in the next testing plan.
 
 ---
 
