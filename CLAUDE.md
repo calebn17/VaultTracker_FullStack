@@ -59,6 +59,12 @@ Both API and iOS must agree on the debug token. In the API `.env`: `DEBUG_AUTH_E
 - **API:** `.env` `DATABASE_URL` selects SQLite (default/local) or PostgreSQL (production on Neon via Render).
 - **Real device:** Set `API_HOST = 192.168.x.x:8000` in Xcode scheme environment variables (same Wi-Fi required).
 
+## Best practices
+
+- **Avoid duplicating code.** When the same logic appears in more than one place, extract it into a shared helper, utility, or abstraction (service layer, hook, extension, etc.) so behavior stays consistent and fixes land in one place.
+
+- **Write tests that can fail and that matter.** Each test should exercise real behavior: given a concrete **input**, assert a distinct **expected outcome** from the code under test. Skip tests added only to pad coverage or “have a test”—and avoid tautologies (e.g. comparing a literal to itself or re-stating constants without invoking production logic). If breaking the implementation would not plausibly turn the test red, the test is not doing useful work.
+
 ## Quick Commands
 
 ### API (from `VaultTrackerAPI/`)

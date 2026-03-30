@@ -89,11 +89,13 @@ Each seam above is a testable boundary. ViewModels are injected with `DataServic
 
 ### P3 — Explicitly deferred (not done in this plan, documented reason)
 
-- **`AuthManager`** — deferred because testing Firebase auth state transitions requires mocking
-  `Auth.auth().onAuthStateChanged` and the `NotificationCenter` post in Swift Testing, which needs
-  a proper Firebase mock library (e.g. `FirebaseAuthMock`) not yet in the project. This is a real
-  dependency to add; it is **not optional**, just scheduled for a follow-up plan once the mock
-  infrastructure exists.
+- **`AuthManager`** — deferred in *this* plan because production code calls `Auth.auth()` and
+  `NotificationCenter.default` directly (see [`AuthManager.swift`](../../VaultTracker/Managers/AuthManager.swift)),
+  so Swift Testing cannot drive auth state or notifications in isolation. **Follow-up decision
+  (per current Firebase Auth docs, Context7 `/firebase/firebase-ios-sdk` + `/websites/firebase_google`):**
+  do **not** rely on a third-party SPM “FirebaseAuthMock” package. Use **protocol-based injection**
+  (app target) and **fakes in `VaultTrackerTests`**—the same pattern as `DataServiceProtocol` /
+  `MockDataService`. Concrete steps and test scope are in **§9**.
 - **Analytics UI data values** — UI tests asserting specific dollar figures become brittle when
   backend seed data changes. The right fix is a sealed test environment with fixed seed data, which
   is a larger infrastructure change. Deferred until CI has a reproducible data fixture.
@@ -119,7 +121,7 @@ Unit tests are fast, isolated, and cheapest to maintain. The dependency-injectio
 **What NOT to test:**
 - `VTColors`, `VTTypography`, `VTComponents` — visual design tokens; verified by eye
 - `NetWorthChartView` rendering — requires snapshot tooling not yet in the project
-- `AuthManager` — Firebase lifecycle mocking is non-trivial; deferred
+- `AuthManager` — deferred until DI + fakes land; see **§9**
 - `NetworkService` (legacy) — not used in new features
 
 ---
@@ -210,3 +212,52 @@ Every test in this project must be capable of failing. Concretely:
 - Assertions check specific values, not just non-nil or non-empty
 - Error-path tests verify both `errorMessage` content AND `isLoading == false`
 - Each test covers exactly one behavior; the test name is `verb + expectedOutcome`
+
+---
+
+## 9. Follow-up: `AuthManager` unit tests (architecture decision)
+
+### 9.1 Why not a standalone “Firebase mock” library?
+
+Firebase’s Apple-platform Auth API is documented around `Auth.auth()`, state observation, and
+credential-based sign-in—not around a pluggable test double product. Current references:
+
+- [Get started with Firebase Authentication on Apple platforms](https://firebase.google.com/docs/auth/ios/start)
+- [Google Sign-In on Apple platforms](https://firebase.google.com/docs/auth/ios/google-signin)
+- [Sign in with Apple](https://firebase.google.com/docs/auth/ios/apple)
+
+The iOS SDK documents **`addStateDidChangeListener`** / **`removeStateDidChangeListener`**, checking
+**`currentUser`**, and **`signOut()`** (local sign-out). A mock that can **invoke the same listener
+callback shape** `(Auth, User?)` is enough for `AuthManager`’s state machine—implement that as a
+**test-only type** behind a small protocol, not as an extra SPM dependency.
+
+### 9.2 Refactor seams (minimal, mirrors existing DI style)
+
+| Seam | Production | Tests |
+|------|------------|--------|
+| Auth backend | Thin adapter calling `Auth.auth()` (listener, `signOut()`, `signIn` with credential as needed) | Fake that stores the listener and exposes `simulateUser(_:)` / `simulateSignOut()` |
+| Notifications | `NotificationCenter.default` | Fresh `NotificationCenter()` per test |
+| Google / Apple UI flows | Unchanged | Still **UI tests** (or defer) — `GIDSignIn` / `ASAuthorizationController` are not worth faking in unit tests |
+
+Also **retain listener handles and notification observer tokens** and remove them in `deinit` (today’s
+`AuthManager` registers both without teardown—fix alongside injection for hygiene and stable tests).
+
+### 9.3 Unit-test scope (first slice)
+
+| Behavior | Assertion sketch |
+|----------|------------------|
+| Initial / listener fires `user == nil` | `authenticationState == .unauthenticated` |
+| Listener fires non-nil user | `.authenticated` |
+| `signOut()` when `AuthTokenProvider.isDebugSession` (DEBUG) | Clears debug flag, `.unauthenticated`, **no** Firebase `signOut` on fake |
+| `signInDebug()` (DEBUG) | `isDebugSession == true`, `.authenticated` |
+| Post `.authenticationRequired` on injected center | Fake `signOut` invoked (or state becomes unauthenticated per implementation) |
+
+**Out of scope for v1 unit tests:** full `signInWithGoogle` / `signInWithApple` (keep UI / manual
+coverage until Apple path is implemented).
+
+### 9.4 Optional later: async auth state stream
+
+The Firebase iOS SDK is moving toward an **`authStateChanges`** async sequence for state observation
+([async stream design notes](https://github.com/firebase/firebase-ios-sdk/blob/main/docs/AsyncStreams/swift-async-sequence-api-design.md)).
+Migrating `AuthManager` to that API is **optional** and only after confirming the SDK version pinned
+by the project exposes it; it does not block the protocol + fake approach above.
