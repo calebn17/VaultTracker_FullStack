@@ -28,22 +28,44 @@ enum AuthenticationState {
 @MainActor
 final class AuthManager: ObservableObject {
     @Published var authenticationState: AuthenticationState = .authenticating
-    
-    var user: User?
+
+    private(set) var user: (any AuthUserInfo)?
+
+    private let authBackend: any FirebaseAuthBackend
+    private let notificationCenter: NotificationCenter
+
+    private var authListenerHandle: AuthListenerHandle?
+    private var authenticationRequiredObserver: NSObjectProtocol?
+
     private var cancellables = Set<AnyCancellable>()
-    
-    
-    init() {
+
+    init(
+        authBackend: any FirebaseAuthBackend = LiveFirebaseAuthBackend(),
+        notificationCenter: NotificationCenter = .default
+    ) {
+        self.authBackend = authBackend
+        self.notificationCenter = notificationCenter
         setupSubscribers()
     }
 
+    deinit {
+        if let authListenerHandle {
+            authBackend.removeStateDidChangeListener(authListenerHandle)
+        }
+        if let authenticationRequiredObserver {
+            notificationCenter.removeObserver(authenticationRequiredObserver)
+        }
+    }
+
     private func setupSubscribers() {
-        Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            self?.user = user
-            self?.authenticationState = user == nil ? .unauthenticated : .authenticated
+        authListenerHandle = authBackend.addStateDidChangeListener { [weak self] user in
+            Task { @MainActor in
+                self?.user = user
+                self?.authenticationState = user == nil ? .unauthenticated : .authenticated
+            }
         }
 
-        NotificationCenter.default.addObserver(
+        authenticationRequiredObserver = notificationCenter.addObserver(
             forName: .authenticationRequired,
             object: nil,
             queue: .main
@@ -53,38 +75,40 @@ final class AuthManager: ObservableObject {
             }
         }
     }
-    
+
     func signInWithGoogle() async throws {
         guard let topVC = Utilities.shared.getTopViewController() else {
             throw URLError(.cannotFindHost)
         }
-        
+
         let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: topVC)
-        
+
         guard let idToken = gidSignInResult.user.idToken?.tokenString else {
             throw URLError(.badServerResponse)
         }
-        
+
         let accessToken = gidSignInResult.user.accessToken.tokenString
         let credentials = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
-        let _ = try await Auth.auth().signIn(with: credentials)
+        try await authBackend.signIn(with: credentials)
     }
-    
+
     func signInWithApple() async throws {
         // TODO: Implement Sign in with Apple
         print("Sign in with Apple not yet implemented")
     }
-    
+
     func signOut() throws {
 #if DEBUG
         if AuthTokenProvider.isDebugSession {
             AuthTokenProvider.isDebugSession = false
             authenticationState = .unauthenticated
+            user = nil
             return
         }
 #endif
-        try Auth.auth().signOut()
+        try authBackend.signOut()
         authenticationState = .unauthenticated
+        user = nil
     }
 
 #if DEBUG
