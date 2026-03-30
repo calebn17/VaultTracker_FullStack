@@ -95,28 +95,17 @@ Each seam is a testable boundary:
 5. **`StatCard`** — Simple component, easy to test, currently zero tests.
 6. **`TransactionForm` edge cases** — Error on submit and reset after success not tested.
 
-### P4 — Explicitly deferred (not done in this plan, documented reason)
+### P4 — Formerly deferred; implemented (follow-up)
 
-- **Remaining React Query hooks** (`use-dashboard`, `use-networth`, `use-analytics`, `use-prices`,
-  `use-assets`, `use-user`) — The plan identified all 8 hooks as P1 but only implemented tests for
-  the 2 with meaningful mutation complexity (`use-transactions`, `use-accounts`). The remaining 6
-  are simple `useQuery` wrappers; the test pattern is identical to `useTransactions` and
-  `useAccounts`. They should be added in the next pass — they are quick to write and close real
-  gaps (wrong URL, wrong query key).
-- **`/analytics` page E2E** — Not addressed in this plan. The analytics page has zero test coverage
-  at any layer. A Playwright spec should follow the same `debugLoginAndGoTo` pattern as
-  `accounts.spec.ts` and verify: hero metrics visible, category cards visible, price lookup returns
-  a result.
-- **`/profile` page E2E** — Sign-out is indirectly covered by `auth.spec.ts` but theme toggle and
-  "Delete all data" have no E2E tests.
+- **Remaining React Query hooks** — Vitest coverage added in `src/lib/queries/__tests__/`: `use-dashboard.test.tsx`, `use-networth.test.tsx`, `use-analytics.test.tsx`, `use-assets.test.tsx`, `use-prices.test.tsx` (`useRefreshPrices` + `usePriceLookup`), `use-user.test.tsx` (`useDeleteUserData` only; [`use-user.ts`](../../src/lib/queries/use-user.ts) has no `useQuery` wrapper).
+- **`/analytics` page E2E** — [`e2e/analytics.spec.ts`](../../e2e/analytics.spec.ts): debug login → sidebar **Analytics**; asserts **Total portfolio**, category cards (**Stocks & ETFs**, **Digital Assets**); price lookup uses a Playwright route stub for `GET **/api/v1/prices/BTC` so the flow is deterministic without a live price backend.
+- **`/profile` page E2E** — [`e2e/profile.spec.ts`](../../e2e/profile.spec.ts): **Toggle theme** scoped to `main` (header also has a theme control); **Delete all financial data** uses a stubbed `DELETE **/api/v1/users/me/data`, then asserts toast **All financial data removed** and redirect to `/login`.
 
 ### Permanently out of scope
 
 - shadcn UI primitives (`src/components/ui/`) — library components, not app logic
 - Static layout (`site-header`, `mobile-nav`, `app-shell`) — no meaningful testable logic
 - Recharts chart rendering — visual only, requires snapshot tooling
-
-> **The P4 items are gaps, not permanent exclusions.** Each should become P1 in the next testing plan.
 
 ---
 
