@@ -82,10 +82,10 @@ No manual change needed before archiving — the switch is compile-time (`#if DE
 
 ### Unit / Integration Tests (`VaultTrackerTests/`)
 
-- **Unit tests** use Swift Testing (`@Test`, `#expect`). ViewModel coverage includes `HomeViewModelTests`, `AnalyticsViewModelTests`, and `AddAssetFormViewModelTests` (validation / request encoding without the network).
+- **Unit tests** use Swift Testing (`@Test`, `#expect`). ViewModel coverage includes `HomeViewModelTests`, `AnalyticsViewModelTests`, and `AddAssetFormViewModelTests` (validation / request encoding without the network). `AuthManagerTests` injects `FakeFirebaseAuthBackend` + isolated `NotificationCenter` for auth state, debug sign-out, and `.authenticationRequired` behavior.
 - **Integration tests** (`APIIntegrationTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`) hit a real local API with debug auth — the API server must be running with `DEBUG_AUTH_ENABLED=true`.
 - `MockDataService.swift` is the test double for `DataServiceProtocol`; add stubs there when new protocol methods are declared. For analytics VM tests it exposes `analyticsStub`, `analyticsError`, and `fetchAnalyticsCallCount` (mirrors the dashboard / refresh-prices patterns).
-- **Inventory** (Swift `@Test` in `VaultTrackerTests/`): ~96 unit cases across mappers, codable, errors, and view models; 20 integration-tagged cases. See [Documentation/Plans/2026-03-29-ios-test-plan.md](../Documentation/Plans/2026-03-29-ios-test-plan.md) for the coverage map and CI split (unit vs integration vs UI).
+- **Inventory** (Swift `@Test` in `VaultTrackerTests/`): mappers, codable, errors, view models, and `AuthManager`; 20 integration-tagged cases. See [Documentation/Plans/2026-03-29-ios-test-plan.md](../Documentation/Plans/2026-03-29-ios-test-plan.md) for the coverage map and CI split (unit vs integration vs UI).
 
 ### UI Tests (`VaultTrackerUITests/`)
 
