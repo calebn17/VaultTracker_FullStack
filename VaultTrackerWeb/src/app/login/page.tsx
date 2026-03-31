@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 import { isFirebaseConfigured } from "@/lib/firebase";
+import { logger } from "@/lib/logger";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +39,11 @@ export default function LoginPage() {
           {isFirebaseConfigured ? (
             <Button
               type="button"
-              onClick={() => signInWithGoogle().catch(console.error)}
+              onClick={() =>
+                void signInWithGoogle().catch((e) =>
+                  logger.error("Google sign-in failed", e)
+                )
+              }
               disabled={loading}
             >
               Continue with Google

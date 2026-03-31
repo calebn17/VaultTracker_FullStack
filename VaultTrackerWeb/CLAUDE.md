@@ -59,6 +59,7 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 - **React Hook Form + Zod** — form validation
 - **Recharts v2** — charts (LineChart, AreaChart, PieChart)
 - **Firebase Auth Web SDK v10** — Google Sign-In popup
+- **@sentry/nextjs** — production error monitoring; `tracesSampleRate: 0.1`
 - **date-fns** — date formatting
 
 ## Architecture
@@ -84,12 +85,22 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 | File | Purpose |
 |---|---|
-| `src/lib/api-client.ts` | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry |
+| `src/lib/logger.ts` | Logging facade — `info` dev-only (console); `warn`/`error` use console in dev and **Sentry** in production (`captureMessage` with `level: warning` for `warn`; `captureException` with `error ?? new Error(message)` and `{ extra }` for `error`, matching the logging design plan). Optional 4th arg `LoggerErrorSentryScope` (`tags` / `contexts`) wraps `captureException` in `Sentry.withScope` (used by route error fallback). Do not log PII. Repeat `captureException` on the **same error object** is ignored by the SDK (`__sentry_captured__`). |
+| `instrumentation-client.ts` | Sentry client `Sentry.init` + `onRouterTransitionStart` (`@sentry/nextjs` v10; replaces legacy `sentry.client.config.ts`) |
+| `src/instrumentation.ts` | Next.js hook: loads `sentry.server.config` / `sentry.edge.config`; exports `onRequestError` |
+| `sentry.server.config.ts` | Node server Sentry init |
+| `sentry.edge.config.ts` | Edge runtime Sentry init |
+| `next.config.ts` | Wrapped with `withSentryConfig` (optional `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` for source maps in CI) |
+| `src/lib/api-client.ts` | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry; logs network `fetch` failures and `getToken` failures |
 | `src/lib/firebase.ts` | Firebase app initialization (client-only) |
 | `src/lib/auth-debug.ts` | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`) |
 | `src/types/api.ts` | TypeScript mirrors of all backend Pydantic schemas |
-| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook |
+| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook; logs sign-in success (`uid` for tracing), failure, sign-out, forced token refresh (`warn` only when a `currentUser` exists), and `getIdToken` failures |
 | `src/contexts/api-client-context.tsx` | `ApiClientProvider` + `useApiClient()` hook; reads base URL from env |
+| `src/components/route-error-fallback.tsx` | Shared client UI for App Router error boundaries — `logger.error` with optional Sentry scope (tag `route_error_scope`) via logger’s 4th argument; WeakSet dedupes Strict Mode double effects; digest only when present |
+| `src/app/error.tsx` | Root error boundary (client); does not catch errors in the root layout (see `global-error.tsx`) |
+| `src/app/global-error.tsx` | Root layout render errors — required `<html>` / `<body>`, same fallback UI as segment boundaries |
+| `src/app/(authenticated)/error.tsx` | Authenticated segment error boundary (client) |
 | `src/lib/queries/` | One file per resource: `use-dashboard.ts`, `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-networth.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts` |
 | `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics and recent transactions (client filter on cached `useTransactions`); opened from `holdings-grid.tsx` and analytics category cards. **Cash** hides Quantity, Avg Cost / Unit, Unrealized P&L, and **Cost Basis** (current value is the meaningful figure). **Real estate** hides Quantity, Avg Cost / Unit, and Unrealized P&L but **still shows Cost Basis**. Recent transactions table lists at most five rows, newest first. |
 
@@ -105,7 +116,7 @@ Both env var names work; `NEXT_PUBLIC_API_URL` takes precedence.
 
 ### Route Structure
 
-All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout (`layout.tsx`). When `user` is null after auth resolution, the layout renders `LoginGateRedirect` (uses `useLayoutEffect` + `router.replace`) instead of children.
+All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout (`layout.tsx`). When `user` is null after auth resolution, the layout renders `LoginGateRedirect` (uses `useLayoutEffect` + `router.replace`) instead of children. Client render errors in that segment are caught by `(authenticated)/error.tsx`; the root `app/error.tsx` covers child routes under the root layout. Errors in **`root/layout.tsx` itself** use `app/global-error.tsx` (Next.js replaces the root layout when it activates).
 
 Unauthenticated routes: `/login` and `/` (redirects based on auth state).
 
@@ -171,8 +182,11 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_SENTRY_DSN=   # optional; from Sentry project settings
 ```
 
 `NEXT_PUBLIC_API_HOST` is also accepted as a fallback for the API base URL.
+
+**Sentry (optional):** Set `NEXT_PUBLIC_SENTRY_DSN` for production/staging. For readable stack traces in Sentry, configure `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` in CI (never commit the token). Local builds use `silent: true` in `withSentryConfig` to reduce noise.
 
 Production API URL: `https://vaulttracker-api.onrender.com`. **Not yet deployed to Vercel** — when deploying, set the env vars in the Vercel dashboard and add the Vercel domain to the API's `ALLOWED_ORIGINS` in `VaultTrackerAPI/app/config.py` (or via the Render env var).
