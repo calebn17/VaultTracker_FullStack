@@ -89,8 +89,11 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 | `src/lib/firebase.ts` | Firebase app initialization (client-only) |
 | `src/lib/auth-debug.ts` | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`) |
 | `src/types/api.ts` | TypeScript mirrors of all backend Pydantic schemas |
-| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook |
+| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook; logs sign-in success/failure, sign-out, forced token refresh (`warn`), and `getIdToken` failures |
 | `src/contexts/api-client-context.tsx` | `ApiClientProvider` + `useApiClient()` hook; reads base URL from env |
+| `src/components/route-error-fallback.tsx` | Shared client UI for App Router `error.tsx` boundaries — logs via `logger.error`, “Try again” calls `reset()` |
+| `src/app/error.tsx` | Root error boundary (client) |
+| `src/app/(authenticated)/error.tsx` | Authenticated segment error boundary (client) |
 | `src/lib/queries/` | One file per resource: `use-dashboard.ts`, `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-networth.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts` |
 | `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics and recent transactions (client filter on cached `useTransactions`); opened from `holdings-grid.tsx` and analytics category cards. **Cash** hides Quantity, Avg Cost / Unit, Unrealized P&L, and **Cost Basis** (current value is the meaningful figure). **Real estate** hides Quantity, Avg Cost / Unit, and Unrealized P&L but **still shows Cost Basis**. Recent transactions table lists at most five rows, newest first. |
 
@@ -106,7 +109,7 @@ Both env var names work; `NEXT_PUBLIC_API_URL` takes precedence.
 
 ### Route Structure
 
-All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout (`layout.tsx`). When `user` is null after auth resolution, the layout renders `LoginGateRedirect` (uses `useLayoutEffect` + `router.replace`) instead of children.
+All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout (`layout.tsx`). When `user` is null after auth resolution, the layout renders `LoginGateRedirect` (uses `useLayoutEffect` + `router.replace`) instead of children. Client render errors in that segment are caught by `(authenticated)/error.tsx`; the root `app/error.tsx` covers the rest of the tree.
 
 Unauthenticated routes: `/login` and `/` (redirects based on auth state).
 

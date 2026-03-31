@@ -18,6 +18,7 @@ import {
 } from "firebase/auth";
 import { DEBUG_AUTH_AVAILABLE, DEBUG_AUTH_TOKEN } from "@/lib/auth-debug";
 import { getFirebaseAuth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
+import { logger } from "@/lib/logger";
 
 type AuthMode = "firebase" | "debug";
 
@@ -55,7 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     const auth = getFirebaseAuth();
-    await signInWithPopup(auth, googleProvider);
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      logger.info("User signed in", { uid: cred.user.uid });
+    } catch (e) {
+      logger.error("Sign-in failed", e);
+      throw e;
+    }
   }, []);
 
   const signInDebug = useMemo(() => {
@@ -71,12 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (mode === "debug") {
       setUser(null);
       setMode("firebase");
+      logger.info("User signed out");
       router.push("/login");
       return;
     }
     if (isFirebaseConfigured) {
       await signOut(getFirebaseAuth());
     }
+    logger.info("User signed out");
     router.push("/login");
   }, [mode, router]);
 
@@ -88,12 +97,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return DEBUG_AUTH_TOKEN;
       }
+      if (forceRefresh) {
+        logger.warn("Force-refreshing token after 401");
+      }
       const auth = getFirebaseAuth();
       const u = auth.currentUser;
       if (!u) {
         throw new Error("Not signed in");
       }
-      return u.getIdToken(forceRefresh);
+      try {
+        return await u.getIdToken(forceRefresh);
+      } catch (e) {
+        logger.error("Token refresh failed", e);
+        throw e;
+      }
     },
     [mode]
   );

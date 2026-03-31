@@ -1,5 +1,13 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mockLogger = vi.hoisted(() => ({
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}));
+
+vi.mock("@/lib/logger", () => ({ logger: mockLogger }));
 
 const mockRouterPush = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
@@ -31,6 +39,16 @@ vi.mock("@/lib/auth-debug", () => ({
 }));
 
 import { AuthProvider, useAuth } from "../auth-context";
+
+beforeEach(() => {
+  mockLogger.info.mockClear();
+  mockLogger.warn.mockClear();
+  mockLogger.error.mockClear();
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 function Inspector({
   onReady,
@@ -105,6 +123,7 @@ describe("AuthProvider — debug mode", () => {
 
     expect(ctx!.user).toBeNull();
     expect(mockRouterPush).toHaveBeenCalledWith("/login");
+    expect(mockLogger.info).toHaveBeenCalledWith("User signed out");
   });
 });
 
