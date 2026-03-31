@@ -97,13 +97,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return DEBUG_AUTH_TOKEN;
       }
-      if (forceRefresh) {
-        logger.warn("Force-refreshing token after 401");
-      }
       const auth = getFirebaseAuth();
       const u = auth.currentUser;
       if (!u) {
         throw new Error("Not signed in");
+      }
+      if (forceRefresh) {
+        logger.warn("Force-refreshing token after 401");
       }
       try {
         return await u.getIdToken(forceRefresh);

@@ -3,11 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const sentryMocks = vi.hoisted(() => ({
   captureMessage: vi.fn(),
   captureException: vi.fn(),
+  withScope: vi.fn((fn: (scope: { setTag: ReturnType<typeof vi.fn>; setContext: ReturnType<typeof vi.fn> }) => void) => {
+    fn({ setTag: vi.fn(), setContext: vi.fn() });
+  }),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
   captureMessage: sentryMocks.captureMessage,
   captureException: sentryMocks.captureException,
+  withScope: sentryMocks.withScope,
 }));
 
 import { logger } from "@/lib/logger";
@@ -16,6 +20,10 @@ describe("logger", () => {
   beforeEach(() => {
     sentryMocks.captureMessage.mockClear();
     sentryMocks.captureException.mockClear();
+    sentryMocks.withScope.mockClear();
+    sentryMocks.withScope.mockImplementation((fn) => {
+      fn({ setTag: vi.fn(), setContext: vi.fn() });
+    });
   });
 
   afterEach(() => {
@@ -76,6 +84,30 @@ describe("logger", () => {
       expect.objectContaining({ message: "only message" }),
       { extra: { d: 4 } }
     );
+  });
+
+  it("error uses synthetic Error when production, message only, no context", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    logger.error("only message");
+    expect(sentryMocks.captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "only message" }),
+      { extra: undefined }
+    );
+  });
+
+  it("error wraps captureException in withScope when sentryScope is provided", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const err = new Error("boundary");
+    logger.error("Route error (root)", err, { digest: "d1" }, {
+      tags: { route_error_scope: "root" },
+      contexts: { route_error: { digest: "d1" } },
+    });
+    expect(sentryMocks.withScope).toHaveBeenCalledTimes(1);
+    expect(sentryMocks.captureException).toHaveBeenCalledWith(err, {
+      extra: { digest: "d1" },
+    });
   });
 
   it("error calls console.error in non-production with error and context", () => {

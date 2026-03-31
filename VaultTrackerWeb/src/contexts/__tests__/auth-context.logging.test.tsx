@@ -13,6 +13,14 @@ const mockSignInWithPopup = vi.hoisted(() =>
   vi.fn().mockResolvedValue({ user: { uid: "firebase-test-uid" } })
 );
 const mockGetIdToken = vi.hoisted(() => vi.fn().mockResolvedValue("id-token"));
+const mockGetFirebaseAuth = vi.hoisted(() =>
+  vi.fn().mockReturnValue({
+    currentUser: {
+      uid: "current-uid",
+      getIdToken: mockGetIdToken,
+    },
+  })
+);
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -30,12 +38,7 @@ vi.mock("firebase/auth", () => ({
 vi.mock("@/lib/firebase", () => ({
   isFirebaseConfigured: true,
   getFirebaseApp: vi.fn(),
-  getFirebaseAuth: vi.fn(() => ({
-    currentUser: {
-      uid: "current-uid",
-      getIdToken: mockGetIdToken,
-    },
-  })),
+  getFirebaseAuth: mockGetFirebaseAuth,
   googleProvider: {},
 }));
 
@@ -65,6 +68,13 @@ describe("AuthProvider — logging (Firebase configured)", () => {
       user: { uid: "firebase-test-uid" },
     });
     mockGetIdToken.mockResolvedValue("id-token");
+    mockGetFirebaseAuth.mockReset();
+    mockGetFirebaseAuth.mockReturnValue({
+      currentUser: {
+        uid: "current-uid",
+        getIdToken: mockGetIdToken,
+      },
+    });
   });
 
   it("logs info when Google sign-in succeeds", async () => {
@@ -105,6 +115,24 @@ describe("AuthProvider — logging (Firebase configured)", () => {
       "Sign-in failed",
       expect.any(Error)
     );
+  });
+
+  it("does not log force-refresh warn when not signed in", async () => {
+    mockGetFirebaseAuth.mockReturnValue({ currentUser: null });
+    let ctx: ReturnType<typeof useAuth> | null = null;
+    render(
+      <AuthProvider>
+        <Inspector onReady={(c) => (ctx = c)} />
+      </AuthProvider>
+    );
+
+    await waitFor(() => expect(ctx).not.toBeNull());
+
+    await act(async () => {
+      await expect(ctx!.getToken(true)).rejects.toThrow("Not signed in");
+    });
+
+    expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 
   it("logs warn when getToken forces refresh", async () => {

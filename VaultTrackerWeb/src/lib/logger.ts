@@ -16,6 +16,12 @@ function hasContext(context?: Record<string, unknown>): boolean {
   return context !== undefined && Object.keys(context).length > 0;
 }
 
+/** Optional Sentry scope enrichment; only applied in production inside this module. */
+export type LoggerErrorSentryScope = {
+  tags?: Record<string, string>;
+  contexts?: Record<string, Record<string, unknown>>;
+};
+
 /**
  * Central logging facade. Sentry is only imported/used from this module.
  * Do not log tokens, emails, or other PII in context.
@@ -52,13 +58,34 @@ export const logger = {
   error(
     message: string,
     error?: unknown,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
+    sentryScope?: LoggerErrorSentryScope
   ): void {
     safeRun(() => {
       if (isProd()) {
-        Sentry.captureException(error ?? new Error(message), {
-          extra: hasContext(context) ? context : undefined,
-        });
+        const extra = hasContext(context) ? context : undefined;
+        const exception = error ?? new Error(message);
+        const capture = () => {
+          Sentry.captureException(exception, { extra });
+        };
+        const hasSentryScope =
+          (sentryScope?.tags !== undefined &&
+            Object.keys(sentryScope.tags).length > 0) ||
+          (sentryScope?.contexts !== undefined &&
+            Object.keys(sentryScope.contexts).length > 0);
+        if (hasSentryScope) {
+          Sentry.withScope((scope) => {
+            for (const [k, v] of Object.entries(sentryScope?.tags ?? {})) {
+              scope.setTag(k, v);
+            }
+            for (const [k, v] of Object.entries(sentryScope?.contexts ?? {})) {
+              scope.setContext(k, v);
+            }
+            capture();
+          });
+        } else {
+          capture();
+        }
         return;
       }
       if (error !== undefined) {

@@ -39,27 +39,46 @@ export class ApiClient {
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const start = Date.now();
     const method = options?.method ?? "GET";
-    const token = await this.getToken(false);
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-    });
+
+    const fetchWithAuth = async (bearer: string) => {
+      try {
+        return await fetch(`${this.baseUrl}${endpoint}`, {
+          ...options,
+          headers: {
+            Authorization: `Bearer ${bearer}`,
+            "Content-Type": "application/json",
+            ...options?.headers,
+          },
+        });
+      } catch (e) {
+        logger.error("API request failed (network)", e, { method, endpoint });
+        throw e;
+      }
+    };
+
+    let token: string;
+    try {
+      token = await this.getToken(false);
+    } catch (e) {
+      logger.error("API token request failed", e, { endpoint, phase: "initial" });
+      throw e;
+    }
+
+    const response = await fetchWithAuth(token);
 
     if (response.status === 401) {
       logger.warn("401 — retrying with refreshed token", { endpoint });
-      const freshToken = await this.getToken(true);
-      const retry = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
-        headers: {
-          Authorization: `Bearer ${freshToken}`,
-          "Content-Type": "application/json",
-          ...options?.headers,
-        },
-      });
+      let freshToken: string;
+      try {
+        freshToken = await this.getToken(true);
+      } catch (e) {
+        logger.error("API token request failed", e, {
+          endpoint,
+          phase: "after_401",
+        });
+        throw e;
+      }
+      const retry = await fetchWithAuth(freshToken);
       if (retry.status === 401) {
         this.onUnauthorized();
         const err = new ApiError("unauthorized", 401);

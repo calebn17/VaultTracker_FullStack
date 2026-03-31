@@ -28,8 +28,27 @@ describe("RouteErrorFallback", () => {
       expect(mockLoggerError).toHaveBeenCalledWith(
         "Route error (root)",
         err,
-        { digest: "digest-abc" }
+        { digest: "digest-abc" },
+        {
+          tags: { route_error_scope: "root" },
+          contexts: { route_error: { digest: "digest-abc" } },
+        }
       );
+    });
+  });
+
+  it("logs error without digest context when digest is absent", async () => {
+    const err = new Error("no-digest");
+    const reset = vi.fn();
+
+    render(
+      <RouteErrorFallback error={err} reset={reset} scope="root" />
+    );
+
+    await waitFor(() => {
+      expect(mockLoggerError).toHaveBeenCalledWith("Route error (root)", err, undefined, {
+        tags: { route_error_scope: "root" },
+      });
     });
   });
 
