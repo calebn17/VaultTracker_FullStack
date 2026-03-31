@@ -7,6 +7,7 @@ Application-layer services that ViewModels depend on. No SwiftUI code lives here
 | File | Role |
 |------|------|
 | `AuthManager.swift` | Firebase auth state machine, exposed as `@EnvironmentObject` |
+| `FirebaseAuthBackend.swift` | `FirebaseAuthBackend` protocol, `AuthUserInfo`, `LiveFirebaseAuthBackend` — test seams for auth |
 | `DataService.swift` | Concrete `DataServiceProtocol` — delegates all I/O to `APIService` |
 | `DataServiceProtocol.swift` | Interface ViewModels code against; enables lightweight mock testing |
 | `NetworkService.swift` | Legacy URLSession wrapper — **do not use for new work** (see below) |
@@ -52,7 +53,9 @@ Calls `DELETE /api/v1/users/me/data`. Used by integration tests to reset server 
 
 ## AuthManager
 
-`@MainActor ObservableObject` injected as an `@EnvironmentObject` at the root. Wraps Firebase's `addStateDidChangeListener` and publishes `authenticationState: AuthenticationState` (`.authenticating`, `.authenticated`, `.unauthenticated`).
+`@MainActor ObservableObject` injected as an `@EnvironmentObject` at the root. Depends on **`FirebaseAuthBackend`** (default `LiveFirebaseAuthBackend` → `Auth.auth()`) and **`NotificationCenter`** (default `.default` so `APIService`’s `.authenticationRequired` post is received). Publishes `authenticationState` and `user: (any AuthUserInfo)?` (Firebase `User` conforms in production).
+
+`init(authBackend:notificationCenter:)` enables unit tests with `FakeFirebaseAuthBackend` and an isolated `NotificationCenter()`. Listener and notification observer are removed in `deinit`.
 
 Also observes `Notification.Name.authenticationRequired` (posted by `APIService` after a persistent 401) to trigger automatic sign-out.
 

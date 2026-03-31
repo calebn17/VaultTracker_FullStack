@@ -27,11 +27,13 @@
 		AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */; };
 		AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */; };
 		AF4D447D2F694B6D0055FF21 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44762F694B6D0055FF21 /* MockDataService.swift */; };
+		E3F501032F9F000100CA0002 /* AuthManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F501022F9F000100CA0002 /* AuthManagerTests.swift */; };
 		AF4D447E2F694B6D0055FF21 /* AssetMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */; };
 		AF4D447F2F694B6D0055FF21 /* AccountMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44712F694B6D0055FF21 /* AccountMapperTests.swift */; };
 		AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */; };
 		AF4D71FA2E1A1F7A00B925F5 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */; };
 		AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */; };
+		E3F501012F9F000100CA0001 /* FirebaseAuthBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F501002F9F000100CA0001 /* FirebaseAuthBackend.swift */; };
 		AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC2E2E29CA9900253BE3 /* Utilities.swift */; };
 		AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC312E29F5D100253BE3 /* LoginView.swift */; };
 		AF56EC352E29F72800253BE3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC342E29F72800253BE3 /* ProfileView.swift */; };
@@ -128,10 +130,12 @@
 		AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMapperTests.swift; sourceTree = "<group>"; };
 		AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
 		AF4D44762F694B6D0055FF21 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
+		E3F501022F9F000100CA0002 /* AuthManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManagerTests.swift; sourceTree = "<group>"; };
 		AF4D44802F694C730055FF21 /* DataServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataServiceProtocol.swift; sourceTree = "<group>"; };
 		AF4D71F92E1A1F7A00B925F5 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		AF5127D62F738D8C00B22755 /* VaultTracker.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = VaultTracker.xctestplan; path = VaultTracker/TestPlans/VaultTracker.xctestplan; sourceTree = "<group>"; };
 		AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		E3F501002F9F000100CA0001 /* FirebaseAuthBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthBackend.swift; sourceTree = "<group>"; };
 		AF56EC2E2E29CA9900253BE3 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		AF56EC312E29F5D100253BE3 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		AF56EC342E29F72800253BE3 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -315,6 +319,7 @@
 				AF07A2312E1E25EF005FFB77 /* DataService.swift */,
 				AF4336892E0CE28A00AFC1A0 /* NetworkService.swift */,
 				AF56EC2B2E29C9AD00253BE3 /* AuthManager.swift */,
+				E3F501002F9F000100CA0001 /* FirebaseAuthBackend.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -355,6 +360,7 @@
 				C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */,
 				C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */,
 				AF4D44762F694B6D0055FF21 /* MockDataService.swift */,
+				E3F501022F9F000100CA0002 /* AuthManagerTests.swift */,
 			);
 			path = VaultTrackerTests;
 			sourceTree = "<group>";
@@ -645,6 +651,7 @@
 				AF07A21F2E1A3B58005FFB77 /* NetWorthSnapshot.swift in Sources */,
 				AF43369C2E0F9C8000AFC1A0 /* AssetModel.swift in Sources */,
 				AF56EC2C2E29C9AD00253BE3 /* AuthManager.swift in Sources */,
+				E3F501012F9F000100CA0001 /* FirebaseAuthBackend.swift in Sources */,
 				AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */,
 				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
 				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
@@ -667,6 +674,7 @@
 				C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */,
 				C2E201032F8C0001001C0002 /* APIModelsCodableTests.swift in Sources */,
 				AF4D447D2F694B6D0055FF21 /* MockDataService.swift in Sources */,
+				E3F501032F9F000100CA0002 /* AuthManagerTests.swift in Sources */,
 				AF7FFD192F69625B008F1008 /* APIIntegrationTests.swift in Sources */,
 				AF4D447E2F694B6D0055FF21 /* AssetMapperTests.swift in Sources */,
 				AF7FFD1B2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift in Sources */,
