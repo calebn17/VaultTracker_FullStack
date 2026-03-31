@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -35,6 +37,8 @@ export class ApiClient {
   ) {}
 
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const start = Date.now();
+    const method = options?.method ?? "GET";
     const token = await this.getToken(false);
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
@@ -46,6 +50,7 @@ export class ApiClient {
     });
 
     if (response.status === 401) {
+      logger.warn("401 — retrying with refreshed token", { endpoint });
       const freshToken = await this.getToken(true);
       const retry = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
@@ -57,20 +62,51 @@ export class ApiClient {
       });
       if (retry.status === 401) {
         this.onUnauthorized();
-        throw new ApiError("unauthorized", 401);
+        const err = new ApiError("unauthorized", 401);
+        logger.error("API error", err, { status: 401, endpoint });
+        throw err;
       }
       if (retry.status === 204) {
+        logger.info("API request", {
+          method,
+          endpoint,
+          durationMs: Date.now() - start,
+        });
         return undefined as T;
       }
-      if (!retry.ok) throw await ApiError.fromResponse(retry);
+      if (!retry.ok) {
+        const err = await ApiError.fromResponse(retry);
+        logger.error("API error", err, { status: err.status, endpoint });
+        throw err;
+      }
+      logger.info("API request", {
+        method,
+        endpoint,
+        durationMs: Date.now() - start,
+      });
       return retry.json() as Promise<T>;
     }
 
     if (response.status === 204) {
+      logger.info("API request", {
+        method,
+        endpoint,
+        durationMs: Date.now() - start,
+      });
       return undefined as T;
     }
 
-    if (!response.ok) throw await ApiError.fromResponse(response);
+    if (!response.ok) {
+      const err = await ApiError.fromResponse(response);
+      logger.error("API error", err, { status: err.status, endpoint });
+      throw err;
+    }
+
+    logger.info("API request", {
+      method,
+      endpoint,
+      durationMs: Date.now() - start,
+    });
     return response.json() as Promise<T>;
   }
 

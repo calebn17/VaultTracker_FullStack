@@ -84,6 +84,7 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 | File | Purpose |
 |---|---|
+| `src/lib/logger.ts` | Logging facade — `info`/`warn`/`error`; dev uses console, production is no-op until Sentry (see `Documentation/Plans/2026-03-30-web-logging-design.md` Phase 3). Do not log PII. `ApiClient` logs each request (method, endpoint, duration), API errors, and 401 retry. |
 | `src/lib/api-client.ts` | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry |
 | `src/lib/firebase.ts` | Firebase app initialization (client-only) |
 | `src/lib/auth-debug.ts` | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`) |
