@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 function isProd(): boolean {
   return process.env.NODE_ENV === "production";
 }
@@ -15,7 +17,7 @@ function hasContext(context?: Record<string, unknown>): boolean {
 }
 
 /**
- * Central logging facade. Sentry wiring lives here only (Phase 3).
+ * Central logging facade. Sentry is only imported/used from this module.
  * Do not log tokens, emails, or other PII in context.
  */
 export const logger = {
@@ -33,6 +35,10 @@ export const logger = {
   warn(message: string, context?: Record<string, unknown>): void {
     safeRun(() => {
       if (isProd()) {
+        Sentry.captureMessage(message, {
+          level: "warning",
+          extra: hasContext(context) ? context : undefined,
+        });
         return;
       }
       if (hasContext(context)) {
@@ -50,6 +56,9 @@ export const logger = {
   ): void {
     safeRun(() => {
       if (isProd()) {
+        Sentry.captureException(error ?? new Error(message), {
+          extra: hasContext(context) ? context : undefined,
+        });
         return;
       }
       if (error !== undefined) {

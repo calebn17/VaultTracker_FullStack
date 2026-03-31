@@ -59,6 +59,7 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 - **React Hook Form + Zod** — form validation
 - **Recharts v2** — charts (LineChart, AreaChart, PieChart)
 - **Firebase Auth Web SDK v10** — Google Sign-In popup
+- **@sentry/nextjs** — production error monitoring; `tracesSampleRate: 0.1`
 - **date-fns** — date formatting
 
 ## Architecture
@@ -84,7 +85,12 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 | File | Purpose |
 |---|---|
-| `src/lib/logger.ts` | Logging facade — `info`/`warn`/`error`; dev uses console, production is no-op until Sentry (see `Documentation/Plans/2026-03-30-web-logging-design.md` Phase 3). Do not log PII. `ApiClient` logs each request (method, endpoint, duration), API errors, and 401 retry. |
+| `src/lib/logger.ts` | Logging facade — `info` dev-only (console); `warn`/`error` use console in dev and **Sentry** in production (`captureMessage` / `captureException`). Only this file imports `@sentry/nextjs` for logging. Do not log PII. |
+| `instrumentation-client.ts` | Sentry client `Sentry.init` + `onRouterTransitionStart` (`@sentry/nextjs` v10; replaces legacy `sentry.client.config.ts`) |
+| `src/instrumentation.ts` | Next.js hook: loads `sentry.server.config` / `sentry.edge.config`; exports `onRequestError` |
+| `sentry.server.config.ts` | Node server Sentry init |
+| `sentry.edge.config.ts` | Edge runtime Sentry init |
+| `next.config.ts` | Wrapped with `withSentryConfig` (optional `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` for source maps in CI) |
 | `src/lib/api-client.ts` | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry |
 | `src/lib/firebase.ts` | Firebase app initialization (client-only) |
 | `src/lib/auth-debug.ts` | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`) |
@@ -175,8 +181,11 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_SENTRY_DSN=   # optional; from Sentry project settings
 ```
 
 `NEXT_PUBLIC_API_HOST` is also accepted as a fallback for the API base URL.
+
+**Sentry (optional):** Set `NEXT_PUBLIC_SENTRY_DSN` for production/staging. For readable stack traces in Sentry, configure `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` in CI (never commit the token). Local builds use `silent: true` in `withSentryConfig` to reduce noise.
 
 Production API URL: `https://vaulttracker-api.onrender.com`. **Not yet deployed to Vercel** — when deploying, set the env vars in the Vercel dashboard and add the Vercel domain to the API's `ALLOWED_ORIGINS` in `VaultTrackerAPI/app/config.py` (or via the Render env var).
