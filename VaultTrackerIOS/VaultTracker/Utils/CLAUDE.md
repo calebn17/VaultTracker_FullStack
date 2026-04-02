@@ -6,6 +6,12 @@ Stateless helpers and extensions used across the app.
 
 | File | Contents |
 |------|----------|
+| `VTLogging.swift` | `VTLogging` protocol + `VTLogLive` (OSLog / future Crashlytics); inject `VTLoggingSpy` in tests |
+
+## `VTLogging`
+
+- **Context shorthands** — `extension VTLogging` adds overloads without `context:` (equivalent to `context: nil`): `info(_:category:)`, `warn(_:category:)`, and `error(_:error:category:)` (same `error:` label as the full API; implementation uses `error err:` internally to avoid shadowing). Use the full methods when attaching structured fields.
+- **Double logs on some API error paths (intentional)** — In `APIService`, `execute` always emits an `info` (“HTTP … completed” with `endpoint`, `status`, `durationMs`) after `URLSession` returns. If the status is not 2xx or decoding fails, a second line is emitted: an `error` from `validate` or `decodeResponse` with the mapped `APIError` and fields like `case`. That pair is deliberate: the first line records the raw HTTP outcome and timing; the second records the app-level error for filtering and Crashlytics. Do not “fix” by skipping the first log on failure without an explicit design change.
 | `Extensions.swift` | `Double` extensions for display formatting |
 | `Utilities.swift` | `Utilities` singleton for UIKit-level helpers |
 

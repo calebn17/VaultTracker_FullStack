@@ -23,6 +23,9 @@ actor AuthTokenProvider {
     /// and use the well-known debug token that the backend's dependency.py recognises.
     nonisolated(unsafe) static var isDebugSession = false
     static let debugToken = "vaulttracker-debug-user"
+
+    /// When `true` (only honored for `isDebugSession` + `getToken(forceRefresh: true)`), forces token failure so `APIService` retry paths can be unit-tested without Firebase.
+    nonisolated(unsafe) static var forceTokenRefreshFailure = false
 #endif
 
     private init() {}
@@ -34,6 +37,9 @@ actor AuthTokenProvider {
     func getToken(forceRefresh: Bool = false) async throws -> String {
 #if DEBUG
         if AuthTokenProvider.isDebugSession {
+            if forceRefresh && AuthTokenProvider.forceTokenRefreshFailure {
+                throw AuthTokenError.notAuthenticated
+            }
             return AuthTokenProvider.debugToken
         }
 #endif

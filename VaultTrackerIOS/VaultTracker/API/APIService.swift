@@ -26,13 +26,18 @@ final class APIService: APIServiceProtocol {
     // MARK: - Private Properties
 
     private let session: URLSession
+    private let log: any VTLogging
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
     // MARK: - Init
 
-    private init(session: URLSession = .shared) {
+    /// - Parameters:
+    ///   - session: Injected for unit tests (`URLProtocol`); production uses `shared`.
+    ///   - log: Injected for tests (`VTLoggingSpy`); production uses ``VTLogLive``.
+    private init(session: URLSession = .shared, log: any VTLogging = VTLogLive()) {
         self.session = session
+        self.log = log
 
         self.decoder = JSONDecoder()
         // Custom date strategy to handle the two formats the backend can return:
@@ -66,6 +71,13 @@ final class APIService: APIServiceProtocol {
         self.encoder = JSONEncoder()
         self.encoder.dateEncodingStrategy = .iso8601
     }
+
+#if DEBUG
+    /// Builds an `APIService` with a custom session/logger for unit tests (`URLProtocol`, ``VTLoggingSpy``). App code should use ``shared``.
+    static func test_make(session: URLSession = .shared, log: any VTLogging = VTLogLive()) -> APIService {
+        APIService(session: session, log: log)
+    }
+#endif
 
     // MARK: - Dashboard
 
@@ -214,35 +226,57 @@ private extension APIService {
     /// Execute a request and decode the response body into T.
     /// Retries once with a force-refreshed token on 401.
     func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
+        let endpoint = Self.endpointString(for: request)
         let (data, response) = try await execute(request)
 
         if let http = response as? HTTPURLResponse, http.statusCode == 401 {
+            log.warn("401 — retrying with refreshed token", category: .api, context: ["endpoint": endpoint])
             let retryData = try await retryWithRefreshedToken(request)
-            return try decodeResponse(T.self, from: retryData)
+            return try decodeResponse(T.self, from: retryData, endpoint: endpoint)
         }
 
-        try validate(response: response, data: data)
-        return try decodeResponse(T.self, from: data)
+        try validate(response: response, data: data, endpoint: endpoint)
+        return try decodeResponse(T.self, from: data, endpoint: endpoint)
     }
 
     /// Execute a request that returns no body (e.g. DELETE 204).
     /// Retries once with a force-refreshed token on 401.
     func performVoid(_ request: URLRequest) async throws {
+        let endpoint = Self.endpointString(for: request)
         let (data, response) = try await execute(request)
 
         if let http = response as? HTTPURLResponse, http.statusCode == 401 {
+            log.warn("401 — retrying with refreshed token", category: .api, context: ["endpoint": endpoint])
             _ = try await retryWithRefreshedToken(request)
             return
         }
 
-        try validate(response: response, data: data)
+        try validate(response: response, data: data, endpoint: endpoint)
     }
 
     /// Wraps URLSession.data catching transport errors as APIError.networkError.
     func execute(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        let start = Date()
+        let method = request.httpMethod ?? "GET"
+        let endpoint = Self.endpointString(for: request)
         do {
-            return try await session.data(for: request)
+            let (data, response) = try await session.data(for: request)
+            let ms = Int(Date().timeIntervalSince(start) * 1000)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            log.info(
+                "HTTP \(method) completed",
+                category: .api,
+                context: ["endpoint": endpoint, "status": status, "durationMs": ms]
+            )
+            return (data, response)
         } catch {
+            let ms = Int(Date().timeIntervalSince(start) * 1000)
+            log.error(
+                "HTTP transport failed",
+                error: error,
+                category: .api,
+                context: ["endpoint": endpoint, "method": method, "durationMs": ms]
+            )
             throw APIError.networkError(error)
         }
     }
@@ -250,10 +284,17 @@ private extension APIService {
     /// Force-refreshes the Firebase token, re-signs the request, and executes it.
     /// If the retry also returns 401, posts `.authenticationRequired` and throws `.unauthorized`.
     func retryWithRefreshedToken(_ original: URLRequest) async throws -> Data {
+        let endpoint = Self.endpointString(for: original)
         let freshToken: String
         do {
             freshToken = try await AuthTokenProvider.shared.getToken(forceRefresh: true)
         } catch {
+            log.error(
+                "Token refresh failed after 401",
+                error: error,
+                category: .api,
+                context: ["endpoint": endpoint]
+            )
             throw APIError.notAuthenticated
         }
 
@@ -263,31 +304,70 @@ private extension APIService {
         let (retryData, retryResponse) = try await execute(retried)
 
         if let http = retryResponse as? HTTPURLResponse, http.statusCode == 401 {
+            log.error(
+                "Persistent 401 after token refresh",
+                error: APIError.unauthorized,
+                category: .api,
+                context: ["endpoint": endpoint, "case": APIError.unauthorized.logLabel]
+            )
             NotificationCenter.default.post(name: .authenticationRequired, object: nil)
             throw APIError.unauthorized
         }
 
-        try validate(response: retryResponse, data: retryData)
+        try validate(response: retryResponse, data: retryData, endpoint: endpoint)
         return retryData
     }
 
     /// Validate HTTP status code, throwing a mapped APIError on failure.
-    func validate(response: URLResponse, data: Data) throws {
+    func validate(response: URLResponse, data: Data, endpoint: String) throws {
         guard let http = response as? HTTPURLResponse else {
-            throw APIError.unknown(-1)
+            let err = APIError.unknown(-1)
+            log.error(
+                "Invalid HTTP response",
+                error: err,
+                category: .api,
+                context: ["endpoint": endpoint, "case": err.logLabel]
+            )
+            throw err
         }
         guard 200...299 ~= http.statusCode else {
-            throw APIError.from(statusCode: http.statusCode, data: data, decoder: decoder)
+            let err = APIError.from(statusCode: http.statusCode, data: data, decoder: decoder)
+            log.error(
+                "API HTTP error",
+                error: err,
+                category: .api,
+                context: ["endpoint": endpoint, "status": http.statusCode, "case": err.logLabel]
+            )
+            throw err
         }
     }
 
     /// Decode response data, wrapping any decoding failure as APIError.decodingError.
-    func decodeResponse<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+    func decodeResponse<T: Decodable>(_ type: T.Type, from data: Data, endpoint: String) throws -> T {
         do {
             return try decoder.decode(type, from: data)
         } catch {
-            throw APIError.decodingError(error)
+            let err = APIError.decodingError(error)
+            log.error(
+                "API decode failed",
+                error: error,
+                category: .api,
+                context: ["endpoint": endpoint, "case": err.logLabel]
+            )
+            throw err
         }
+    }
+
+    static func endpointString(for request: URLRequest) -> String {
+        guard let url = request.url else { return "unknown" }
+        let path = url.path
+        if path.isEmpty {
+            return url.absoluteString
+        }
+        if let query = url.query, !query.isEmpty {
+            return "\(path)?\(query)"
+        }
+        return path
     }
 }
 

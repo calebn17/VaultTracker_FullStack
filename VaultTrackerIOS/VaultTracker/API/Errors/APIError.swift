@@ -43,6 +43,21 @@ enum APIError: LocalizedError {
 
     // MARK: - LocalizedError
 
+    /// Short label for logs and Crashlytics (not for user-visible copy).
+    var logLabel: String {
+        switch self {
+        case .notAuthenticated: return "notAuthenticated"
+        case .unauthorized: return "unauthorized"
+        case .forbidden: return "forbidden"
+        case .notFound: return "notFound"
+        case .validationError: return "validationError"
+        case .serverError(let code): return "serverError(\(code))"
+        case .networkError: return "networkError"
+        case .decodingError: return "decodingError"
+        case .unknown(let code): return "unknown(\(code))"
+        }
+    }
+
     var errorDescription: String? {
         switch self {
         case .notAuthenticated:
