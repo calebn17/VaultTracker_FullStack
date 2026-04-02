@@ -31,7 +31,8 @@ protocol FirebaseAuthBackend: AnyObject {
 
     func removeStateDidChangeListener(_ handle: AuthListenerHandle)
     func signOut() throws
-    func signIn(with credential: AuthCredential) async throws
+    @discardableResult
+    func signIn(with credential: AuthCredential) async throws -> AuthDataResult
 }
 
 final class LiveFirebaseAuthBackend: FirebaseAuthBackend {
@@ -64,7 +65,7 @@ final class LiveFirebaseAuthBackend: FirebaseAuthBackend {
         try Auth.auth().signOut()
     }
 
-    func signIn(with credential: AuthCredential) async throws {
-        _ = try await Auth.auth().signIn(with: credential)
+    func signIn(with credential: AuthCredential) async throws -> AuthDataResult {
+        try await Auth.auth().signIn(with: credential)
     }
 }

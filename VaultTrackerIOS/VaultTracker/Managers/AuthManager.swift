@@ -33,6 +33,7 @@ final class AuthManager: ObservableObject {
 
     private let authBackend: any FirebaseAuthBackend
     private let notificationCenter: NotificationCenter
+    private let log: any VTLogging
 
     private var authListenerHandle: AuthListenerHandle?
     private var authenticationRequiredObserver: NSObjectProtocol?
@@ -41,10 +42,12 @@ final class AuthManager: ObservableObject {
 
     init(
         authBackend: any FirebaseAuthBackend = LiveFirebaseAuthBackend(),
-        notificationCenter: NotificationCenter = .default
+        notificationCenter: NotificationCenter = .default,
+        log: any VTLogging = VTLog.shared
     ) {
         self.authBackend = authBackend
         self.notificationCenter = notificationCenter
+        self.log = log
         setupSubscribers()
     }
 
@@ -71,33 +74,41 @@ final class AuthManager: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
+                self?.log.warn("authenticationRequired — signing out", category: .auth)
                 try? self?.signOut()
             }
         }
     }
 
     func signInWithGoogle() async throws {
-        guard let topVC = Utilities.shared.getTopViewController() else {
-            throw URLError(.cannotFindHost)
+        do {
+            guard let topVC = Utilities.shared.getTopViewController() else {
+                throw URLError(.cannotFindHost)
+            }
+
+            let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: topVC)
+
+            guard let idToken = gidSignInResult.user.idToken?.tokenString else {
+                throw URLError(.badServerResponse)
+            }
+
+            let accessToken = gidSignInResult.user.accessToken.tokenString
+            let credentials = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
+            let result = try await authBackend.signIn(with: credentials)
+            log.info("User signed in", category: .auth, context: ["uid": result.user.uid])
+        } catch {
+            log.error("Sign-in failed", error: error, category: .auth)
+            throw error
         }
-
-        let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: topVC)
-
-        guard let idToken = gidSignInResult.user.idToken?.tokenString else {
-            throw URLError(.badServerResponse)
-        }
-
-        let accessToken = gidSignInResult.user.accessToken.tokenString
-        let credentials = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
-        try await authBackend.signIn(with: credentials)
     }
 
     func signInWithApple() async throws {
         // TODO: Implement Sign in with Apple
-        print("Sign in with Apple not yet implemented")
+        log.warn("Sign in with Apple not yet implemented", category: .auth)
     }
 
     func signOut() throws {
+        log.info("User signed out", category: .auth)
 #if DEBUG
         if AuthTokenProvider.isDebugSession {
             AuthTokenProvider.isDebugSession = false

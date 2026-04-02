@@ -71,6 +71,11 @@ struct VTLogLive: VTLogging {
 #endif
 }
 
+/// Default app logger for call sites that do not use dependency injection (views, `AuthTokenProvider`, etc.).
+enum VTLog {
+    static let shared: any VTLogging = VTLogLive()
+}
+
 // MARK: - Context shorthands
 
 extension VTLogging {

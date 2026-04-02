@@ -86,6 +86,8 @@
 		E2B301042F8E0001001E0001 /* AddAssetFormViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */; };
 		E4F300122FA0000100CA0001 /* VTLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300112FA0000100CA0001 /* VTLogging.swift */; };
 		E4F300162FA0000100CA0003 /* APIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300152FA0000100CA0003 /* APIServiceTests.swift */; };
+		E4F300172FA0000100CA0004 /* VTLoggingSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */; };
+		E4F300192FA0000100CA0005 /* AuthTokenProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -189,6 +191,8 @@
 		E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetFormViewModelTests.swift; sourceTree = "<group>"; };
 		E4F300112FA0000100CA0001 /* VTLogging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTLogging.swift; sourceTree = "<group>"; };
 		E4F300152FA0000100CA0003 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
+		E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTLoggingSpy.swift; sourceTree = "<group>"; };
+		E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenProviderTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -365,7 +369,9 @@
 				C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */,
 				AF4D44762F694B6D0055FF21 /* MockDataService.swift */,
 				E3F501022F9F000100CA0002 /* AuthManagerTests.swift */,
+				E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */,
 				E4F300152FA0000100CA0003 /* APIServiceTests.swift */,
+				E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */,
 			);
 			path = VaultTrackerTests;
 			sourceTree = "<group>";
@@ -687,6 +693,8 @@
 				AF7FFD1B2F6964E8008F1008 /* AddAssetFormViewModelIntegrationTests.swift in Sources */,
 				AF4D447F2F694B6D0055FF21 /* AccountMapperTests.swift in Sources */,
 				E4F300162FA0000100CA0003 /* APIServiceTests.swift in Sources */,
+				E4F300172FA0000100CA0004 /* VTLoggingSpy.swift in Sources */,
+				E4F300192FA0000100CA0005 /* AuthTokenProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

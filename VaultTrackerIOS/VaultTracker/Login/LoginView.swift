@@ -25,7 +25,7 @@ struct LoginView: View {
                     do {
                         try await authManager.signInWithGoogle()
                     } catch {
-                        print("Error signing in with Google: \(error.localizedDescription)")
+                        // AuthManager already logs sign-in failures
                     }
                 }
             }) {
@@ -50,7 +50,7 @@ struct LoginView: View {
                     do {
                         try await authManager.signInWithApple()
                     } catch {
-                        print("Error signing in with Apple: \(error.localizedDescription)")
+                        // AuthManager already logs sign-in failures
                     }
                 }
             }) {

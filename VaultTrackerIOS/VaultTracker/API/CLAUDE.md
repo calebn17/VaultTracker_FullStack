@@ -32,7 +32,7 @@ API/
 
 **Environment switching** — Compile-time conditional: `#if DEBUG` builds use `.development` (reads `API_HOST` from scheme env vars); `RELEASE` archives automatically target `.production` (`https://vaulttracker-api.onrender.com`). No manual change needed before archiving.
 
-**Authentication** — Every request is signed by `AuthTokenProvider.shared.getToken()`. On a 401 response, `APIService` force-refreshes the token and retries once. If the retry also 401s, it posts `.authenticationRequired` on `NotificationCenter` and throws `APIError.unauthorized` — `AuthManager` observes this to sign the user out.
+**Authentication** — Every request is signed by `AuthTokenProvider.shared.getToken()`. On a 401 response, `APIService` force-refreshes the token and retries once. If the retry also 401s, it posts `.authenticationRequired` on `NotificationCenter` and throws `APIError.unauthorized` — `AuthManager` observes this to sign the user out. `AuthTokenProvider.test_make(log:)` is internal for `VaultTrackerTests` (`VTLoggingSpy`) only; production uses `shared`.
 
 **Date decoding** — The decoder uses a custom strategy that tries three ISO 8601 formats in order: with timezone + fractional seconds, with timezone only, then naive UTC. This handles both current rows (timezone-aware) and legacy rows stored before timezone support was added.
 

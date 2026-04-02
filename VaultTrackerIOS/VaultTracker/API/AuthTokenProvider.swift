@@ -16,7 +16,18 @@ import FirebaseAuth
 /// in its `.env`, eliminating the need for a real Firebase account during local testing.
 actor AuthTokenProvider {
 
+    private let log: any VTLogging
+
+    private init(log: any VTLogging = VTLog.shared) {
+        self.log = log
+    }
+
     static let shared = AuthTokenProvider()
+
+    /// Custom logger; same behavior as ``shared``. Intended for `VaultTrackerTests` via `@testable import` only.
+    internal static func test_make(log: any VTLogging) -> AuthTokenProvider {
+        AuthTokenProvider(log: log)
+    }
 
 #if DEBUG
     /// Toggled by `AuthManager.signInDebug()`. When `true`, all API calls skip Firebase
@@ -27,8 +38,6 @@ actor AuthTokenProvider {
     /// When `true` (only honored for `isDebugSession` + `getToken(forceRefresh: true)`), forces token failure so `APIService` retry paths can be unit-tested without Firebase.
     nonisolated(unsafe) static var forceTokenRefreshFailure = false
 #endif
-
-    private init() {}
 
     /// Returns the current user's ID token.
     /// - Parameter forceRefresh: Pass `true` to force Firebase to fetch a new
@@ -47,11 +56,16 @@ actor AuthTokenProvider {
             throw AuthTokenError.notAuthenticated
         }
         return try await withCheckedThrowingContinuation { continuation in
-            user.getIDTokenForcingRefresh(forceRefresh) { token, error in
+            if forceRefresh {
+                self.log.warn("Force-refreshing token after 401", category: .auth)
+            }
+            user.getIDTokenForcingRefresh(forceRefresh) { [self] token, error in
                 if let token = token {
                     continuation.resume(returning: token)
                 } else {
-                    continuation.resume(throwing: error ?? AuthTokenError.notAuthenticated)
+                    let thrown = error ?? AuthTokenError.notAuthenticated
+                    self.log.error("Token fetch failed", error: thrown, category: .auth)
+                    continuation.resume(throwing: thrown)
                 }
             }
         }
