@@ -39,6 +39,7 @@
 		AF56EC352E29F72800253BE3 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC342E29F72800253BE3 /* ProfileView.swift */; };
 		AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56EC372E2B203500253BE3 /* LoadingView.swift */; };
 		AF66F4662E29BF650096DCDA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AF66F4652E29BF650096DCDA /* FirebaseAuth */; };
+		E4F3001B2FA0000200CA0001 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = E4F3001C2FA0000200CA0002 /* FirebaseCrashlytics */; };
 		AF66F4692E29BF9C0096DCDA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = AF66F4682E29BF9C0096DCDA /* GoogleSignIn */; };
 		AF66F46B2E29C0DE0096DCDA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */; };
 		AF7FFD192F69625B008F1008 /* APIIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7FFD182F69625B008F1008 /* APIIntegrationTests.swift */; };
@@ -88,6 +89,7 @@
 		E4F300162FA0000100CA0003 /* APIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300152FA0000100CA0003 /* APIServiceTests.swift */; };
 		E4F300172FA0000100CA0004 /* VTLoggingSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */; };
 		E4F300192FA0000100CA0005 /* AuthTokenProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */; };
+		E4F3002A2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F3002B2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -193,6 +195,7 @@
 		E4F300152FA0000100CA0003 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
 		E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTLoggingSpy.swift; sourceTree = "<group>"; };
 		E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenProviderTests.swift; sourceTree = "<group>"; };
+		E4F3002B2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTLogCrashlyticsSupportTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF66F4662E29BF650096DCDA /* FirebaseAuth in Frameworks */,
+				E4F3001B2FA0000200CA0001 /* FirebaseCrashlytics in Frameworks */,
 				AF66F4692E29BF9C0096DCDA /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -372,6 +376,7 @@
 				E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */,
 				E4F300152FA0000100CA0003 /* APIServiceTests.swift */,
 				E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */,
+				E4F3002B2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift */,
 			);
 			path = VaultTrackerTests;
 			sourceTree = "<group>";
@@ -499,6 +504,7 @@
 				AF4336562E0CDFE700AFC1A0 /* Sources */,
 				AF4336572E0CDFE700AFC1A0 /* Frameworks */,
 				AF4336582E0CDFE700AFC1A0 /* Resources */,
+				E4F3001D2FA0000200CA0003 /* Firebase Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -619,6 +625,30 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		E4F3001D2FA0000200CA0003 /* Firebase Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/VaultTracker/GoogleService-Info.plist",
+			);
+			name = "Firebase Crashlytics";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" -gsp \"${SRCROOT}/VaultTracker/GoogleService-Info.plist\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		AF4336562E0CDFE700AFC1A0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -695,6 +725,7 @@
 				E4F300162FA0000100CA0003 /* APIServiceTests.swift in Sources */,
 				E4F300172FA0000100CA0004 /* VTLoggingSpy.swift in Sources */,
 				E4F300192FA0000100CA0005 /* AuthTokenProviderTests.swift in Sources */,
+				E4F3002A2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1051,6 +1082,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF66F4642E29BF650096DCDA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		E4F3001C2FA0000200CA0002 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF66F4642E29BF650096DCDA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 		AF66F4682E29BF9C0096DCDA /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
