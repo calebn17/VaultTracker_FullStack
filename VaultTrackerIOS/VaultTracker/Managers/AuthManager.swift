@@ -110,8 +110,8 @@ final class AuthManager: ObservableObject {
     func signOut() throws {
         log.info("User signed out", category: .auth)
 #if DEBUG
-        if AuthTokenProvider.isDebugSession {
-            AuthTokenProvider.isDebugSession = false
+        if AuthTokenProvider.shared.isDebugSession {
+            AuthTokenProvider.shared.isDebugSession = false
             authenticationState = .unauthenticated
             user = nil
             return
@@ -127,7 +127,7 @@ final class AuthManager: ObservableObject {
     /// well-known debug token.  Only available in DEBUG builds; requires
     /// DEBUG_AUTH_ENABLED=true in the backend .env.
     func signInDebug() {
-        AuthTokenProvider.isDebugSession = true
+        AuthTokenProvider.shared.isDebugSession = true
         authenticationState = .authenticated
     }
 #endif

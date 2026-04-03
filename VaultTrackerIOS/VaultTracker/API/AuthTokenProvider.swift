@@ -32,11 +32,11 @@ actor AuthTokenProvider {
 #if DEBUG
     /// Toggled by `AuthManager.signInDebug()`. When `true`, all API calls skip Firebase
     /// and use the well-known debug token that the backend's dependency.py recognises.
-    nonisolated(unsafe) static var isDebugSession = false
+    nonisolated(unsafe) var isDebugSession = false
     static let debugToken = "vaulttracker-debug-user"
 
     /// When `true` (only honored for `isDebugSession` + `getToken(forceRefresh: true)`), forces token failure so `APIService` retry paths can be unit-tested without Firebase.
-    nonisolated(unsafe) static var forceTokenRefreshFailure = false
+    nonisolated(unsafe) var forceTokenRefreshFailure = false
 #endif
 
     /// Returns the current user's ID token.
@@ -45,8 +45,8 @@ actor AuthTokenProvider {
     ///   use the cached token if it hasn't expired yet (< 1 hour old).
     func getToken(forceRefresh: Bool = false) async throws -> String {
 #if DEBUG
-        if AuthTokenProvider.isDebugSession {
-            if forceRefresh && AuthTokenProvider.forceTokenRefreshFailure {
+        if isDebugSession {
+            if forceRefresh && forceTokenRefreshFailure {
                 throw AuthTokenError.notAuthenticated
             }
             return AuthTokenProvider.debugToken

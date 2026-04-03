@@ -27,6 +27,7 @@ final class APIService: APIServiceProtocol {
 
     private let session: URLSession
     private let log: any VTLogging
+    private let tokenProvider: AuthTokenProvider
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
@@ -35,9 +36,11 @@ final class APIService: APIServiceProtocol {
     /// - Parameters:
     ///   - session: Injected for unit tests (`URLProtocol`); production uses `shared`.
     ///   - log: Injected for tests (`VTLoggingSpy`); production uses ``VTLogLive``.
-    private init(session: URLSession = .shared, log: any VTLogging = VTLogLive()) {
+    ///   - tokenProvider: Injected for unit tests; production uses `AuthTokenProvider.shared`.
+    private init(session: URLSession = .shared, log: any VTLogging = VTLogLive(), tokenProvider: AuthTokenProvider = .shared) {
         self.session = session
         self.log = log
+        self.tokenProvider = tokenProvider
 
         self.decoder = JSONDecoder()
         // Custom date strategy to handle the two formats the backend can return:
@@ -74,8 +77,8 @@ final class APIService: APIServiceProtocol {
 
 #if DEBUG
     /// Builds an `APIService` with a custom session/logger for unit tests (`URLProtocol`, ``VTLoggingSpy``). App code should use ``shared``.
-    static func test_make(session: URLSession = .shared, log: any VTLogging = VTLogLive()) -> APIService {
-        APIService(session: session, log: log)
+    static func test_make(session: URLSession = .shared, log: any VTLogging = VTLogLive(), tokenProvider: AuthTokenProvider = .shared) -> APIService {
+        APIService(session: session, log: log, tokenProvider: tokenProvider)
     }
 #endif
 
@@ -201,7 +204,7 @@ private extension APIService {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         do {
-            let token = try await AuthTokenProvider.shared.getToken()
+            let token = try await tokenProvider.getToken()
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         } catch {
             throw APIError.notAuthenticated
@@ -287,7 +290,7 @@ private extension APIService {
         let endpoint = Self.endpointString(for: original)
         let freshToken: String
         do {
-            freshToken = try await AuthTokenProvider.shared.getToken(forceRefresh: true)
+            freshToken = try await tokenProvider.getToken(forceRefresh: true)
         } catch {
             log.error(
                 "Token refresh failed after 401",

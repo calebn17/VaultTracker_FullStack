@@ -102,7 +102,7 @@ struct AuthManagerTests {
 
     @Test func authenticationRequiredPostsSignOutThroughBackend() async throws {
 #if DEBUG
-        AuthTokenProvider.isDebugSession = false
+        AuthTokenProvider.shared.isDebugSession = false
 #endif
         let spy = VTLoggingSpy()
         let fake = FakeFirebaseAuthBackend()
@@ -123,18 +123,18 @@ struct AuthManagerTests {
 
 #if DEBUG
     @Test func signInDebugThenSignOutSkipsFirebaseSignOut() async throws {
-        AuthTokenProvider.isDebugSession = false
+        AuthTokenProvider.shared.isDebugSession = false
         let spy = VTLoggingSpy()
         let fake = FakeFirebaseAuthBackend()
         let manager = AuthManager(authBackend: fake, notificationCenter: NotificationCenter(), log: spy)
         await Task.yield()
 
         manager.signInDebug()
-        #expect(AuthTokenProvider.isDebugSession == true)
+        #expect(AuthTokenProvider.shared.isDebugSession == true)
         #expect(manager.authenticationState == .authenticated)
 
         try manager.signOut()
-        #expect(AuthTokenProvider.isDebugSession == false)
+        #expect(AuthTokenProvider.shared.isDebugSession == false)
         #expect(manager.authenticationState == .unauthenticated)
         #expect(fake.firebaseSignOutCallCount == 0)
         #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
@@ -143,7 +143,7 @@ struct AuthManagerTests {
 
     @Test func signOutLogsInfoThroughBackend() async throws {
 #if DEBUG
-        AuthTokenProvider.isDebugSession = false
+        AuthTokenProvider.shared.isDebugSession = false
 #endif
         let spy = VTLoggingSpy()
         let fake = FakeFirebaseAuthBackend()

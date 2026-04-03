@@ -32,11 +32,11 @@ API/
 
 **Environment switching** — Compile-time conditional: `#if DEBUG` builds use `.development` (reads `API_HOST` from scheme env vars); `RELEASE` archives automatically target `.production` (`https://vaulttracker-api.onrender.com`). No manual change needed before archiving.
 
-**Authentication** — Every request is signed by `AuthTokenProvider.shared.getToken()`. On a 401 response, `APIService` force-refreshes the token and retries once. If the retry also 401s, it posts `.authenticationRequired` on `NotificationCenter` and throws `APIError.unauthorized` — `AuthManager` observes this to sign the user out. `AuthTokenProvider.test_make(log:)` is internal for `VaultTrackerTests` (`VTLoggingSpy`) only; production uses `shared`.
+**Authentication** — Every request is signed by the injected `AuthTokenProvider` (defaults to `AuthTokenProvider.shared`). On a 401 response, `APIService` force-refreshes the token and retries once. If the retry also 401s, it posts `.authenticationRequired` on `NotificationCenter` and throws `APIError.unauthorized` — `AuthManager` observes this to sign the user out. `APIService.test_make(session:log:tokenProvider:)` accepts an injected provider for unit tests; production uses `shared`.
 
 **Date decoding** — The decoder uses a custom strategy that tries three ISO 8601 formats in order: with timezone + fractional seconds, with timezone only, then naive UTC. This handles both current rows (timezone-aware) and legacy rows stored before timezone support was added.
 
-**Debug bypass** — In DEBUG builds, `AuthTokenProvider.isDebugSession = true` returns a hardcoded token (`"vaulttracker-debug-user"`). The backend must have `DEBUG_AUTH_ENABLED=true` in its `.env` for this to work.
+**Debug bypass** — In DEBUG builds, `AuthTokenProvider` exposes `isDebugSession` and `forceTokenRefreshFailure` as **instance** (`nonisolated(unsafe) var`) properties, not statics. Set `instance.isDebugSession = true` to bypass Firebase and return the hardcoded token (`"vaulttracker-debug-user"`). Production and integration tests use `AuthTokenProvider.shared.isDebugSession = true`; unit tests in `APIServiceTests` create a per-test instance via `makeDebugProvider()` (calls `AuthTokenProvider.test_make(log:)` then sets `isDebugSession = true`) to avoid cross-suite races. The backend must have `DEBUG_AUTH_ENABLED=true` in its `.env`.
 
 ## Live Endpoints
 
