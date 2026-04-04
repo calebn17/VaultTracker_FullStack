@@ -1,0 +1,19 @@
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - unused_import
+
+disabled_rules:
+  - trailing_whitespace  # SwiftLint autocorrect handles this
+
+force_cast: error
+force_try: error
+implicitly_unwrapped_optional: error
+
+line_length:
+  warning: 120
+  error: 200
+
+file_length:
+  warning: 400
+  error: 600

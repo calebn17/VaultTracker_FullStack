@@ -23,6 +23,7 @@ If they want less narration, they can ask for a **shorter** summary; if they wan
 **PostgreSQL via Docker Compose (current default — matches production)**
 
 The `.env` already points at local Docker Postgres:
+
 ```
 DATABASE_URL=postgresql://vaulttracker:vaulttracker_dev_password@localhost:5432/vaulttracker
 ```
@@ -47,24 +48,29 @@ Tables are created automatically on startup — no Alembic needed.
 **SQLite (no Docker required)**
 
 Swap `.env` if you want the zero-setup option:
+
 ```
 DATABASE_URL=sqlite:///./vaulttracker.db
 ```
+
 The DB file lives at `VaultTrackerAPI/vaulttracker.db`. Tables are still auto-created.
 
 ### iOS Simulator vs real device
 
 The iOS app uses a compile-time flag to select the backend:
 
-| Launch method | Build config | Backend target |
-|---|---|---|
-| Simulator via Xcode | DEBUG | `localhost:8000` |
-| Real device via Xcode | DEBUG | `localhost:8000` (fails — see below) |
-| Archive → TestFlight/App Store | RELEASE | `https://vaulttracker-api.onrender.com` |
+
+| Launch method                  | Build config | Backend target                          |
+| ------------------------------ | ------------ | --------------------------------------- |
+| Simulator via Xcode            | DEBUG        | `localhost:8000`                        |
+| Real device via Xcode          | DEBUG        | `localhost:8000` (fails — see below)    |
+| Archive → TestFlight/App Store | RELEASE      | `https://vaulttracker-api.onrender.com` |
+
 
 **Real device fix:** `localhost` on a physical iPhone means the phone itself, not your Mac. Set `API_HOST` to your Mac's LAN IP in the Xcode scheme:
 
 Xcode → Edit Scheme → Run → Arguments → Environment Variables:
+
 ```
 API_HOST = 192.168.x.x:8000
 ```
@@ -118,18 +124,18 @@ Expect multiple failures. If the suite still passes, widen `_vt_inject_broken_be
 
 ### Demo portfolio seed (local web / UI visualization)
 
-For **VaultTrackerWeb** (or manual API exploration), you can load realistic demo holdings and a long net-worth history without mocking the client. Script: [`scripts/seed_demo_portfolio.py`](scripts/seed_demo_portfolio.py).
+For **VaultTrackerWeb** (or manual API exploration), you can load realistic demo holdings and a long net-worth history without mocking the client. Script: `[scripts/seed_demo_portfolio.py](scripts/seed_demo_portfolio.py)`.
 
 - **Mechanism:** Inserts many backdated `SmartTransactionCreate` rows via `TransactionService.smart_create` — same write path as `POST /api/v1/transactions/smart` — so accounts, assets, transactions, and `NetWorthSnapshot` rows stay consistent with production rules.
-- **Default user:** `firebase_id` **`debug-user`** (matches `DEBUG_AUTH_ENABLED` + Bearer `vaulttracker-debug-user`). Override with `--firebase-id <uid>` if you need a different user row.
-- **`--clear`:** Deletes that user’s transactions, snapshots, assets, and accounts (same effect as `DELETE /api/v1/users/me/data`) before seeding. Use it on repeat runs; seeding **without** `--clear` **duplicates** buys.
+- **Default user:** `firebase_id` `**debug-user`** (matches `DEBUG_AUTH_ENABLED` + Bearer `vaulttracker-debug-user`). Override with `--firebase-id <uid>` if you need a different user row.
+- `**--clear`:** Deletes that user’s transactions, snapshots, assets, and accounts (same effect as `DELETE /api/v1/users/me/data`) before seeding. Use it on repeat runs; seeding **without** `--clear` **duplicates** buys.
 
 ```bash
 cd VaultTrackerAPI
 ./venv/bin/python scripts/seed_demo_portfolio.py --clear
 ```
 
-Then run the API with `DEBUG_AUTH_ENABLED=true`, start the web app with `NEXT_PUBLIC_API_URL` pointing at the API, and sign in with **debug** on `/login`. Optional: use **Refresh prices** on the dashboard for live crypto quotes (symbols must appear in `PriceService.CRYPTO_MAP` in [`app/services/price_service.py`](app/services/price_service.py)).
+Then run the API with `DEBUG_AUTH_ENABLED=true`, start the web app with `NEXT_PUBLIC_API_URL` pointing at the API, and sign in with **debug** on `/login`. Optional: use **Refresh prices** on the dashboard for live crypto quotes (symbols must appear in `PriceService.CRYPTO_MAP` in `[app/services/price_service.py](app/services/price_service.py)`).
 
 ## Architecture
 
@@ -159,13 +165,15 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 
 Two create/update families exist under `/api/v1/transactions`:
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/transactions` | Legacy create — caller supplies `asset_id` + `account_id` UUIDs. |
-| `POST` | `/transactions/smart` | Smart create — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates account + asset server-side. |
-| `PUT` | `/transactions/{id}` | Legacy update — partial update by UUID; reverses then reapplies on the **same** asset row. |
-| `PUT` | `/transactions/{id}/smart` | Smart update — full smart body; `TransactionService.smart_update` reverses on the **old** asset, then re-resolves account + asset from the payload (same rules as `smart_create`). |
-| `DELETE` | `/transactions/{id}` | Reverses asset effect and deletes the row. |
+
+| Method   | Path                       | Description                                                                                                                                                                        |
+| -------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST`   | `/transactions`            | Legacy create — caller supplies `asset_id` + `account_id` UUIDs.                                                                                                                   |
+| `POST`   | `/transactions/smart`      | Smart create — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates account + asset server-side.                                                   |
+| `PUT`    | `/transactions/{id}`       | Legacy update — partial update by UUID; reverses then reapplies on the **same** asset row.                                                                                         |
+| `PUT`    | `/transactions/{id}/smart` | Smart update — full smart body; `TransactionService.smart_update` reverses on the **old** asset, then re-resolves account + asset from the payload (same rules as `smart_create`). |
+| `DELETE` | `/transactions/{id}`       | Reverses asset effect and deletes the row.                                                                                                                                         |
+
 
 ### The transaction → asset → snapshot chain
 
@@ -195,12 +203,14 @@ The dashboard router ([app/routers/dashboard.py](app/routers/dashboard.py)) grou
 
 Loaded from `.env` via pydantic-settings ([app/config.py](app/config.py)):
 
-| Variable | Default | Notes |
-|---|---|---|
-| `DATABASE_URL` | `sqlite:///./vaulttracker.db` | Use `postgresql://...` for Neon / Render |
-| `DEBUG_AUTH_ENABLED` | `false` | Enables iOS debug token bypass |
-| `ALLOWED_ORIGINS` | localhost 3000/8000 (see `config.py`) | Comma-separated CORS origins |
-| `FIREBASE_CREDENTIALS_PATH` | (empty) | Service account JSON; required for real JWT verification |
-| `ALPHA_VANTAGE_API_KEY` | (empty) | Stock quotes (`/prices`, refresh) |
+
+| Variable                    | Default                               | Notes                                                    |
+| --------------------------- | ------------------------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`              | `sqlite:///./vaulttracker.db`         | Use `postgresql://...` for Neon / Render                 |
+| `DEBUG_AUTH_ENABLED`        | `false`                               | Enables iOS debug token bypass                           |
+| `ALLOWED_ORIGINS`           | localhost 3000/8000 (see `config.py`) | Comma-separated CORS origins                             |
+| `FIREBASE_CREDENTIALS_PATH` | (empty)                               | Service account JSON; required for real JWT verification |
+| `ALPHA_VANTAGE_API_KEY`     | (empty)                               | Stock quotes (`/prices`, refresh)                        |
+
 
 Database tables are created automatically via `Base.metadata.create_all` in the lifespan handler — there are no migration scripts.
