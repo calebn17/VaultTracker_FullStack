@@ -18,7 +18,7 @@ VaultTracker/
 ├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy)
 ├── Models/             # Domain value types (Asset, Transaction, Account, etc.)
 ├── Custom UI Components/ # Reusable SwiftUI primitives (CustomButton, CustomTextField)
-├── Utils/              # Extensions (Double formatting, `Color(hex:)`), UIKit bridges
+├── Utils/              # `VTLogging` / `VTLogLive`, extensions, UIKit bridges
 └── Assets.xcassets     # Image and color assets
 ```
 
@@ -82,7 +82,7 @@ No manual change needed before archiving — the switch is compile-time (`#if DE
 
 ### Unit / Integration Tests (`VaultTrackerTests/`)
 
-- **Unit tests** use Swift Testing (`@Test`, `#expect`). ViewModel coverage includes `HomeViewModelTests`, `AnalyticsViewModelTests`, and `AddAssetFormViewModelTests` (validation / request encoding without the network). `AuthManagerTests` injects `FakeFirebaseAuthBackend` + isolated `NotificationCenter` for auth state, debug sign-out, and `.authenticationRequired` behavior.
+- **Unit tests** use Swift Testing (`@Test`, `#expect`). ViewModel coverage includes `HomeViewModelTests`, `AnalyticsViewModelTests`, and `AddAssetFormViewModelTests` (validation / request encoding without the network). `AuthManagerTests` injects `FakeFirebaseAuthBackend` + isolated `NotificationCenter` (optional `VTLogging`; default `VTLog.shared`) for auth state, debug sign-out, and `.authenticationRequired` behavior. `APIServiceTests` builds the service with `APIService.test_make(session:log:tokenProvider:)`, a stub `URLProtocol` session, and a per-test `AuthTokenProvider` created by `makeDebugProvider()` (sets `isDebugSession = true` on the instance). This avoids cross-suite races: `APIServiceTests` never touches `AuthTokenProvider.shared`, so concurrent `AuthManagerTests` mutations of `.shared.isDebugSession` do not interfere. For `tokenRefreshFailureAfter401LogsNotAuthenticated`, the test passes a provider with `forceTokenRefreshFailure = true`. All `APIService` test bodies are under `#if DEBUG`. `AuthTokenProviderTests` uses `AuthTokenProvider.test_make(log:)` without file-level `#if DEBUG`.
 - **Integration tests** (`APIIntegrationTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`) hit a real local API with debug auth — the API server must be running with `DEBUG_AUTH_ENABLED=true`.
 - `MockDataService.swift` is the test double for `DataServiceProtocol`; add stubs there when new protocol methods are declared. For analytics VM tests it exposes `analyticsStub`, `analyticsError`, and `fetchAnalyticsCallCount` (mirrors the dashboard / refresh-prices patterns).
 - **Inventory** (Swift `@Test` in `VaultTrackerTests/`): mappers, codable, errors, view models, and `AuthManager`; 20 integration-tagged cases. See [Documentation/Plans/2026-03-29-ios-test-plan.md](../Documentation/Plans/2026-03-29-ios-test-plan.md) for the coverage map and CI split (unit vs integration vs UI).

@@ -51,8 +51,14 @@ struct AuthManagerTests {
             firebaseSignOutCallCount += 1
         }
 
-        func signIn(with credential: AuthCredential) async throws {
+        func signIn(with credential: AuthCredential) async throws -> AuthDataResult {
             signInWithCredentialCallCount += 1
+            // Do not call Firebase — tests rely on a pure stub. Production uses `LiveFirebaseAuthBackend`.
+            throw NSError(
+                domain: "FakeFirebaseAuthBackend",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "stub — use LiveFirebaseAuthBackend for a real sign-in"]
+            )
         }
 
         func simulateUser(_ user: (any AuthUserInfo)?) {
@@ -96,12 +102,13 @@ struct AuthManagerTests {
 
     @Test func authenticationRequiredPostsSignOutThroughBackend() async throws {
 #if DEBUG
-        AuthTokenProvider.isDebugSession = false
+        AuthTokenProvider.shared.isDebugSession = false
 #endif
+        let spy = VTLoggingSpy()
         let fake = FakeFirebaseAuthBackend()
         fake.currentUser = StubAuthUser()
         let nc = NotificationCenter()
-        let manager = AuthManager(authBackend: fake, notificationCenter: nc)
+        let manager = AuthManager(authBackend: fake, notificationCenter: nc, log: spy)
         await Task.yield()
         #expect(manager.authenticationState == .authenticated)
 
@@ -110,23 +117,62 @@ struct AuthManagerTests {
 
         #expect(fake.firebaseSignOutCallCount == 1)
         #expect(manager.authenticationState == .unauthenticated)
+        #expect(spy.entries.contains { $0.level == .warn && $0.message == "authenticationRequired — signing out" })
+        #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
     }
 
 #if DEBUG
     @Test func signInDebugThenSignOutSkipsFirebaseSignOut() async throws {
-        AuthTokenProvider.isDebugSession = false
+        AuthTokenProvider.shared.isDebugSession = false
+        let spy = VTLoggingSpy()
         let fake = FakeFirebaseAuthBackend()
-        let manager = AuthManager(authBackend: fake, notificationCenter: NotificationCenter())
+        let manager = AuthManager(authBackend: fake, notificationCenter: NotificationCenter(), log: spy)
         await Task.yield()
 
         manager.signInDebug()
-        #expect(AuthTokenProvider.isDebugSession == true)
+        #expect(AuthTokenProvider.shared.isDebugSession == true)
         #expect(manager.authenticationState == .authenticated)
 
         try manager.signOut()
-        #expect(AuthTokenProvider.isDebugSession == false)
+        #expect(AuthTokenProvider.shared.isDebugSession == false)
         #expect(manager.authenticationState == .unauthenticated)
         #expect(fake.firebaseSignOutCallCount == 0)
+        #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
     }
 #endif
+
+    @Test func signOutLogsInfoThroughBackend() async throws {
+#if DEBUG
+        AuthTokenProvider.shared.isDebugSession = false
+#endif
+        let spy = VTLoggingSpy()
+        let fake = FakeFirebaseAuthBackend()
+        fake.currentUser = StubAuthUser()
+        let manager = AuthManager(authBackend: fake, notificationCenter: NotificationCenter(), log: spy)
+        await Task.yield()
+
+        try manager.signOut()
+        #expect(fake.firebaseSignOutCallCount == 1)
+        #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
+    }
+
+    @Test func signInWithAppleLogsNotImplementedWarn() async throws {
+        let spy = VTLoggingSpy()
+        let manager = AuthManager(authBackend: FakeFirebaseAuthBackend(), notificationCenter: NotificationCenter(), log: spy)
+        await Task.yield()
+        try await manager.signInWithApple()
+        #expect(spy.entries.contains { $0.level == .warn && $0.message == "Sign in with Apple not yet implemented" })
+    }
+
+    /// Disabled until Google Sign-In can be stubbed (injectable presenter / `GIDSignIn` seam).
+    @Test(.disabled("Requires real Google Sign-In / host UI; bypass needs injectable GIDSign-In or Utilities seam."))
+    func signInWithGoogleLogsErrorWhenPresentationUnavailable() async throws {
+        let spy = VTLoggingSpy()
+        let manager = AuthManager(authBackend: FakeFirebaseAuthBackend(), notificationCenter: NotificationCenter(), log: spy)
+        await Task.yield()
+        await #expect(throws: Error.self) {
+            try await manager.signInWithGoogle()
+        }
+        #expect(spy.entries.contains { $0.level == .error && $0.message == "Sign-in failed" })
+    }
 }

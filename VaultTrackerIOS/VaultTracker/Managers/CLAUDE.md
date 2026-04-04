@@ -53,9 +53,9 @@ Calls `DELETE /api/v1/users/me/data`. Used by integration tests to reset server 
 
 ## AuthManager
 
-`@MainActor ObservableObject` injected as an `@EnvironmentObject` at the root. Depends on **`FirebaseAuthBackend`** (default `LiveFirebaseAuthBackend` → `Auth.auth()`) and **`NotificationCenter`** (default `.default` so `APIService`’s `.authenticationRequired` post is received). Publishes `authenticationState` and `user: (any AuthUserInfo)?` (Firebase `User` conforms in production).
+`@MainActor ObservableObject` injected as an `@EnvironmentObject` at the root. Depends on **`FirebaseAuthBackend`** (default `LiveFirebaseAuthBackend` → `Auth.auth()`) and **`NotificationCenter`** (default `.default` so `APIService`’s `.authenticationRequired` post is received). `FirebaseAuthBackend.signIn(with:)` returns **`AuthDataResult`** so `signInWithGoogle()` can log `result.user.uid` without re-reading `Auth.auth().currentUser`. Publishes `authenticationState` and `user: (any AuthUserInfo)?` (Firebase `User` conforms in production).
 
-`init(authBackend:notificationCenter:)` enables unit tests with `FakeFirebaseAuthBackend` and an isolated `NotificationCenter()`. Listener and notification observer are removed in `deinit`.
+`init(authBackend:notificationCenter:log:)` enables unit tests with `FakeFirebaseAuthBackend`, an isolated `NotificationCenter()`, and an optional `VTLogging` (default `VTLog.shared`). Auth lifecycle events (sign-in success/failure, sign-out, `authenticationRequired`) use the injected logger. Listener and notification observer are removed in `deinit`.
 
 Also observes `Notification.Name.authenticationRequired` (posted by `APIService` after a persistent 401) to trigger automatic sign-out.
 

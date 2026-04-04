@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import Firebase
+import FirebaseCrashlytics
 
 @main
 struct VaultTrackerApp: App {
@@ -15,6 +16,12 @@ struct VaultTrackerApp: App {
     
     init() {
         FirebaseApp.configure()
+#if DEBUG
+        // Avoid non-fatal noise and uploads during local development; OSLog still captures `VTLogLive` output.
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+#else
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+#endif
         Self.configureLedgerChrome()
     }
     

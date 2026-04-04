@@ -133,7 +133,7 @@ final class HomeViewModel: ObservableObject {
         do {
             snapshots = try await dataService.fetchNetWorthHistory(period: selectedPeriod)
         } catch {
-            print("Error fetching net worth history: \(error)")
+            VTLog.shared.error("Error fetching net worth history", error: error, category: .ui)
             snapshots = []
         }
     }

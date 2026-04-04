@@ -22,7 +22,7 @@ struct ProfileView: View {
                 do {
                     try authManager.signOut()
                 } catch {
-                    print("Error signing out: \(error.localizedDescription)")
+                    VTLog.shared.error("Error signing out", error: error, category: .ui)
                 }
             } label: {
                 Text("Sign Out")

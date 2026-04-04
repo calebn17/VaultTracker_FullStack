@@ -34,7 +34,7 @@ struct APIIntegrationTests {
     let api = APIService.shared
 
     init() async throws {
-        AuthTokenProvider.isDebugSession = true
+        AuthTokenProvider.shared.isDebugSession = true
         try await DataService.shared.clearAllData()
     }
 
