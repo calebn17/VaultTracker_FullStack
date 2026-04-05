@@ -26,7 +26,7 @@ struct HomeViewState {
     var retirementGroupedAssetHoldings: GroupedAssetHolding = []
 
     var isLoading: Bool = false
-    var errorMessage: String? = nil
+    var errorMessage: String?
 }
 
 @MainActor

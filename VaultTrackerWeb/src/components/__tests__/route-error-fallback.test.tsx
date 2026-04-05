@@ -20,9 +20,7 @@ describe("RouteErrorFallback", () => {
     err.digest = "digest-abc";
     const reset = vi.fn();
 
-    render(
-      <RouteErrorFallback error={err} reset={reset} scope="root" />
-    );
+    render(<RouteErrorFallback error={err} reset={reset} scope="root" />);
 
     await waitFor(() => {
       expect(mockLoggerError).toHaveBeenCalledWith(
@@ -41,9 +39,7 @@ describe("RouteErrorFallback", () => {
     const err = new Error("no-digest");
     const reset = vi.fn();
 
-    render(
-      <RouteErrorFallback error={err} reset={reset} scope="root" />
-    );
+    render(<RouteErrorFallback error={err} reset={reset} scope="root" />);
 
     await waitFor(() => {
       expect(mockLoggerError).toHaveBeenCalledWith("Route error (root)", err, undefined, {
@@ -57,9 +53,7 @@ describe("RouteErrorFallback", () => {
     const err = new Error("x");
     const reset = vi.fn();
 
-    render(
-      <RouteErrorFallback error={err} reset={reset} scope="authenticated" />
-    );
+    render(<RouteErrorFallback error={err} reset={reset} scope="authenticated" />);
 
     await user.click(screen.getByRole("button", { name: /try again/i }));
     expect(reset).toHaveBeenCalledTimes(1);

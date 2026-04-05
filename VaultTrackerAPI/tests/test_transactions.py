@@ -3,8 +3,13 @@ import uuid
 from app.models.transaction import Transaction
 
 
-def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test_user, db_session):
-    """Deleting the only tx for an asset removes the holding (row deleted + dashboard omits empties)."""
+def test_delete_last_smart_transaction_removes_asset_from_dashboard(
+    client, test_user, db_session
+):
+    """
+    Deleting the only tx for an asset removes the holding (row deleted +
+    dashboard omits empties).
+    """
     body = {
         "transaction_type": "buy",
         "category": "crypto",
@@ -22,9 +27,7 @@ def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test
     d1 = client.get("/api/v1/dashboard")
     assert d1.status_code == 200
     names = sorted(
-        h["name"]
-        for cat in d1.json()["groupedHoldings"].values()
-        for h in cat
+        h["name"] for cat in d1.json()["groupedHoldings"].values() for h in cat
     )
     assert "Solana" in names
 
@@ -34,9 +37,7 @@ def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test
     d2 = client.get("/api/v1/dashboard")
     assert d2.status_code == 200
     names_after = [
-        h["name"]
-        for cat in d2.json()["groupedHoldings"].values()
-        for h in cat
+        h["name"] for cat in d2.json()["groupedHoldings"].values() for h in cat
     ]
     assert "Solana" not in names_after
 
@@ -44,7 +45,10 @@ def test_delete_last_smart_transaction_removes_asset_from_dashboard(client, test
 def test_smart_transactions_with_different_dates_yield_multiple_networth_points(
     client, test_user, db_session
 ):
-    """Net worth snapshots use each trade's date so history matches transaction dates."""
+    """
+    Net worth snapshots use each trade's date so history matches transaction
+    dates.
+    """
     base_buy = {
         "transaction_type": "buy",
         "category": "crypto",
@@ -80,7 +84,9 @@ def test_smart_transactions_with_different_dates_yield_multiple_networth_points(
     assert len(snaps) == 2
 
 
-def test_deleting_backdated_transaction_adjusts_historical_snapshots(client, test_user, db_session):
+def test_deleting_backdated_transaction_adjusts_historical_snapshots(
+    client, test_user, db_session
+):
     """Deleting a backdated buy corrects all snapshot values on or after that date."""
     base = {
         "transaction_type": "buy",
@@ -89,19 +95,31 @@ def test_deleting_backdated_transaction_adjusts_historical_snapshots(client, tes
         "account_type": "cryptoExchange",
     }
     # Two buys on different dates
-    r1 = client.post("/api/v1/transactions/smart", json={
-        **base, "asset_name": "Bitcoin", "symbol": "BTC",
-        "quantity": 1.0, "price_per_unit": 40000.0,
-        "date": "2024-01-01T00:00:00Z",
-    })
+    r1 = client.post(
+        "/api/v1/transactions/smart",
+        json={
+            **base,
+            "asset_name": "Bitcoin",
+            "symbol": "BTC",
+            "quantity": 1.0,
+            "price_per_unit": 40000.0,
+            "date": "2024-01-01T00:00:00Z",
+        },
+    )
     assert r1.status_code == 201, r1.text
     btc_tx_id = r1.json()["id"]
 
-    r2 = client.post("/api/v1/transactions/smart", json={
-        **base, "asset_name": "Ethereum", "symbol": "ETH",
-        "quantity": 1.0, "price_per_unit": 5000.0,
-        "date": "2024-06-01T00:00:00Z",
-    })
+    r2 = client.post(
+        "/api/v1/transactions/smart",
+        json={
+            **base,
+            "asset_name": "Ethereum",
+            "symbol": "ETH",
+            "quantity": 1.0,
+            "price_per_unit": 5000.0,
+            "date": "2024-06-01T00:00:00Z",
+        },
+    )
     assert r2.status_code == 201, r2.text
 
     h_before = client.get("/api/v1/networth/history", params={"period": "daily"})
@@ -129,7 +147,9 @@ def test_deleting_backdated_transaction_adjusts_historical_snapshots(client, tes
     assert jun_after["value"] == 5000.0  # was 45000 - 40000
 
 
-def test_smart_transaction_creates_account_asset_and_transaction(client, test_user, db_session):
+def test_smart_transaction_creates_account_asset_and_transaction(
+    client, test_user, db_session
+):
     body = {
         "transaction_type": "buy",
         "category": "crypto",
@@ -241,7 +261,9 @@ def test_legacy_update_409_when_linked_asset_missing(client, test_user, db_sessi
     assert r1.status_code == 409
 
 
-def test_smart_transaction_update_changes_quantity_and_preserves_resolution(client, test_user, db_session):
+def test_smart_transaction_update_changes_quantity_and_preserves_resolution(
+    client, test_user, db_session
+):
     create_body = {
         "transaction_type": "buy",
         "category": "crypto",
@@ -274,7 +296,9 @@ def test_smart_transaction_update_changes_quantity_and_preserves_resolution(clie
     assert rows[0]["total_value"] == 2.0 * 41000.0
 
 
-def test_smart_transaction_update_409_when_linked_asset_missing(client, test_user, db_session):
+def test_smart_transaction_update_409_when_linked_asset_missing(
+    client, test_user, db_session
+):
     create_body = {
         "transaction_type": "buy",
         "category": "crypto",
@@ -318,8 +342,13 @@ def test_smart_transaction_update_404(client, test_user, db_session):
     assert r.status_code == 404
 
 
-def test_smart_transaction_update_moves_to_new_asset_and_account(client, test_user, db_session):
-    """Reversal applies to old asset; new payload resolves a different account + symbol."""
+def test_smart_transaction_update_moves_to_new_asset_and_account(
+    client, test_user, db_session
+):
+    """
+    Reversal applies to old asset; new payload resolves a different account +
+    symbol.
+    """
     create_body = {
         "transaction_type": "buy",
         "category": "crypto",

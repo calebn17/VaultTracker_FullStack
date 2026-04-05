@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { format } from "date-fns";
-import {
-  LayoutDashboard,
-  PieChart,
-  ListOrdered,
-  Wallet,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { LayoutDashboard, PieChart, ListOrdered, Wallet, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,10 +22,7 @@ export function SiteHeader() {
   const { theme, setTheme } = useTheme();
   const { user, mode } = useAuth();
 
-  const initial =
-    user?.displayName?.[0] ??
-    user?.email?.[0] ??
-    (mode === "debug" ? "D" : "?");
+  const initial = user?.displayName?.[0] ?? user?.email?.[0] ?? (mode === "debug" ? "D" : "?");
 
   const dateChip = format(new Date(), "EEE, MMM d, yyyy");
 
@@ -48,8 +38,7 @@ export function SiteHeader() {
           </Link>
           <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main">
             {links.map(({ href, label }) => {
-              const active =
-                pathname === href || pathname.startsWith(`${href}/`);
+              const active = pathname === href || pathname.startsWith(`${href}/`);
               return (
                 <Link
                   key={href}
@@ -82,20 +71,14 @@ export function SiteHeader() {
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? (
-              <Sun className="size-4" />
-            ) : (
-              <Moon className="size-4" />
-            )}
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
           <Link
             href="/profile"
             className="ring-offset-background shrink-0 rounded-full ring-2 ring-transparent transition-[box-shadow] hover:ring-primary/40 focus-visible:ring-ring focus-visible:outline-none"
           >
             <Avatar className="size-8 border border-border">
-              {user?.photoURL ? (
-                <AvatarImage src={user.photoURL} alt="" />
-              ) : null}
+              {user?.photoURL ? <AvatarImage src={user.photoURL} alt="" /> : null}
               <AvatarFallback className="bg-secondary text-[11px] font-medium">
                 {initial}
               </AvatarFallback>

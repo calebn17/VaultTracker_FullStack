@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function StatCard({
@@ -38,9 +33,7 @@ export function StatCard({
     return (
       <Card size="sm" className="gap-2 py-3">
         <CardHeader className="pb-0">
-          <CardTitle className="text-muted-foreground text-xs font-medium">
-            {title}
-          </CardTitle>
+          <CardTitle className="text-muted-foreground text-xs font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {loading ? (
@@ -56,9 +49,7 @@ export function StatCard({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-muted-foreground text-sm font-medium">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-muted-foreground text-sm font-medium">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (

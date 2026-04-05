@@ -6,13 +6,7 @@ import type { Category, CategoryTotals } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export const CATEGORY_ORDER: Category[] = [
-  "crypto",
-  "stocks",
-  "cash",
-  "realEstate",
-  "retirement",
-];
+export const CATEGORY_ORDER: Category[] = ["crypto", "stocks", "cash", "realEstate", "retirement"];
 
 export const CATEGORY_BAR_COLORS: Record<Category, string> = {
   crypto: "bg-chart-1",
@@ -109,9 +103,7 @@ export function CategoryBar({
           transform: "translate(-50%, calc(-100% - 6px))",
         }}
       >
-        <div className="font-medium">
-          {CATEGORY_LABELS[tooltip.hoveredKey]}
-        </div>
+        <div className="font-medium">{CATEGORY_LABELS[tooltip.hoveredKey]}</div>
         <div className="text-muted-foreground tabular-nums">
           {formatCurrency(totals[tooltip.hoveredKey])}
         </div>

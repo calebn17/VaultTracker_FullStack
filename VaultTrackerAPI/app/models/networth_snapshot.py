@@ -9,7 +9,7 @@ longer writes snapshots directly; all snapshot management is server-side.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Float, ForeignKey
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base

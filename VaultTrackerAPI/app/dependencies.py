@@ -12,7 +12,8 @@ matches the `AuthTokenProvider.debugToken` constant in the iOS client and allows
 local development without a Firebase account.
 
 Production: set `FIREBASE_CREDENTIALS_PATH` to a service account JSON file.
-Non-debug Bearer tokens are verified with Firebase Admin and the uid becomes firebase_id.
+Non-debug Bearer tokens are verified with Firebase Admin and the uid becomes
+firebase_id.
 """
 
 from __future__ import annotations
@@ -21,9 +22,9 @@ import os
 import threading
 
 import firebase_admin
+from fastapi import Depends, Header, HTTPException, status
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
-from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.config import settings

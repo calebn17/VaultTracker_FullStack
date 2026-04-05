@@ -1,4 +1,3 @@
-
 //
 //  NetWorthSnapshot.swift
 //  VaultTracker

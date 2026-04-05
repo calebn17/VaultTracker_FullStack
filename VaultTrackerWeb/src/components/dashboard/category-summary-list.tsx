@@ -2,10 +2,7 @@
 
 import type { Category, CategoryTotals } from "@/types/api";
 import { formatCurrency } from "@/lib/format";
-import {
-  CATEGORY_LABELS,
-  CATEGORY_ORDER,
-} from "@/components/dashboard/category-bar";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/components/dashboard/category-bar";
 
 /** Meridian reference palette (networth-tracker.html) */
 export const MERIDIAN_CATEGORY_HEX: Record<Category, string> = {
@@ -26,11 +23,7 @@ export function CategorySummaryList({
   total?: number;
   loading?: boolean;
 }) {
-  const total =
-    totalProp ??
-    (totals
-      ? CATEGORY_ORDER.reduce((s, k) => s + totals[k], 0)
-      : 0);
+  const total = totalProp ?? (totals ? CATEGORY_ORDER.reduce((s, k) => s + totals[k], 0) : 0);
   if (loading || !totals) {
     return (
       <div className="flex flex-col gap-3.5">
@@ -67,9 +60,7 @@ export function CategorySummaryList({
                 />
                 {CATEGORY_LABELS[key]}
               </div>
-              <span className="text-muted-foreground text-xs tabular-nums">
-                {pct.toFixed(1)}%
-              </span>
+              <span className="text-muted-foreground text-xs tabular-nums">{pct.toFixed(1)}%</span>
             </div>
             <div className="bg-secondary h-1 overflow-hidden rounded-full">
               <div

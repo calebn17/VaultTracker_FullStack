@@ -23,23 +23,11 @@ import {
 } from "@/components/ui/select";
 import type { AccountResponse, AccountType } from "@/types/api";
 
-const types: AccountType[] = [
-  "cryptoExchange",
-  "brokerage",
-  "bank",
-  "retirement",
-  "other",
-];
+const types: AccountType[] = ["cryptoExchange", "brokerage", "bank", "retirement", "other"];
 
 const schema = z.object({
   name: z.string().min(1),
-  account_type: z.enum([
-    "cryptoExchange",
-    "brokerage",
-    "bank",
-    "retirement",
-    "other",
-  ]),
+  account_type: z.enum(["cryptoExchange", "brokerage", "bank", "retirement", "other"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -82,10 +70,7 @@ export function AccountFormDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-2">
             <Label>Name</Label>
             <Input {...form.register("name")} />
@@ -94,9 +79,7 @@ export function AccountFormDialog({
             <Label>Type</Label>
             <Select
               value={form.watch("account_type")}
-              onValueChange={(v) =>
-                form.setValue("account_type", v as AccountType)
-              }
+              onValueChange={(v) => form.setValue("account_type", v as AccountType)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -111,11 +94,7 @@ export function AccountFormDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={pending}>

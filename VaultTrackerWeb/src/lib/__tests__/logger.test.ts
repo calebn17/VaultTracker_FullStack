@@ -3,9 +3,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const sentryMocks = vi.hoisted(() => ({
   captureMessage: vi.fn(),
   captureException: vi.fn(),
-  withScope: vi.fn((fn: (scope: { setTag: ReturnType<typeof vi.fn>; setContext: ReturnType<typeof vi.fn> }) => void) => {
-    fn({ setTag: vi.fn(), setContext: vi.fn() });
-  }),
+  withScope: vi.fn(
+    (
+      fn: (scope: {
+        setTag: ReturnType<typeof vi.fn>;
+        setContext: ReturnType<typeof vi.fn>;
+      }) => void
+    ) => {
+      fn({ setTag: vi.fn(), setContext: vi.fn() });
+    }
+  ),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -100,10 +107,15 @@ describe("logger", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.spyOn(console, "error").mockImplementation(() => {});
     const err = new Error("boundary");
-    logger.error("Route error (root)", err, { digest: "d1" }, {
-      tags: { route_error_scope: "root" },
-      contexts: { route_error: { digest: "d1" } },
-    });
+    logger.error(
+      "Route error (root)",
+      err,
+      { digest: "d1" },
+      {
+        tags: { route_error_scope: "root" },
+        contexts: { route_error: { digest: "d1" } },
+      }
+    );
     expect(sentryMocks.withScope).toHaveBeenCalledTimes(1);
     expect(sentryMocks.captureException).toHaveBeenCalledWith(err, {
       extra: { digest: "d1" },

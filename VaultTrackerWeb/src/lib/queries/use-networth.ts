@@ -6,9 +6,6 @@ export function useNetWorthHistory(period: NetWorthPeriod = "daily") {
   const api = useApiClient();
   return useQuery({
     queryKey: ["networth", period],
-    queryFn: () =>
-      api.get<NetWorthHistoryResponse>(
-        `/api/v1/networth/history?period=${period}`
-      ),
+    queryFn: () => api.get<NetWorthHistoryResponse>(`/api/v1/networth/history?period=${period}`),
   });
 }

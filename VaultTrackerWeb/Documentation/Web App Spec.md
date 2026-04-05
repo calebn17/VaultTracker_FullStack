@@ -29,15 +29,15 @@ The web app is a responsive dashboard for tracking personal net worth. It consum
 
 ### Pages
 
-| Route | Page | Auth | Data Source |
-|-------|------|------|-------------|
-| `/` | Redirect | No | — |
-| `/login` | Google Sign-In | No | Firebase Auth |
-| `/dashboard` | Net worth, chart, categories, holdings, price lookup | Yes | `GET /dashboard` + `GET /networth/history` + `GET /prices/{symbol}` |
-| `/analytics` | Allocation donut, trends, gain/loss | Yes | `GET /analytics` |
-| `/transactions` | Sortable table + add/edit/delete | Yes | `GET /transactions` (enriched) + `POST /transactions/smart` + `PUT /transactions/{id}/smart` |
-| `/accounts` | Account CRUD + linked assets | Yes | `GET /accounts` + CRUD |
-| `/profile` | User info, sign out, theme, delete data | Yes | Firebase Auth + `DELETE /users/me/data` |
+| Route           | Page                                                 | Auth | Data Source                                                                                  |
+| --------------- | ---------------------------------------------------- | ---- | -------------------------------------------------------------------------------------------- |
+| `/`             | Redirect                                             | No   | —                                                                                            |
+| `/login`        | Google Sign-In                                       | No   | Firebase Auth                                                                                |
+| `/dashboard`    | Net worth, chart, categories, holdings, price lookup | Yes  | `GET /dashboard` + `GET /networth/history` + `GET /prices/{symbol}`                          |
+| `/analytics`    | Allocation donut, trends, gain/loss                  | Yes  | `GET /analytics`                                                                             |
+| `/transactions` | Sortable table + add/edit/delete                     | Yes  | `GET /transactions` (enriched) + `POST /transactions/smart` + `PUT /transactions/{id}/smart` |
+| `/accounts`     | Account CRUD + linked assets                         | Yes  | `GET /accounts` + CRUD                                                                       |
+| `/profile`      | User info, sign out, theme, delete data              | Yes  | Firebase Auth + `DELETE /users/me/data`                                                      |
 
 ---
 
@@ -45,19 +45,19 @@ The web app is a responsive dashboard for tracking personal net worth. It consum
 
 ### Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14+ (App Router) |
-| Language | TypeScript 5.x |
-| Styling | Tailwind CSS 3.x |
-| Components | shadcn/ui |
-| Server state | TanStack React Query 5.x |
-| Charts | Recharts 2.x |
-| Tables | TanStack Table 8.x |
-| Forms | React Hook Form + Zod |
-| Auth | Firebase Auth (Web SDK) 10.x |
-| HTTP | Native fetch (wrapped) |
-| Deployment | Vercel (free tier) |
+| Layer        | Technology                   |
+| ------------ | ---------------------------- |
+| Framework    | Next.js 14+ (App Router)     |
+| Language     | TypeScript 5.x               |
+| Styling      | Tailwind CSS 3.x             |
+| Components   | shadcn/ui                    |
+| Server state | TanStack React Query 5.x     |
+| Charts       | Recharts 2.x                 |
+| Tables       | TanStack Table 8.x           |
+| Forms        | React Hook Form + Zod        |
+| Auth         | Firebase Auth (Web SDK) 10.x |
+| HTTP         | Native fetch (wrapped)       |
+| Deployment   | Vercel (free tier)           |
 
 ### Directory Structure
 
@@ -163,7 +163,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         ...options?.headers,
       },
@@ -175,7 +175,7 @@ class ApiClient {
       const retry = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
         headers: {
-          "Authorization": `Bearer ${freshToken}`,
+          Authorization: `Bearer ${freshToken}`,
           "Content-Type": "application/json",
           ...options?.headers,
         },
@@ -192,7 +192,9 @@ class ApiClient {
     return response.json();
   }
 
-  get<T>(endpoint: string) { return this.request<T>(endpoint); }
+  get<T>(endpoint: string) {
+    return this.request<T>(endpoint);
+  }
 
   post<T>(endpoint: string, body: unknown) {
     return this.request<T>(endpoint, {
@@ -289,7 +291,13 @@ export interface NetWorthHistoryResponse {
 }
 
 export interface PriceRefreshResponse {
-  updated: Array<{ asset_id: string; symbol: string; old_value: number; new_value: number; price: number }>;
+  updated: Array<{
+    asset_id: string;
+    symbol: string;
+    old_value: number;
+    new_value: number;
+    price: number;
+  }>;
   skipped: string[];
   errors: Array<{ symbol: string; error: string }>;
 }
@@ -353,8 +361,7 @@ export function useTransactions() {
 export function useCreateTransaction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SmartTransactionCreate) =>
-      api.post("/api/v1/transactions/smart", data),
+    mutationFn: (data: SmartTransactionCreate) => api.post("/api/v1/transactions/smart", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });
@@ -499,6 +506,7 @@ export function useDeleteUserData() {
 Create calls `POST /api/v1/transactions/smart`. Edit sends the same payload shape to `PUT /api/v1/transactions/{id}/smart` (server reverses the old row on its asset, then re-resolves account + asset like create). **No resolution logic lives in the client.**
 
 Fields:
+
 - Transaction type: buy / sell (radio group)
 - Category: crypto / stocks / cash / realEstate / retirement (select)
 - Asset name: text input (e.g., "Bitcoin", "AAPL", "Savings")
@@ -512,6 +520,7 @@ Fields:
 - Date: date picker (defaults to today)
 
 Validation via Zod:
+
 ```typescript
 const transactionSchema = z.object({
   transaction_type: z.enum(["buy", "sell"]),
@@ -530,18 +539,18 @@ const transactionSchema = z.object({
 
 TanStack Table with these columns:
 
-| Column | Source | Sortable | Filterable |
-|--------|--------|----------|------------|
-| Date | `date` | Yes | No |
-| Type | `transaction_type` | No | Yes (buy/sell) |
-| Asset | `asset.name` | Yes | Yes (search) |
-| Symbol | `asset.symbol` | No | No |
-| Category | `asset.category` | No | Yes (select) |
-| Account | `account.name` | No | Yes (select) |
-| Quantity | `quantity` | Yes | No |
-| Price | `price_per_unit` | Yes | No |
-| Total | `total_value` | Yes | No |
-| Actions | edit/delete buttons | No | No |
+| Column   | Source              | Sortable | Filterable     |
+| -------- | ------------------- | -------- | -------------- |
+| Date     | `date`              | Yes      | No             |
+| Type     | `transaction_type`  | No       | Yes (buy/sell) |
+| Asset    | `asset.name`        | Yes      | Yes (search)   |
+| Symbol   | `asset.symbol`      | No       | No             |
+| Category | `asset.category`    | No       | Yes (select)   |
+| Account  | `account.name`      | No       | Yes (select)   |
+| Quantity | `quantity`          | Yes      | No             |
+| Price    | `price_per_unit`    | Yes      | No             |
+| Total    | `total_value`       | Yes      | No             |
+| Actions  | edit/delete buttons | No       | No             |
 
 Pagination: client-side, 20 rows per page.
 
@@ -550,6 +559,7 @@ CSV export: downloads all transactions as CSV (date, type, asset, symbol, catego
 ### Responsive Layout
 
 **Desktop (> 1024px):**
+
 ```
 ┌──────────┬─────────────────────────────────────┐
 │          │                                     │
@@ -565,6 +575,7 @@ CSV export: downloads all transactions as CSV (date, type, asset, symbol, catego
 ```
 
 **Mobile (< 768px):**
+
 ```
 ┌─────────────────────────────────────┐
 │                                     │

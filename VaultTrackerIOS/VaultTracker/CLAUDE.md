@@ -24,6 +24,10 @@ VaultTracker/
 
 Each directory has its own `CLAUDE.md` with feature-specific context.
 
+## SwiftLint
+
+`.swiftlint.yml` in this directory configures `swiftlint lint` (CI uses the same). `unused_import` lives under `analyzer_rules` and only runs with `swiftlint analyze` and an Xcode compiler log—not plain `lint`. `implicitly_unwrapped_optional` is opt-in with `severity: error` (nested YAML, not a bare `error` scalar).
+
 ## Design system (Digital Ledger)
 
 - **Spec:** [Documentation/Plans/2026-03-28-digital-ledger-redesign-design.md](../Documentation/Plans/2026-03-28-digital-ledger-redesign-design.md) — color/type/component rules and screen checklist (view-only; keep `accessibilityIdentifier` values stable).

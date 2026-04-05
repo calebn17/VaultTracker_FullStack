@@ -24,9 +24,7 @@ import {
 } from "@/components/ui/select";
 
 function allocationPercent(
-  allocation:
-    | Record<string, { percentage: number } | undefined>
-    | undefined,
+  allocation: Record<string, { percentage: number } | undefined> | undefined,
   key: Category
 ): number {
   return allocation?.[key]?.percentage ?? 0;
@@ -58,9 +56,7 @@ export default function AnalyticsPage() {
   );
 
   const monthChangeProp =
-    monthChange != null
-      ? { absolute: monthChange.absolute, percent: monthChange.percent }
-      : null;
+    monthChange != null ? { absolute: monthChange.absolute, percent: monthChange.percent } : null;
 
   const totalNetWorth = d?.totalNetWorth ?? 0;
   const grouped = d?.groupedHoldings;
@@ -89,9 +85,7 @@ export default function AnalyticsPage() {
             totalValue={totals?.stocks ?? 0}
             allocationPercent={allocationPercent(alloc, "stocks")}
             totalNetWorth={totalNetWorth}
-            onSelectHolding={(h, c) =>
-              setSelectedHolding({ holding: h, category: c })
-            }
+            onSelectHolding={(h, c) => setSelectedHolding({ holding: h, category: c })}
             loading={cardLoading}
           />
         </div>
@@ -102,9 +96,7 @@ export default function AnalyticsPage() {
             totalValue={totals?.crypto ?? 0}
             allocationPercent={allocationPercent(alloc, "crypto")}
             totalNetWorth={totalNetWorth}
-            onSelectHolding={(h, c) =>
-              setSelectedHolding({ holding: h, category: c })
-            }
+            onSelectHolding={(h, c) => setSelectedHolding({ holding: h, category: c })}
             loading={cardLoading}
           />
         </div>
@@ -116,9 +108,7 @@ export default function AnalyticsPage() {
             totalValue={totals?.realEstate ?? 0}
             allocationPercent={allocationPercent(alloc, "realEstate")}
             totalNetWorth={totalNetWorth}
-            onSelectHolding={(h, c) =>
-              setSelectedHolding({ holding: h, category: c })
-            }
+            onSelectHolding={(h, c) => setSelectedHolding({ holding: h, category: c })}
             loading={cardLoading}
           />
         </div>
@@ -129,9 +119,7 @@ export default function AnalyticsPage() {
             totalValue={totals?.cash ?? 0}
             allocationPercent={allocationPercent(alloc, "cash")}
             totalNetWorth={totalNetWorth}
-            onSelectHolding={(h, c) =>
-              setSelectedHolding({ holding: h, category: c })
-            }
+            onSelectHolding={(h, c) => setSelectedHolding({ holding: h, category: c })}
             loading={cardLoading}
           />
         </div>
@@ -143,9 +131,7 @@ export default function AnalyticsPage() {
             totalValue={totals?.retirement ?? 0}
             allocationPercent={allocationPercent(alloc, "retirement")}
             totalNetWorth={totalNetWorth}
-            onSelectHolding={(h, c) =>
-              setSelectedHolding({ holding: h, category: c })
-            }
+            onSelectHolding={(h, c) => setSelectedHolding({ holding: h, category: c })}
             loading={cardLoading}
           />
         </div>
@@ -155,10 +141,7 @@ export default function AnalyticsPage() {
             <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.1em]">
               Net worth trend
             </h3>
-            <Select
-              value={period}
-              onValueChange={(v) => setPeriod(v as NetWorthPeriod)}
-            >
+            <Select value={period} onValueChange={(v) => setPeriod(v as NetWorthPeriod)}>
               <SelectTrigger className="w-40 sm:w-44">
                 <SelectValue />
               </SelectTrigger>
@@ -170,14 +153,9 @@ export default function AnalyticsPage() {
               </SelectContent>
             </Select>
           </div>
-          <NetWorthChart
-            data={history.data?.snapshots ?? []}
-            loading={history.isLoading}
-          />
+          <NetWorthChart data={history.data?.snapshots ?? []} loading={history.isLoading} />
           {history.isError ? (
-            <p className="text-destructive text-sm">
-              Could not load net worth history.
-            </p>
+            <p className="text-destructive text-sm">Could not load net worth history.</p>
           ) : null}
         </div>
       </div>
@@ -217,9 +195,7 @@ export default function AnalyticsPage() {
               <p className="text-sm">
                 <span className="font-medium">{priceQ.data.symbol}</span>:{" "}
                 {formatCurrency(priceQ.data.price)}{" "}
-                <span className="text-muted-foreground">
-                  ({priceQ.data.source})
-                </span>
+                <span className="text-muted-foreground">({priceQ.data.source})</span>
               </p>
             ) : null}
           </div>

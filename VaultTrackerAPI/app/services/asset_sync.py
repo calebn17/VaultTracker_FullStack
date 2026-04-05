@@ -1,8 +1,9 @@
 """
-Shared helpers for keeping Asset rows and NetWorthSnapshot rows aligned with transactions.
+Shared helpers for keeping Asset rows and NetWorthSnapshot rows aligned with
+transactions.
 
-Routers and TransactionService both use these so mark-to-market and snapshot rules stay
-in one place.
+Routers and TransactionService both use these so mark-to-market and snapshot
+rules stay in one place.
 """
 
 from datetime import datetime, timezone
@@ -69,5 +70,7 @@ def update_asset_from_transaction(
 
 
 def is_empty_position(asset: Asset) -> bool:
-    """True when quantity and mark-to-market value are both zero (no visible holding)."""
+    """
+    True when quantity and mark-to-market value are both zero (no visible holding).
+    """
     return abs(asset.quantity or 0.0) < 1e-9 and abs(asset.current_value or 0.0) < 1e-9

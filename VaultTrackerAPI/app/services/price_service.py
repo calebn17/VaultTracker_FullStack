@@ -35,7 +35,9 @@ class PriceService:
         "ATOM": "cosmos",
     }
 
-    async def get_crypto_price(self, symbol: str, *, use_cache: bool = True) -> float | None:
+    async def get_crypto_price(
+        self, symbol: str, *, use_cache: bool = True
+    ) -> float | None:
         if use_cache:
             cached = cache.get_crypto_price(symbol)
             if cached is not None:
@@ -57,7 +59,9 @@ class PriceService:
         cache.set_crypto_price(symbol, p)
         return p
 
-    async def get_stock_price(self, symbol: str, *, use_cache: bool = True) -> float | None:
+    async def get_stock_price(
+        self, symbol: str, *, use_cache: bool = True
+    ) -> float | None:
         if use_cache:
             cached = cache.get_stock_price(symbol)
             if cached is not None:
@@ -98,9 +102,13 @@ class PriceService:
         for asset in assets:
             try:
                 if asset.category == "crypto":
-                    new_price = await self.get_crypto_price(asset.symbol or "", use_cache=False)
+                    new_price = await self.get_crypto_price(
+                        asset.symbol or "", use_cache=False
+                    )
                 elif asset.category in ("stocks", "retirement"):
-                    new_price = await self.get_stock_price(asset.symbol or "", use_cache=False)
+                    new_price = await self.get_stock_price(
+                        asset.symbol or "", use_cache=False
+                    )
                 else:
                     skipped.append(asset.name)
                     continue
@@ -122,7 +130,9 @@ class PriceService:
                     errors.append(
                         {
                             "symbol": asset.symbol or "",
-                            "error": "No price returned (unknown symbol or missing API key)",
+                            "error": (
+                                "No price returned (unknown symbol or missing API key)"
+                            ),
                         }
                     )
             except Exception as e:  # noqa: BLE001 — collect per-asset errors for API response

@@ -13,7 +13,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { TransactionTable, downloadTransactionsCsv } from "@/components/transactions/transaction-table";
+import {
+  TransactionTable,
+  downloadTransactionsCsv,
+} from "@/components/transactions/transaction-table";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form";
 import {
   useTransactions,
@@ -38,9 +41,7 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-heading text-xl font-semibold tracking-tight">
-          Transactions
-        </h1>
+        <h1 className="font-heading text-xl font-semibold tracking-tight">Transactions</h1>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => downloadTransactionsCsv(rows)}>
             Export CSV
@@ -123,8 +124,7 @@ export default function TransactionsPage() {
                     toast.success("Deleted");
                     setDeleteRow(null);
                   },
-                  onError: (e) =>
-                    toast.error(e instanceof Error ? e.message : "Delete failed"),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
                 });
               }}
             >

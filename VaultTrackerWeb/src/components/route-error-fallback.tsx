@@ -21,11 +21,7 @@ function routeErrorContext(error: Error & { digest?: string }) {
   return undefined;
 }
 
-export function RouteErrorFallback({
-  error,
-  reset,
-  scope,
-}: RouteErrorFallbackProps) {
+export function RouteErrorFallback({ error, reset, scope }: RouteErrorFallbackProps) {
   useEffect(() => {
     if (loggedRouteErrors.has(error)) {
       return;

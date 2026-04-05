@@ -9,7 +9,7 @@ asset's quantity and current_value via `update_asset_from_transaction`.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Float, ForeignKey
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base

@@ -2,13 +2,7 @@ import { z } from "zod";
 import type { Category, EnrichedTransaction } from "@/types/api";
 import { defaultAccountType } from "@/lib/account-types";
 
-const categories = [
-  "crypto",
-  "stocks",
-  "cash",
-  "realEstate",
-  "retirement",
-] as const;
+const categories = ["crypto", "stocks", "cash", "realEstate", "retirement"] as const;
 
 export const transactionSchema = z
   .object({
@@ -19,13 +13,7 @@ export const transactionSchema = z
     quantity: z.number().positive(),
     price_per_unit: z.number().positive(),
     account_name: z.string().min(1, "Required"),
-    account_type: z.enum([
-      "cryptoExchange",
-      "brokerage",
-      "bank",
-      "retirement",
-      "other",
-    ]),
+    account_type: z.enum(["cryptoExchange", "brokerage", "bank", "retirement", "other"]),
     date: z.string().min(1),
   })
   .superRefine((data, ctx) => {

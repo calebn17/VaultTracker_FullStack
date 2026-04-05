@@ -14,7 +14,10 @@ describe("StatCard — default variant", () => {
     render(<StatCard title="Total Value" value="$10,000" loading />);
 
     // Skeleton should be present (it renders as a div with specific classes)
-    expect(document.querySelector(".animate-pulse, [data-slot='skeleton']") ?? document.querySelector("div.bg-muted")).toBeTruthy();
+    expect(
+      document.querySelector(".animate-pulse, [data-slot='skeleton']") ??
+        document.querySelector("div.bg-muted")
+    ).toBeTruthy();
     // Value text should not be in the document while loading
     expect(screen.queryByText("$10,000")).not.toBeInTheDocument();
   });

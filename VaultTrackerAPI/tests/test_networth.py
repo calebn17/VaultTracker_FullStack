@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.models.networth_snapshot import NetWorthSnapshot
 
@@ -39,7 +39,9 @@ def test_networth_history_all_returns_each_row(client, test_user, db_session):
     assert len(r.json()["snapshots"]) == 2
 
 
-def test_networth_history_weekly_keeps_last_snapshot_per_iso_week(client, test_user, db_session):
+def test_networth_history_weekly_keeps_last_snapshot_per_iso_week(
+    client, test_user, db_session
+):
     # 2024-01-01 is Monday — same ISO week as 2024-01-06 (Saturday).
     db_session.add(
         NetWorthSnapshot(
@@ -80,7 +82,9 @@ def test_networth_history_weekly_keeps_last_snapshot_per_iso_week(client, test_u
     assert snaps[1]["value"] == 40.0
 
 
-def test_networth_history_monthly_keeps_last_snapshot_per_calendar_month(client, test_user, db_session):
+def test_networth_history_monthly_keeps_last_snapshot_per_calendar_month(
+    client, test_user, db_session
+):
     db_session.add(
         NetWorthSnapshot(
             user_id=test_user.id,

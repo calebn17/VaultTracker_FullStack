@@ -16,23 +16,29 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.user import User
-from app.models.asset import Asset
 from app.models.account import Account
-from app.models.transaction import Transaction
+from app.models.asset import Asset
 from app.models.networth_snapshot import NetWorthSnapshot
+from app.models.transaction import Transaction
+from app.models.user import User
 from app.schemas.transaction import (
+    AccountSummary,
+    AssetSummary,
     EnrichedTransactionResponse,
     SmartTransactionCreate,
     TransactionCreate,
-    TransactionUpdate,
     TransactionResponse,
-    AssetSummary,
-    AccountSummary,
+    TransactionUpdate,
 )
-from app.services.asset_sync import record_networth_snapshot, update_asset_from_transaction
+from app.services.asset_sync import (
+    record_networth_snapshot,
+    update_asset_from_transaction,
+)
 from app.services.cache_service import cache
-from app.services.transaction_service import SmartUpdateMissingLinkedAssetError, TransactionService
+from app.services.transaction_service import (
+    SmartUpdateMissingLinkedAssetError,
+    TransactionService,
+)
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
@@ -80,19 +86,26 @@ async def get_transactions(
     return [_to_enriched(t) for t in rows]
 
 
-@router.post("/smart", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/smart", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_smart_transaction(
     body: SmartTransactionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Create account/asset if needed, then record one transaction (server-side resolution)."""
+    """
+    Create account/asset if needed, then record one transaction
+    (server-side resolution).
+    """
     service = TransactionService()
     tx = service.smart_create(body, current_user, db)
     return tx
 
 
-@router.post("", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_transaction(
     transaction: TransactionCreate,
     current_user: User = Depends(get_current_user),
@@ -102,10 +115,14 @@ async def create_transaction(
     Create a new transaction.
     This will automatically update the related asset's quantity and value.
     """
-    asset = db.query(Asset).filter(
-        Asset.id == transaction.asset_id,
-        Asset.user_id == current_user.id,
-    ).first()
+    asset = (
+        db.query(Asset)
+        .filter(
+            Asset.id == transaction.asset_id,
+            Asset.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not asset:
         raise HTTPException(
@@ -113,10 +130,14 @@ async def create_transaction(
             detail="Asset not found",
         )
 
-    account = db.query(Account).filter(
-        Account.id == transaction.account_id,
-        Account.user_id == current_user.id,
-    ).first()
+    account = (
+        db.query(Account)
+        .filter(
+            Account.id == transaction.account_id,
+            Account.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not account:
         raise HTTPException(
@@ -124,7 +145,9 @@ async def create_transaction(
             detail="Account not found",
         )
 
-    when = transaction.date if transaction.date is not None else datetime.now(timezone.utc)
+    when = (
+        transaction.date if transaction.date is not None else datetime.now(timezone.utc)
+    )
     db_transaction = Transaction(
         user_id=current_user.id,
         asset_id=transaction.asset_id,
@@ -158,10 +181,14 @@ async def get_transaction(
     db: Session = Depends(get_db),
 ):
     """Get a specific transaction by ID."""
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id,
-    ).first()
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not transaction:
         raise HTTPException(
@@ -178,7 +205,10 @@ async def update_smart_transaction(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Update a transaction using the same smart payload as POST /smart (re-resolves account + asset)."""
+    """
+    Update a transaction using the same smart payload as POST /smart
+    (re-resolves account + asset).
+    """
     service = TransactionService()
     try:
         tx = service.smart_update(transaction_id, body, current_user, db)
@@ -203,10 +233,14 @@ async def update_transaction(
     db: Session = Depends(get_db),
 ):
     """Update an existing transaction."""
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id,
-    ).first()
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not transaction:
         raise HTTPException(
@@ -256,10 +290,14 @@ async def delete_transaction(
     db: Session = Depends(get_db),
 ):
     """Delete a transaction and reverse its effect on the asset."""
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id,
-    ).first()
+    transaction = (
+        db.query(Transaction)
+        .filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not transaction:
         raise HTTPException(
@@ -282,9 +320,7 @@ async def delete_transaction(
     if asset:
         db.flush()
         remaining = (
-            db.query(Transaction)
-            .filter(Transaction.asset_id == asset.id)
-            .count()
+            db.query(Transaction).filter(Transaction.asset_id == asset.id).count()
         )
         if remaining == 0:
             db.delete(asset)

@@ -11,17 +11,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.account import Account
-from app.schemas.account import AccountCreate, AccountUpdate, AccountResponse
+from app.models.user import User
+from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
 @router.get("", response_model=list[AccountResponse])
 async def get_accounts(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Get all accounts for the current user."""
     return db.query(Account).filter(Account.user_id == current_user.id).all()
@@ -31,7 +30,7 @@ async def get_accounts(
 async def create_account(
     account: AccountCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create a new account."""
     db_account = Account(
@@ -49,18 +48,18 @@ async def create_account(
 async def get_account(
     account_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get a specific account by ID."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id
-    ).first()
+    account = (
+        db.query(Account)
+        .filter(Account.id == account_id, Account.user_id == current_user.id)
+        .first()
+    )
 
     if not account:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
         )
     return account
 
@@ -70,18 +69,18 @@ async def update_account(
     account_id: str,
     account_update: AccountUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update an existing account."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id
-    ).first()
+    account = (
+        db.query(Account)
+        .filter(Account.id == account_id, Account.user_id == current_user.id)
+        .first()
+    )
 
     if not account:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
         )
 
     update_data = account_update.model_dump(exclude_unset=True)
@@ -97,18 +96,18 @@ async def update_account(
 async def delete_account(
     account_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Delete an account."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id
-    ).first()
+    account = (
+        db.query(Account)
+        .filter(Account.id == account_id, Account.user_id == current_user.id)
+        .first()
+    )
 
     if not account:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
         )
 
     db.delete(account)

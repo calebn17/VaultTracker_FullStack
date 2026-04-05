@@ -80,7 +80,7 @@ final class NetworkService: NetworkServiceProtocol {
         }
     }
     
-    //MARK: - Helpers
+    // MARK: - Helpers
     private enum RequestBuilderError: Error {
         case jsonSerializationFailed(Error)
         case createURLFailed
@@ -134,7 +134,7 @@ final class NetworkService: NetworkServiceProtocol {
                 
                 let jsonData = try JSONSerialization.data(withJSONObject: body)
                 request.httpBody = jsonData
-            } catch let error{
+            } catch let error {
                 throw RequestBuilderError.jsonSerializationFailed(error)
             }
         }

@@ -17,9 +17,7 @@ describe("formatCurrency", () => {
 describe("formatDate", () => {
   it("formats a valid ISO string with MMM d, yyyy", () => {
     const iso = "2024-03-15T12:00:00.000Z";
-    expect(formatDate(iso)).toBe(
-      format(new Date(iso), "MMM d, yyyy")
-    );
+    expect(formatDate(iso)).toBe(format(new Date(iso), "MMM d, yyyy"));
   });
 
   it("returns the input when parsing fails", () => {

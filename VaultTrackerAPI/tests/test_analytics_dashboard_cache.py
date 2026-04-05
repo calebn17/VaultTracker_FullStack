@@ -13,7 +13,9 @@ def test_analytics_returns_allocation_and_performance(client, test_user, db_sess
         assert "percentage" in body["allocation"][cat]
 
 
-def test_dashboard_populates_cache_and_invalidates_on_transaction(client, test_user, db_session):
+def test_dashboard_populates_cache_and_invalidates_on_transaction(
+    client, test_user, db_session
+):
     key = f"dashboard:{test_user.id}"
     assert cache.get(key) is None
 

@@ -28,9 +28,7 @@ function fieldByName(name: string) {
   return el as HTMLInputElement;
 }
 
-function openDialog(
-  props: Partial<ComponentProps<typeof TransactionFormDialog>> = {}
-) {
+function openDialog(props: Partial<ComponentProps<typeof TransactionFormDialog>> = {}) {
   const onSubmit = vi.fn();
   render(
     <TransactionFormDialog
@@ -59,9 +57,7 @@ describe("TransactionFormDialog", () => {
     await user.click(screen.getByRole("option", { name: /^Cash$/ }));
 
     await waitFor(() => {
-      expect(
-        getDialog().querySelector('[name="symbol"]')
-      ).not.toBeInTheDocument();
+      expect(getDialog().querySelector('[name="symbol"]')).not.toBeInTheDocument();
     });
   });
 
@@ -97,9 +93,7 @@ describe("TransactionFormDialog", () => {
     await user.click(screen.getByRole("option", { name: /^Cash$/ }));
 
     await waitFor(() => {
-      expect(
-        getDialog().querySelector('[name="price_per_unit"]')
-      ).not.toBeInTheDocument();
+      expect(getDialog().querySelector('[name="price_per_unit"]')).not.toBeInTheDocument();
     });
   });
 
@@ -115,9 +109,7 @@ describe("TransactionFormDialog", () => {
     await user.type(fieldByName("price_per_unit"), "1");
     await user.type(fieldByName("account_name"), "Acct");
 
-    await user.click(
-      within(getDialog()).getByRole("button", { name: /^Save$/ })
-    );
+    await user.click(within(getDialog()).getByRole("button", { name: /^Save$/ }));
 
     expect(await within(getDialog()).findByText("Required")).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
@@ -142,9 +134,7 @@ describe("TransactionFormDialog", () => {
     await user.clear(dateInput);
     await user.type(dateInput, "2024-03-10");
 
-    await user.click(
-      within(getDialog()).getByRole("button", { name: /^Save$/ })
-    );
+    await user.click(within(getDialog()).getByRole("button", { name: /^Save$/ }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     expect(onSubmit).toHaveBeenCalledWith(
@@ -188,9 +178,7 @@ describe("TransactionFormDialog", () => {
     await user.clear(dateInput);
     await user.type(dateInput, "2024-03-10");
 
-    await user.click(
-      within(getDialog()).getByRole("button", { name: /^Save$/ })
-    );
+    await user.click(within(getDialog()).getByRole("button", { name: /^Save$/ }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
@@ -225,9 +213,7 @@ describe("TransactionFormDialog", () => {
     await user.clear(dateInput);
     await user.type(dateInput, "2024-03-10");
 
-    await user.click(
-      within(getDialog()).getByRole("button", { name: /^Save$/ })
-    );
+    await user.click(within(getDialog()).getByRole("button", { name: /^Save$/ }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     await Promise.resolve();
@@ -248,9 +234,7 @@ describe("TransactionFormDialog", () => {
       />
     );
 
-    await user.click(
-      within(getDialog()).getByRole("button", { name: /cancel/i })
-    );
+    await user.click(within(getDialog()).getByRole("button", { name: /cancel/i }));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onOpenChange).toHaveBeenCalledTimes(1);

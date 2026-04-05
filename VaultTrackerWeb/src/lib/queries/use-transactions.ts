@@ -14,8 +14,7 @@ export function useCreateTransaction() {
   const api = useApiClient();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SmartTransactionCreate) =>
-      api.post("/api/v1/transactions/smart", data),
+    mutationFn: (data: SmartTransactionCreate) => api.post("/api/v1/transactions/smart", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });
@@ -30,13 +29,8 @@ export function useUpdateTransaction() {
   const api = useApiClient();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: SmartTransactionCreate;
-    }) => api.put(`/api/v1/transactions/${id}/smart`, data),
+    mutationFn: ({ id, data }: { id: string; data: SmartTransactionCreate }) =>
+      api.put(`/api/v1/transactions/${id}/smart`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });

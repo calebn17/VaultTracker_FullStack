@@ -169,7 +169,7 @@ final class APIService: APIServiceProtocol {
     // MARK: - Net Worth History
 
     func fetchNetWorthHistory(period: APINetWorthPeriod? = nil) async throws -> APINetWorthHistoryResponse {
-        var queryItems: [URLQueryItem]? = nil
+        var queryItems: [URLQueryItem]?
         if let period {
             queryItems = [URLQueryItem(name: "period", value: period.rawValue)]
         }

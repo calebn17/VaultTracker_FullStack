@@ -10,12 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import {
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  type User,
-} from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 import { DEBUG_AUTH_AVAILABLE, DEBUG_AUTH_TOKEN } from "@/lib/auth-debug";
 import { getFirebaseAuth, googleProvider, isFirebaseConfigured } from "@/lib/firebase";
 import { logger } from "@/lib/logger";
@@ -124,22 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOutUser,
       getToken,
     };
-    return signInDebug === undefined
-      ? base
-      : { ...base, signInDebug };
-  }, [
-    user,
-    loading,
-    mode,
-    signInWithGoogle,
-    signInDebug,
-    signOutUser,
-    getToken,
-  ]);
+    return signInDebug === undefined ? base : { ...base, signInDebug };
+  }, [user, loading, mode, signInWithGoogle, signInDebug, signOutUser, getToken]);
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

@@ -14,16 +14,18 @@ VaultTracker has three sub-projects (API, iOS, Web) with existing unit test CI j
 
 ## Design Decisions
 
-| Decision | Choice | Rationale |
-|---|---|---|
-| CI structure | Dedicated `lint-*` jobs before test jobs | Clean separation; distinct status checks per sub-project |
-| API tool | Ruff (lint + format) | Single tool replaces flake8 + black + isort; fast; Python 3.11 native |
-| iOS tool | SwiftLint | Industry standard; native error/warning severity tiers; reviewdog support |
-| Web tools | ESLint (already configured) + Prettier | ESLint handles logic; Prettier handles formatting objectively |
-| Error surfacing | reviewdog | Posts PR review comments (priority) + GitHub Check annotations (secondary) |
-| Blocking vs warning | Formatters = hard block; linter errors = hard block; linter warnings = comment only | Objective formatting has no ambiguity; subjective style nits shouldn't block |
-| Runners | `ubuntu-latest` for API + Web; `macos-latest` for iOS | iOS requires macOS; Ubuntu is 10× cheaper for the others. Flip via comment when self-hosted Mac runners are available. |
-| Existing violations | Fix upfront with one cleanup commit | Avoids baseline file complexity; formatters automate most of it |
+
+| Decision            | Choice                                                                              | Rationale                                                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| CI structure        | Dedicated `lint-`* jobs before test jobs                                            | Clean separation; distinct status checks per sub-project                                                               |
+| API tool            | Ruff (lint + format)                                                                | Single tool replaces flake8 + black + isort; fast; Python 3.11 native                                                  |
+| iOS tool            | SwiftLint                                                                           | Industry standard; native error/warning severity tiers; reviewdog support                                              |
+| Web tools           | ESLint (already configured) + Prettier                                              | ESLint handles logic; Prettier handles formatting objectively                                                          |
+| Error surfacing     | reviewdog                                                                           | Posts PR review comments (priority) + GitHub Check annotations (secondary)                                             |
+| Blocking vs warning | Formatters = hard block; linter errors = hard block; linter warnings = comment only | Objective formatting has no ambiguity; subjective style nits shouldn't block                                           |
+| Runners             | `ubuntu-latest` for API + Web; `macos-latest` for iOS                               | iOS requires macOS; Ubuntu is 10× cheaper for the others. Flip via comment when self-hosted Mac runners are available. |
+| Existing violations | Fix upfront with one cleanup commit                                                 | Avoids baseline file complexity; formatters automate most of it                                                        |
+
 
 ---
 
@@ -31,26 +33,32 @@ VaultTracker has three sub-projects (API, iOS, Web) with existing unit test CI j
 
 ### API (Ruff)
 
-| Tier | Rules | Behavior |
-|---|---|---|
-| Hard block | `ruff format --check .` | Any formatting mismatch fails the job |
-| Hard block | `ruff check --select E,F,I` | Syntax errors, undefined names, unused imports, import sort |
-| Warn | `ruff check --select W,C90,N --exit-zero` | Style, complexity, naming — posted as PR comments, job passes |
+
+| Tier       | Rules                                     | Behavior                                                      |
+| ---------- | ----------------------------------------- | ------------------------------------------------------------- |
+| Hard block | `ruff format --check .`                   | Any formatting mismatch fails the job                         |
+| Hard block | `ruff check --select E,F,I`               | Syntax errors, undefined names, unused imports, import sort   |
+| Warn       | `ruff check --select W,C90,N --exit-zero` | Style, complexity, naming — posted as PR comments, job passes |
+
 
 ### iOS (SwiftLint)
 
-| Tier | Config | Behavior |
-|---|---|---|
-| Hard block | Rules set to `error` severity in `.swiftlint.yml` | SwiftLint exits non-zero; job fails |
-| Warn | Rules set to `warning` severity (default for most rules) | SwiftLint exits 0; reviewdog posts PR comments |
+
+| Tier       | Config                                                   | Behavior                                       |
+| ---------- | -------------------------------------------------------- | ---------------------------------------------- |
+| Hard block | Rules set to `error` severity in `.swiftlint.yml`        | SwiftLint exits non-zero; job fails            |
+| Warn       | Rules set to `warning` severity (default for most rules) | SwiftLint exits 0; reviewdog posts PR comments |
+
 
 ### Web
 
-| Tier | Tool | Behavior |
-|---|---|---|
-| Hard block | `prettier --check .` | Any formatting mismatch fails the job |
-| Hard block | ESLint rules as `"error"` | Job fails; reviewdog posts blocking annotation |
-| Warn | ESLint rules as `"warn"` | Job passes; reviewdog posts informational PR comment |
+
+| Tier       | Tool                      | Behavior                                             |
+| ---------- | ------------------------- | ---------------------------------------------------- |
+| Hard block | `prettier --check .`      | Any formatting mismatch fails the job                |
+| Hard block | ESLint rules as `"error"` | Job fails; reviewdog posts blocking annotation       |
+| Warn       | ESLint rules as `"warn"`  | Job passes; reviewdog posts informational PR comment |
+
 
 ---
 
@@ -72,13 +80,15 @@ Test jobs use `always() && needs.changes.outputs.<sub> == 'true' && needs.lint-<
 
 ## Files to Create / Modify
 
-| File | Action |
-|---|---|
-| `.github/workflows/ci.yml` | Add `lint-api`, `lint-ios`, `lint-web` jobs; update `needs` + `if` on test jobs |
-| `VaultTrackerAPI/pyproject.toml` | Create — Ruff lint + format config |
-| `VaultTrackerIOS/VaultTracker/.swiftlint.yml` | Create — SwiftLint rules with error/warning tiers |
-| `VaultTrackerWeb/.prettierrc` | Create — Prettier config |
-| `VaultTrackerWeb/eslint.config.mjs` | Update — add `warn`-level rules for style nits |
+
+| File                                          | Action                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`                    | Add `lint-api`, `lint-ios`, `lint-web` jobs; update `needs` + `if` on test jobs |
+| `VaultTrackerAPI/pyproject.toml`              | Create — Ruff lint + format config                                              |
+| `VaultTrackerIOS/VaultTracker/.swiftlint.yml` | Create — SwiftLint rules with error/warning tiers                               |
+| `VaultTrackerWeb/.prettierrc`                 | Create — Prettier config                                                        |
+| `VaultTrackerWeb/eslint.config.mjs`           | Update — add `warn`-level rules for style nits                                  |
+
 
 ---
 
@@ -101,18 +111,24 @@ indent-style = "space"
 
 ### `VaultTrackerIOS/VaultTracker/.swiftlint.yml`
 
+`unused_import` is an **analyzer** rule: list it under `analyzer_rules` and run `swiftlint analyze` with an Xcode compiler log to enforce it. Plain `swiftlint lint` (as in CI below) does not evaluate analyzer rules.
+
 ```yaml
+analyzer_rules:
+  - unused_import
+
 opt_in_rules:
   - empty_count
   - closure_spacing
-  - unused_import
+  - implicitly_unwrapped_optional
 
 disabled_rules:
   - trailing_whitespace  # SwiftLint autocorrect handles this
 
 force_cast: error
 force_try: error
-implicitly_unwrapped_optional: error
+implicitly_unwrapped_optional:
+  severity: error
 
 line_length:
   warning: 120
@@ -137,12 +153,15 @@ file_length:
 
 ### `VaultTrackerWeb/eslint.config.mjs` additions
 
+Use `@typescript-eslint/no-unused-vars` (not base `no-unused-vars`) for TypeScript; turn the base rule off to avoid duplicate diagnostics.
+
 ```js
 {
   rules: {
     "no-console": "warn",
     "prefer-const": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
   }
 }
 ```
@@ -282,3 +301,4 @@ Commit as: `chore: auto-fix lint and formatting violations before CI enforcement
 3. PR with `force_cast` in Swift → `lint-ios` fails; `test-ios` skipped
 4. PR touching only Web files → only `lint-web` and `test-web` run
 5. PR touching only a root file (e.g. `CLAUDE.md`) → all jobs skipped (no path-filter match)
+

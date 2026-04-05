@@ -28,11 +28,7 @@ import {
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(
-      QueryClientProvider,
-      { client: queryClient },
-      children
-    );
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 }
 
@@ -158,10 +154,7 @@ describe("useUpdateTransaction", () => {
 
     await result.current.mutateAsync({ id: "txn-42", data: txData });
 
-    expect(mockPut).toHaveBeenCalledWith(
-      "/api/v1/transactions/txn-42/smart",
-      txData
-    );
+    expect(mockPut).toHaveBeenCalledWith("/api/v1/transactions/txn-42/smart", txData);
   });
 
   it("invalidates all 5 dependent query keys on success", async () => {

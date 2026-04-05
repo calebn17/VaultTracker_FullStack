@@ -18,9 +18,7 @@ export function getFirebaseApp(): FirebaseApp {
     throw new Error("Firebase can only be used in the browser");
   }
   if (!isFirebaseConfigured) {
-    throw new Error(
-      "Firebase is not configured. Copy .env.local.example to .env.local."
-    );
+    throw new Error("Firebase is not configured. Copy .env.local.example to .env.local.");
   }
   if (!getApps().length) {
     return initializeApp(firebaseConfig);

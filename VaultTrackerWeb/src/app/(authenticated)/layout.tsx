@@ -21,11 +21,7 @@ function LoginGateRedirect() {
   );
 }
 
-export default function AuthenticatedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
   const dashboardWide = pathname === "/dashboard";
@@ -43,11 +39,5 @@ export default function AuthenticatedLayout({
     return <LoginGateRedirect />;
   }
 
-  return (
-    <AppShell
-      contentClassName={dashboardWide ? "max-w-7xl" : undefined}
-    >
-      {children}
-    </AppShell>
-  );
+  return <AppShell contentClassName={dashboardWide ? "max-w-7xl" : undefined}>{children}</AppShell>;
 }

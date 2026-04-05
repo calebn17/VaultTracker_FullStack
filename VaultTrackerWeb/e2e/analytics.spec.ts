@@ -5,9 +5,7 @@ import { test, expect } from "@playwright/test";
  * link after landing on /dashboard — do NOT use page.goto("/analytics") which
  * would clear the debug session and redirect to /login.
  */
-async function debugLoginAndGoToAnalytics(
-  page: import("@playwright/test").Page
-) {
+async function debugLoginAndGoToAnalytics(page: import("@playwright/test").Page) {
   await page.goto("/login");
   await page.getByRole("button", { name: /debug api session/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
@@ -22,17 +20,13 @@ test.describe("Analytics", () => {
     await debugLoginAndGoToAnalytics(page);
   });
 
-  test("shows portfolio hero and category cards after load", async ({
-    page,
-  }) => {
+  test("shows portfolio hero and category cards after load", async ({ page }) => {
     await expect(page.getByText("Total portfolio")).toBeVisible();
     await expect(page.getByText("Stocks & ETFs")).toBeVisible();
     await expect(page.getByText("Digital Assets")).toBeVisible();
   });
 
-  test("price lookup shows symbol and price after API response", async ({
-    page,
-  }) => {
+  test("price lookup shows symbol and price after API response", async ({ page }) => {
     await page.route("**/api/v1/prices/BTC", async (route) => {
       if (route.request().method() !== "GET") {
         await route.continue();

@@ -32,13 +32,7 @@ import {
 import type { Category, EnrichedTransaction } from "@/types/api";
 import { formatCurrency, formatDate } from "@/lib/format";
 
-const categories: Category[] = [
-  "crypto",
-  "stocks",
-  "cash",
-  "realEstate",
-  "retirement",
-];
+const categories: Category[] = ["crypto", "stocks", "cash", "realEstate", "retirement"];
 
 export function TransactionTable({
   data,
@@ -49,9 +43,7 @@ export function TransactionTable({
   onEdit: (row: EnrichedTransaction) => void;
   onDelete: (row: EnrichedTransaction) => void;
 }) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "date", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: true }]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -184,10 +176,7 @@ export function TransactionTable({
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="md:max-w-xs"
         />
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => setTypeFilter(v ?? "all")}
-        >
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v ?? "all")}>
           <SelectTrigger className="md:w-36">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
@@ -197,10 +186,7 @@ export function TransactionTable({
             <SelectItem value="sell">Sell</SelectItem>
           </SelectContent>
         </Select>
-        <Select
-          value={categoryFilter}
-          onValueChange={(v) => setCategoryFilter(v ?? "all")}
-        >
+        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "all")}>
           <SelectTrigger className="md:w-44">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -213,10 +199,7 @@ export function TransactionTable({
             ))}
           </SelectContent>
         </Select>
-        <Select
-          value={accountFilter}
-          onValueChange={(v) => setAccountFilter(v ?? "all")}
-        >
+        <Select value={accountFilter} onValueChange={(v) => setAccountFilter(v ?? "all")}>
           <SelectTrigger className="md:w-48">
             <SelectValue placeholder="Account" />
           </SelectTrigger>
@@ -242,16 +225,11 @@ export function TransactionTable({
                       <button
                         type="button"
                         className={
-                          h.column.getCanSort()
-                            ? "cursor-pointer select-none font-medium"
-                            : ""
+                          h.column.getCanSort() ? "cursor-pointer select-none font-medium" : ""
                         }
                         onClick={h.column.getToggleSortingHandler()}
                       >
-                        {flexRender(
-                          h.column.columnDef.header,
-                          h.getContext()
-                        )}
+                        {flexRender(h.column.columnDef.header, h.getContext())}
                         {{
                           asc: " ↑",
                           desc: " ↓",
@@ -269,10 +247,7 @@ export function TransactionTable({
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -293,8 +268,7 @@ export function TransactionTable({
 
       <div className="flex items-center justify-between gap-2">
         <p className="text-muted-foreground text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount() || 1}
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
         </p>
         <div className="flex gap-2">
           <Button

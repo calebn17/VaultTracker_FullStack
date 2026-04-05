@@ -3,13 +3,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,17 +49,13 @@ export default function AccountsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-heading text-xl font-semibold tracking-tight">
-          Accounts
-        </h1>
+        <h1 className="font-heading text-xl font-semibold tracking-tight">Accounts</h1>
         <Button type="button" onClick={() => setAddOpen(true)}>
           Add account
         </Button>
       </div>
 
-      {error ? (
-        <p className="text-destructive text-sm">Failed to load accounts.</p>
-      ) : null}
+      {error ? <p className="text-destructive text-sm">Failed to load accounts.</p> : null}
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Loading…</p>
@@ -78,27 +68,13 @@ export default function AccountsPage() {
                 <CardDescription>{a.account_type}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <p className="text-muted-foreground">
-                  Created {formatDate(a.created_at)}
-                </p>
-                <p>
-                  Transactions: {txCountByAccount.get(a.id) ?? 0}
-                </p>
+                <p className="text-muted-foreground">Created {formatDate(a.created_at)}</p>
+                <p>Transactions: {txCountByAccount.get(a.id) ?? 0}</p>
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEdit(a)}
-                  >
+                  <Button type="button" variant="outline" size="sm" onClick={() => setEdit(a)}>
                     Edit
                   </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setDel(a)}
-                  >
+                  <Button type="button" variant="destructive" size="sm" onClick={() => setDel(a)}>
                     Delete
                   </Button>
                 </div>
@@ -124,8 +100,7 @@ export default function AccountsPage() {
               toast.success("Account created");
               setAddOpen(false);
             },
-            onError: (e) =>
-              toast.error(e instanceof Error ? e.message : "Failed"),
+            onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
           });
         }}
       />
@@ -145,8 +120,7 @@ export default function AccountsPage() {
                 toast.success("Updated");
                 setEdit(null);
               },
-              onError: (e) =>
-                toast.error(e instanceof Error ? e.message : "Failed"),
+              onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
             }
           );
         }}
@@ -157,8 +131,8 @@ export default function AccountsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This may remove linked transactions depending on server cascade
-              rules. This action cannot be undone.
+              This may remove linked transactions depending on server cascade rules. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -172,8 +146,7 @@ export default function AccountsPage() {
                     toast.success("Account deleted");
                     setDel(null);
                   },
-                  onError: (e) =>
-                    toast.error(e instanceof Error ? e.message : "Failed"),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
                 });
               }}
             >

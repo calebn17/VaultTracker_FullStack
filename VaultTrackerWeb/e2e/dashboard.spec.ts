@@ -5,9 +5,7 @@ import { test, expect } from "@playwright/test";
  * from /dashboard so the session survives. A full page.goto("/transactions")
  * would clear the session and bounce to /login.
  */
-async function debugLoginToDashboard(
-  page: import("@playwright/test").Page
-) {
+async function debugLoginToDashboard(page: import("@playwright/test").Page) {
   await page.goto("/login");
   await page.getByRole("button", { name: /debug api session/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
@@ -19,14 +17,10 @@ test.describe("Dashboard", () => {
   test("shows Net Worth heading after login", async ({ page }) => {
     await debugLoginToDashboard(page);
 
-    await expect(
-      page.getByRole("heading", { name: /net worth/i })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /net worth/i })).toBeVisible();
   });
 
-  test("Refresh Prices button is present and triggers a toast on click", async ({
-    page,
-  }) => {
+  test("Refresh Prices button is present and triggers a toast on click", async ({ page }) => {
     await debugLoginToDashboard(page);
 
     const refreshBtn = page.getByRole("button", { name: /refresh prices/i });
@@ -90,10 +84,7 @@ test.describe("Dashboard", () => {
     await expect(page).toHaveURL(/\/dashboard/);
 
     const detailsBtn = page.getByRole("button", {
-      name: new RegExp(
-        `View details for ${assetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-        "i"
-      ),
+      name: new RegExp(`View details for ${assetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i"),
     });
     await expect(detailsBtn).toBeVisible({ timeout: 20_000 });
     await detailsBtn.click();

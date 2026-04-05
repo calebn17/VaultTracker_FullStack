@@ -67,18 +67,13 @@ export function PortfolioHero({
           <TrendGlyph positive={monthChange.absolute >= 0} />
           <span className="tabular-nums">
             {monthChange.absolute >= 0 ? "+" : ""}
-            {formatCurrency(monthChange.absolute)} (
-            {monthChange.percent >= 0 ? "+" : ""}
+            {formatCurrency(monthChange.absolute)} ({monthChange.percent >= 0 ? "+" : ""}
             {monthChange.percent.toFixed(1)}%)
           </span>
-          <span className="text-muted-foreground text-[11px] font-normal">
-            last ~30 days
-          </span>
+          <span className="text-muted-foreground text-[11px] font-normal">last ~30 days</span>
         </div>
       ) : (
-        <p className="text-muted-foreground text-[13px]">
-          Add history to see trailing change.
-        </p>
+        <p className="text-muted-foreground text-[13px]">Add history to see trailing change.</p>
       )}
     </div>
   );
