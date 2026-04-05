@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-02
 **Branch:** `add-ios-logging` → target: `main`
-**Status:** Approved, pending implementation
+**Status:** Implemented (workflow + local tooling; see root `CLAUDE.md` CI table)
 
 ---
 

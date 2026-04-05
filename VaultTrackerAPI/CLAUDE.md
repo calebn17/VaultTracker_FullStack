@@ -112,6 +112,14 @@ Single file:
 ./venv/bin/python -m pytest tests/test_analytics_dashboard_cache.py -q
 ```
 
+**Ruff** (format + lint; mirrors CI `lint-api`; install once: `./venv/bin/pip install ruff`):
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/ruff format --check .
+./venv/bin/ruff check --select E,F,I .
+```
+
 `tests/conftest.py` swaps in an in-memory SQLite DB and auth overrides so tests do not touch `vaulttracker.db` or Firebase. For exploratory checks, Swagger at `/docs` or curl with a Bearer token still work.
 
 **Falsification check** (prove failures surface when behavior is wrong):

@@ -17,6 +17,7 @@ See `Documentation/Web App Spec.md` Phase 7 for the open checklist items (7.3–
 npm run dev           # Dev server at localhost:3000
 npm run build         # Production build
 npm run lint          # ESLint
+npx prettier --check .  # Format check (same as CI lint-web)
 npm run test          # Vitest (unit + component), single run
 npm run test:watch    # Vitest watch mode
 npm run test:coverage # Vitest with coverage

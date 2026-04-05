@@ -91,14 +91,17 @@ Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Full rationale
 
 **Triggers:** `pull_request` and `push` to `main`.
 
-**Layout:** A `changes` job on `ubuntu-latest` uses [`dorny/paths-filter@v3`](https://github.com/dorny/paths-filter) to set `api` / `ios` / `web` flags from paths under `VaultTrackerAPI/**`, `VaultTrackerIOS/**`, and `VaultTrackerWeb/**`. Each test job runs on `macos-latest` only when its flag is true; jobs are independent and can run in parallel.
+**Layout:** A `changes` job on `ubuntu-latest` uses [`dorny/paths-filter@v3`](https://github.com/dorny/paths-filter) to set `api` / `ios` / `web` flags from paths under `VaultTrackerAPI/**`, `VaultTrackerIOS/**`, and `VaultTrackerWeb/**`. For each stack, a **`lint-*` job runs first** (Ubuntu for API + Web, macOS for iOS); **`test-*` runs only if** the matching path flag is true **and** the corresponding lint job succeeded (`always()` + `needs.lint-*.result == 'success'`). Lint details and reviewdog behavior: [`Documentation/Plans/2026-04-02-linting-design.md`](Documentation/Plans/2026-04-02-linting-design.md).
 
-**Root-only edits** (e.g. `CLAUDE.md`, `.github/workflows/ci.yml`) match no path filter, so all test jobs are skipped by design.
+**Root-only edits** (e.g. `CLAUDE.md`, `.github/workflows/ci.yml`) match no path filter, so all lint and test jobs are skipped by design.
 
 | Job | What runs |
 |-----|-----------|
-| `test-api` | Python 3.11, `pip install -r requirements.txt`, `python -m pytest tests/ -v` in `VaultTrackerAPI/` (no secrets; SQLite tests). |
-| `test-ios` | `xcodebuild test` in `VaultTrackerIOS/`: project `VaultTracker.xcodeproj`, scheme `VaultTracker`, test plan `VaultTracker`, destination `platform=iOS Simulator,name=iPhone 17,OS=latest`, `TestResults.xcresult`. Unit tests only. |
-| `test-web` | Node 20, `npm ci`, `npm test` in `VaultTrackerWeb/` (Vitest). |
+| `lint-api` | Ubuntu, Python 3.11, Ruff (`ruff format --check`, `ruff check` E/F/I blocking + W/C90/N via reviewdog). |
+| `lint-ios` | macOS, Homebrew SwiftLint + reviewdog (`VaultTrackerIOS/VaultTracker`). |
+| `lint-web` | Ubuntu, Node 20, `npm ci`, Prettier `--check`, ESLint JSON + reviewdog. |
+| `test-api` | macOS, Python 3.11, `pip install -r requirements.txt`, `python -m pytest tests/ -v` in `VaultTrackerAPI/` (no secrets; SQLite tests). |
+| `test-ios` | macOS, `xcodebuild test` in `VaultTrackerIOS/`: project `VaultTracker.xcodeproj`, scheme `VaultTracker`, test plan `VaultTrackerUnitTests`, destination `platform=iOS Simulator,name=iPhone 17,OS=latest`, `TestResults.xcresult`. Unit tests only. |
+| `test-web` | macOS, Node 20, `npm ci`, `npm test` in `VaultTrackerWeb/` (Vitest). |
 
-**Planned extensions** (not in the workflow yet): Playwright e2e for web; XCUITest job for `VaultTrackerUITests` — see the design doc.
+**Planned extensions** (not in the workflow yet): Playwright e2e for web; XCUITest job for `VaultTrackerUITests` — see the CI testing design doc.

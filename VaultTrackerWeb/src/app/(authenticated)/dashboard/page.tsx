@@ -40,6 +40,8 @@ export default function DashboardPage() {
   const [chartRange, setChartRange] = useState<ChartRange>("6M");
   const [assetCategory, setAssetCategory] = useState<Category | "all">("all");
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
+  /** Stable "now" for client-side chart windowing (avoids impure Date.now in render). */
+  const [chartNowMs] = useState(() => Date.now());
 
   const dashboard = useDashboard();
   const createTx = useCreateTransaction();
@@ -53,9 +55,9 @@ export default function DashboardPage() {
   const chartSnapshots = useMemo(() => {
     const raw = historyForChart.data?.snapshots ?? [];
     if (chartRange !== "1M") return raw;
-    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const cutoff = chartNowMs - 30 * 24 * 60 * 60 * 1000;
     return raw.filter((s) => new Date(s.date).getTime() >= cutoff);
-  }, [historyForChart.data?.snapshots, chartRange]);
+  }, [historyForChart.data?.snapshots, chartRange, chartNowMs]);
 
   const monthChange = useMemo(
     () => computeApproxMonthChange(historyDaily.data?.snapshots ?? []),
