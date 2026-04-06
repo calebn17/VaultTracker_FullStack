@@ -59,6 +59,13 @@ Both API and iOS must agree on the debug token. In the API `.env`: `DEBUG_AUTH_E
 - **API:** `.env` `DATABASE_URL` selects SQLite (default/local) or PostgreSQL (production on Neon via Render).
 - **Real device:** Set `API_HOST = 192.168.x.x:8000` in Xcode scheme environment variables (same Wi-Fi required).
 
+## Cursor agent hooks
+
+- **[`.cursor/hooks.json`](.cursor/hooks.json)** registers:
+  - **`beforeShellExecution`** — [`.cursor/hooks/block-dangerous.sh`](.cursor/hooks/block-dangerous.sh) blocks a small set of risky shell patterns (e.g. `rm -rf`, `git reset --hard`, forced push, curl/wget piped to shell).
+  - **`preToolUse`** (Write / StrReplace / etc.) — [`.cursor/hooks/protect-files.sh`](.cursor/hooks/protect-files.sh) blocks edits to protected paths (e.g. `.env*`, `.git/*`, lockfiles, `*.pem` / `*.key`, `secrets/*`).
+- Requires **`jq`** on your PATH. See [Cursor hooks](https://cursor.com/docs/hooks).
+
 ## Best practices
 
 - **Avoid duplicating code.** When the same logic appears in more than one place, extract it into a shared helper, utility, or abstraction (service layer, hook, extension, etc.) so behavior stays consistent and fixes land in one place.
