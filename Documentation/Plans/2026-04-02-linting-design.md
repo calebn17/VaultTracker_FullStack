@@ -302,3 +302,14 @@ Commit as: `chore: auto-fix lint and formatting violations before CI enforcement
 4. PR touching only Web files → only `lint-web` and `test-web` run
 5. PR touching only a root file (e.g. `CLAUDE.md`) → all jobs skipped (no path-filter match)
 
+---
+
+## Operator reference (post-implementation)
+
+Local commands and CI job summaries live in:
+
+- Repository root [`CLAUDE.md`](../../CLAUDE.md) — Quick Commands + GitHub Actions table
+- [`VaultTrackerAPI/CLAUDE.md`](../../VaultTrackerAPI/CLAUDE.md) — Ruff
+- [`VaultTrackerWeb/CLAUDE.md`](../../VaultTrackerWeb/CLAUDE.md) — Prettier + ESLint + CI note
+- [`VaultTrackerIOS/VaultTracker/CLAUDE.md`](../../VaultTrackerIOS/VaultTracker/CLAUDE.md) — SwiftLint + `analyze` note for `unused_import`
+

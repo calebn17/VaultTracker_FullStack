@@ -116,9 +116,13 @@ Single file:
 
 ```bash
 cd VaultTrackerAPI
-./venv/bin/ruff format --check .
+./venv/bin/ruff format --check .   # or `ruff format .` to apply
 ./venv/bin/ruff check --select E,F,I .
+# Optional: style/complexity/naming (CI posts via reviewdog; does not block merge)
+./venv/bin/ruff check --select W,C90,N .
 ```
+
+`pyproject.toml` at the API root holds Ruff settings (`line-length` 88, rule sets). The seed script `scripts/seed_demo_portfolio.py` ignores **E402** (imports after `sys.path` bootstrap).
 
 `tests/conftest.py` swaps in an in-memory SQLite DB and auth overrides so tests do not touch `vaulttracker.db` or Firebase. For exploratory checks, Swagger at `/docs` or curl with a Bearer token still work.
 

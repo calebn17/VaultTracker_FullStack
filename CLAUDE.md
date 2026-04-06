@@ -73,16 +73,25 @@ source venv/bin/activate
 uvicorn app.main:app --reload          # Dev server at localhost:8000
 ./venv/bin/python -m pytest tests/ -v  # All tests
 ./venv/bin/python -m pytest tests/test_transactions.py -q  # Single file
+# Lint (same as CI lint-api; pip install ruff if needed)
+./venv/bin/ruff format --check . && ./venv/bin/ruff check --select E,F,I .
 ```
 
 ### iOS
 Build and run via Xcode (`VaultTrackerIOS/VaultTracker.xcodeproj`). Tests run with `Cmd+U`.
+
+```bash
+# SwiftLint (same directory as CI lint-ios); brew install swiftlint
+cd VaultTrackerIOS/VaultTracker && swiftlint lint
+```
 
 ### Web (from `VaultTrackerWeb/`)
 ```bash
 npm run dev    # Dev server at localhost:3000
 npm run build  # Production build
 npm test       # Same as CI: Vitest (`vitest run`)
+npm run lint   # ESLint (CI also sends results to reviewdog on PRs)
+npx prettier --check .   # Format check (same as CI lint-web)
 ```
 
 ## GitHub Actions CI

@@ -18,11 +18,14 @@ npm run dev           # Dev server at localhost:3000
 npm run build         # Production build
 npm run lint          # ESLint
 npx prettier --check .  # Format check (same as CI lint-web)
+npx prettier --write .  # Apply Prettier project-wide (respects .prettierignore)
 npm run test          # Vitest (unit + component), single run
 npm run test:watch    # Vitest watch mode
 npm run test:coverage # Vitest with coverage
 npm run test:e2e      # Playwright (starts dev server via playwright.config unless one is already running)
 ```
+
+**CI (`lint-web`):** On pull requests, GitHub Actions runs `npm ci`, `prettier --check`, then ESLint with **JSON output piped to reviewdog** (check annotations + optional PR review comments). Fix blocking ESLint **errors** locally with `npm run lint` before pushing. Warnings (e.g. `no-console: warn`) do not fail ESLint’s exit code unless you tighten rules.
 
 ## Testing
 
