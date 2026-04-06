@@ -1,7 +1,7 @@
 # Linting & Formatting Design — VaultTracker CI
 
 **Date:** 2026-04-02
-**Branch:** `add-ios-logging` → target: `main`
+**Branch:** `docs/linting-ci-design-plan` → target: `main` (update when the work moves branches)
 **Status:** Implemented (workflow + local tooling; see root `CLAUDE.md` CI table)
 
 ---
@@ -21,7 +21,7 @@ VaultTracker has three sub-projects (API, iOS, Web) with existing unit test CI j
 | API tool            | Ruff (lint + format)                                                                | Single tool replaces flake8 + black + isort; fast; Python 3.11 native                                                  |
 | iOS tool            | SwiftLint                                                                           | Industry standard; native error/warning severity tiers; reviewdog support                                              |
 | Web tools           | ESLint (already configured) + Prettier                                              | ESLint handles logic; Prettier handles formatting objectively                                                          |
-| Error surfacing     | reviewdog                                                                           | Posts PR review comments (priority) + GitHub Check annotations (secondary)                                             |
+| Error surfacing     | reviewdog                                                                           | Posts PR review comments (priority) + GitHub Check annotations (secondary); **two separate `reviewdog` runs** — the CLI only honors one `-reporter` per process (see below) |
 | Blocking vs warning | Formatters = hard block; linter errors = hard block; linter warnings = comment only | Objective formatting has no ambiguity; subjective style nits shouldn't block                                           |
 | Runners             | `ubuntu-latest` for API + Web; `macos-latest` for iOS                               | iOS requires macOS; Ubuntu is 10× cheaper for the others. Flip via comment when self-hosted Mac runners are available. |
 | Existing violations | Fix upfront with one cleanup commit                                                 | Avoids baseline file complexity; formatters automate most of it                                                        |
@@ -183,7 +183,7 @@ lint-api:
       with:
         python-version: '3.11'
     - name: Install ruff
-      run: pip install ruff
+      run: pip install 'ruff>=0.8,<1'
     - name: Check formatting (hard block)
       working-directory: VaultTrackerAPI
       run: ruff format --check .
@@ -193,19 +193,33 @@ lint-api:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        set -o pipefail
-        ruff check . --select E,F,I --output-format=rdjson \
-          | reviewdog -f=rdjson -reporter=github-pr-review -reporter=github-check -fail-on-error=true
+        set -e
+        TMP=$(mktemp)
+        trap 'rm -f "$TMP"' EXIT
+        set +e
+        ruff check . --select E,F,I --output-format=rdjson > "$TMP"
+        set -e
+        reviewdog -f=rdjson -reporter=github-pr-review -fail-on-error=true < "$TMP"
+        PR=$?
+        reviewdog -f=rdjson -reporter=github-check -fail-on-error=true < "$TMP"
+        CHK=$?
+        exit $(( PR || CHK ))
     - name: Lint — warning rules (W, C, N)
       working-directory: VaultTrackerAPI
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        ruff check . --select W,C90,N --exit-zero --output-format=rdjson \
-          | reviewdog -f=rdjson -reporter=github-pr-review -reporter=github-check -fail-on-error=false
+        set -e
+        TMP=$(mktemp)
+        trap 'rm -f "$TMP"' EXIT
+        ruff check . --select W,C90,N --exit-zero --output-format=rdjson > "$TMP"
+        reviewdog -f=rdjson -reporter=github-pr-review -fail-on-error=false < "$TMP"
+        reviewdog -f=rdjson -reporter=github-check -fail-on-error=false < "$TMP"
 ```
 
 Use **`--output-format=rdjson`** with **`-f=rdjson`**: current reviewdog releases do not ship a named **`ruff`** input parser; Ruff’s RDJSON matches reviewdog’s diagnostic schema.
+
+**Reviewdog:** the CLI accepts only **one** `-reporter` per invocation (later flags override earlier ones). The workflow runs **two** `reviewdog` processes on the same linter output (written to a temp file) — first `github-pr-review`, then `github-check` — so both PR comments and Check annotations are produced.
 
 ### `lint-ios`
 
@@ -224,8 +238,16 @@ lint-ios:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        swiftlint lint --reporter checkstyle --quiet \
-          | reviewdog -f=checkstyle -reporter=github-pr-review -reporter=github-check -fail-on-error=true
+        TMP=$(mktemp)
+        trap 'rm -f "$TMP"' EXIT
+        set +e
+        swiftlint lint --reporter checkstyle --quiet > "$TMP"
+        set -e
+        reviewdog -f=checkstyle -reporter=github-pr-review -fail-on-error=true < "$TMP"
+        PR=$?
+        reviewdog -f=checkstyle -reporter=github-check -fail-on-error=true < "$TMP"
+        CHK=$?
+        exit $(( PR || CHK ))
 ```
 
 Use **`--reporter checkstyle`** with **`-f=checkstyle`**: reviewdog does not ship a **`swiftlint`** input parser; checkstyle XML is a built-in parser.
@@ -254,8 +276,16 @@ lint-web:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        npx eslint . --format=json \
-          | reviewdog -f=eslint -reporter=github-pr-review -reporter=github-check -fail-on-error=true
+        TMP=$(mktemp)
+        trap 'rm -f "$TMP"' EXIT
+        set +e
+        npx eslint . --format=json > "$TMP"
+        set -e
+        reviewdog -f=eslint -reporter=github-pr-review -fail-on-error=true < "$TMP"
+        PR=$?
+        reviewdog -f=eslint -reporter=github-check -fail-on-error=true < "$TMP"
+        CHK=$?
+        exit $(( PR || CHK ))
 ```
 
 ### Updated test job `needs` + `if`
@@ -279,8 +309,8 @@ test-web:
 ## Upfront Cleanup (run locally before CI wiring)
 
 ```bash
-# API
-cd VaultTrackerAPI && pip install ruff
+# API (pin matches CI: pip install 'ruff>=0.8,<1')
+cd VaultTrackerAPI && pip install 'ruff>=0.8,<1'
 ruff format .
 ruff check --fix --select E,F,I .
 

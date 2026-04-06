@@ -112,7 +112,7 @@ Single file:
 ./venv/bin/python -m pytest tests/test_analytics_dashboard_cache.py -q
 ```
 
-**Ruff** (format + lint; mirrors CI `lint-api`; install once: `./venv/bin/pip install ruff`):
+**Ruff** (format + lint; mirrors CI `lint-api`; install once: `./venv/bin/pip install 'ruff>=0.8,<1'`):
 
 ```bash
 cd VaultTrackerAPI

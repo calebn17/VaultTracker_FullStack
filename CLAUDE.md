@@ -73,7 +73,7 @@ source venv/bin/activate
 uvicorn app.main:app --reload          # Dev server at localhost:8000
 ./venv/bin/python -m pytest tests/ -v  # All tests
 ./venv/bin/python -m pytest tests/test_transactions.py -q  # Single file
-# Lint (same as CI lint-api; pip install ruff if needed)
+# Lint (same as CI lint-api; pip install 'ruff>=0.8,<1' if needed)
 ./venv/bin/ruff format --check . && ./venv/bin/ruff check --select E,F,I .
 ```
 
