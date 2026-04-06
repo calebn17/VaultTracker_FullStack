@@ -194,16 +194,18 @@ lint-api:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
         set -o pipefail
-        ruff check . --select E,F,I --output-format=github \
-          | reviewdog -f=ruff -reporter=github-pr-review -reporter=github-check -fail-on-error=true
+        ruff check . --select E,F,I --output-format=rdjson \
+          | reviewdog -f=rdjson -reporter=github-pr-review -reporter=github-check -fail-on-error=true
     - name: Lint — warning rules (W, C, N)
       working-directory: VaultTrackerAPI
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        ruff check . --select W,C90,N --exit-zero --output-format=github \
-          | reviewdog -f=ruff -reporter=github-pr-review -reporter=github-check -fail-on-error=false
+        ruff check . --select W,C90,N --exit-zero --output-format=rdjson \
+          | reviewdog -f=rdjson -reporter=github-pr-review -reporter=github-check -fail-on-error=false
 ```
+
+Use **`--output-format=rdjson`** with **`-f=rdjson`**: current reviewdog releases do not ship a named **`ruff`** input parser; Ruff’s RDJSON matches reviewdog’s diagnostic schema.
 
 ### `lint-ios`
 
@@ -222,9 +224,11 @@ lint-ios:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
-        swiftlint lint \
-          | reviewdog -f=swiftlint -reporter=github-pr-review -reporter=github-check -fail-on-error=true
+        swiftlint lint --reporter checkstyle --quiet \
+          | reviewdog -f=checkstyle -reporter=github-pr-review -reporter=github-check -fail-on-error=true
 ```
+
+Use **`--reporter checkstyle`** with **`-f=checkstyle`**: reviewdog does not ship a **`swiftlint`** input parser; checkstyle XML is a built-in parser.
 
 ### `lint-web`
 
