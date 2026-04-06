@@ -191,7 +191,7 @@ lint-api:
     - name: Lint — blocking rules (E, F, I)
       working-directory: VaultTrackerAPI
       env:
-        REVIEWDOG_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
         set -o pipefail
         ruff check . --select E,F,I --output-format=github \
@@ -199,7 +199,7 @@ lint-api:
     - name: Lint — warning rules (W, C, N)
       working-directory: VaultTrackerAPI
       env:
-        REVIEWDOG_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
         ruff check . --select W,C90,N --exit-zero --output-format=github \
           | reviewdog -f=ruff -reporter=github-pr-review -reporter=github-check -fail-on-error=false
@@ -220,7 +220,7 @@ lint-ios:
     - name: Lint (SwiftLint — errors block, warnings comment)
       working-directory: VaultTrackerIOS/VaultTracker
       env:
-        REVIEWDOG_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
         swiftlint lint \
           | reviewdog -f=swiftlint -reporter=github-pr-review -reporter=github-check -fail-on-error=true
@@ -248,7 +248,7 @@ lint-web:
     - name: Lint (ESLint via reviewdog)
       working-directory: VaultTrackerWeb
       env:
-        REVIEWDOG_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
       run: |
         npx eslint . --format=json \
           | reviewdog -f=eslint -reporter=github-pr-review -reporter=github-check -fail-on-error=true
