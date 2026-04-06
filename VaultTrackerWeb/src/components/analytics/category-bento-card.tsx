@@ -45,9 +45,7 @@ export function CategoryBentoCard({
       <div
         className={cn(
           "rounded-2xl border border-border p-6",
-          category === "cash"
-            ? "bg-primary text-primary-foreground"
-            : "bg-card"
+          category === "cash" ? "bg-primary text-primary-foreground" : "bg-card"
         )}
       >
         <div className="bg-muted/50 mb-4 h-3 w-28 animate-pulse rounded" />
@@ -74,9 +72,7 @@ export function CategoryBentoCard({
         <h2
           className={cn(
             "text-[10px] font-medium uppercase tracking-[0.1em]",
-            category === "cash"
-              ? "text-primary-foreground/90"
-              : "text-muted-foreground"
+            category === "cash" ? "text-primary-foreground/90" : "text-muted-foreground"
           )}
         >
           {title}
@@ -85,9 +81,7 @@ export function CategoryBentoCard({
       <span
         className={cn(
           "shrink-0 font-mono text-[11px] tabular-nums",
-          category === "cash"
-            ? "text-primary-foreground/80"
-            : "text-muted-foreground"
+          category === "cash" ? "text-primary-foreground/80" : "text-muted-foreground"
         )}
       >
         {allocationPercent.toFixed(1)}% alloc
@@ -102,9 +96,7 @@ export function CategoryBentoCard({
         <p
           className={cn(
             "py-8 text-center text-sm opacity-60",
-            category === "cash"
-              ? "text-primary-foreground"
-              : "text-muted-foreground"
+            category === "cash" ? "text-primary-foreground" : "text-muted-foreground"
           )}
         >
           No holdings yet
@@ -132,10 +124,7 @@ export function CategoryBentoCard({
                   className="hover:bg-foreground/[0.04] grid w-full grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-x-3 py-3 text-left text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex min-w-0 items-center gap-2">
-                    <AssetIcon
-                      label={h.symbol?.trim() || h.name}
-                      color={accent}
-                    />
+                    <AssetIcon label={h.symbol?.trim() || h.name} color={accent} />
                     <span className="truncate font-medium">{h.name}</span>
                   </div>
                   <span className="text-muted-foreground text-right font-mono text-[13px] tabular-nums">
@@ -204,9 +193,7 @@ export function CategoryBentoCard({
                     style={{ background: accent }}
                     aria-hidden
                   />
-                  <span className="text-primary-foreground/95 truncate">
-                    {h.name}
-                  </span>
+                  <span className="text-primary-foreground/95 truncate">{h.name}</span>
                 </div>
                 <span className="text-primary-foreground shrink-0 font-mono tabular-nums">
                   {formatCurrency(h.current_value)}

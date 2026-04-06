@@ -1,4 +1,4 @@
-import { render, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/logger", () => ({
@@ -34,19 +34,11 @@ import { AuthProvider, useAuth } from "../auth-context";
 
 describe("AuthProvider — production (no debug auth)", () => {
   it("exposes signInDebug as undefined in context value", async () => {
-    let ctx: ReturnType<typeof useAuth> | null = null;
-    function Probe() {
-      ctx = useAuth();
-      return null;
-    }
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,
+    });
 
-    render(
-      <AuthProvider>
-        <Probe />
-      </AuthProvider>
-    );
-
-    await waitFor(() => expect(ctx).not.toBeNull());
-    expect(ctx!.signInDebug).toBeUndefined();
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current.signInDebug).toBeUndefined();
   });
 });

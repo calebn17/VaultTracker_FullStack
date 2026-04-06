@@ -38,7 +38,6 @@ from app.schemas.transaction import SmartTransactionCreate
 from app.services.cache_service import cache
 from app.services.transaction_service import TransactionService
 
-
 DEFAULT_FIREBASE_ID = "debug-user"
 
 
@@ -234,7 +233,10 @@ def run_seed(firebase_id: str, clear_first: bool) -> None:
         user = get_or_create_user(db, firebase_id)
         if clear_first:
             clear_user_financial_data(db, user.id)
-            print(f"Cleared existing data for firebase_id={firebase_id!r} (user id={user.id}).")
+            print(
+                f"Cleared existing data for firebase_id={firebase_id!r} "
+                f"(user id={user.id})."
+            )
 
         txs = build_demo_transactions()
         svc = TransactionService()
@@ -244,15 +246,18 @@ def run_seed(firebase_id: str, clear_first: bool) -> None:
                 print(f"  Applied {i}/{len(txs)} transactions…")
 
         print(
-            f"Done. Seeded {len(txs)} smart transactions for firebase_id={firebase_id!r} "
-            f"(user id={user.id}). Open the web app with debug sign-in and refresh the dashboard."
+            f"Done. Seeded {len(txs)} smart transactions for "
+            f"firebase_id={firebase_id!r} (user id={user.id}). "
+            f"Open the web app with debug sign-in and refresh the dashboard."
         )
     finally:
         db.close()
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Seed demo portfolio data via smart_create.")
+    parser = argparse.ArgumentParser(
+        description="Seed demo portfolio data via smart_create."
+    )
     parser.add_argument(
         "--firebase-id",
         default=DEFAULT_FIREBASE_ID,
@@ -261,7 +266,10 @@ def main() -> None:
     parser.add_argument(
         "--clear",
         action="store_true",
-        help="Delete existing transactions, snapshots, assets, and accounts for this user first.",
+        help=(
+            "Delete existing transactions, snapshots, assets, and accounts "
+            "for this user first."
+        ),
     )
     args = parser.parse_args()
     run_seed(args.firebase_id, args.clear)

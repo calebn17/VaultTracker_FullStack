@@ -11,11 +11,10 @@ describe("StatCard — default variant", () => {
   });
 
   it("renders a Skeleton and hides the value when loading", () => {
-    render(<StatCard title="Total Value" value="$10,000" loading />);
+    const { container } = render(<StatCard title="Total Value" value="$10,000" loading />);
 
-    // Skeleton should be present (it renders as a div with specific classes)
-    expect(document.querySelector(".animate-pulse, [data-slot='skeleton']") ?? document.querySelector("div.bg-muted")).toBeTruthy();
-    // Value text should not be in the document while loading
+    // Skeleton is the shadcn primitive (`data-slot`); scope to this tree only
+    expect(container.querySelector('[data-slot="skeleton"]')).toBeInTheDocument();
     expect(screen.queryByText("$10,000")).not.toBeInTheDocument();
   });
 });

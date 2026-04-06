@@ -50,11 +50,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function Inspector({
-  onReady,
-}: {
-  onReady: (ctx: ReturnType<typeof useAuth>) => void;
-}) {
+function Inspector({ onReady }: { onReady: (ctx: ReturnType<typeof useAuth>) => void }) {
   const ctx = useAuth();
   onReady(ctx);
   return <div data-testid="ready" />;

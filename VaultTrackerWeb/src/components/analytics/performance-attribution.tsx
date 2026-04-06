@@ -51,9 +51,7 @@ export function PerformanceAttribution({
           </p>
         </div>
         <div className="rounded-xl bg-secondary p-5">
-          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-            Cost basis
-          </p>
+          <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">Cost basis</p>
           <p className="mt-2 font-heading text-xl font-semibold tabular-nums text-foreground">
             {formatCurrency(performance.costBasis)}
           </p>

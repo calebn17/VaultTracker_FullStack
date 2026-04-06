@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,9 +29,7 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-8">
-      <h1 className="font-heading text-xl font-semibold tracking-tight">
-        Profile
-      </h1>
+      <h1 className="font-heading text-xl font-semibold tracking-tight">Profile</h1>
 
       <Card>
         <CardHeader>
@@ -59,12 +51,7 @@ export default function ProfilePage() {
               </p>
             </>
           )}
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-4"
-            onClick={() => signOutUser()}
-          >
+          <Button type="button" variant="outline" className="mt-4" onClick={() => signOutUser()}>
             Sign out
           </Button>
         </CardContent>
@@ -80,11 +67,7 @@ export default function ProfilePage() {
             variant="outline"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            {theme === "dark" ? (
-              <Sun className="mr-2 size-4" />
-            ) : (
-              <Moon className="mr-2 size-4" />
-            )}
+            {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
             Toggle theme
           </Button>
         </CardContent>
@@ -94,8 +77,8 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle className="text-destructive">Danger zone</CardTitle>
           <CardDescription>
-            Deletes all accounts, assets, transactions, and net worth snapshots.
-            Your Firebase login is kept.
+            Deletes all accounts, assets, transactions, and net worth snapshots. Your Firebase login
+            is kept.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -131,9 +114,7 @@ export default function ProfilePage() {
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmText("")}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setConfirmText("")}>Cancel</AlertDialogCancel>
             <Button
               type="button"
               variant="destructive"
@@ -146,10 +127,7 @@ export default function ProfilePage() {
                     setConfirmText("");
                     await signOutUser();
                   },
-                  onError: (e) =>
-                    toast.error(
-                      e instanceof Error ? e.message : "Delete failed"
-                    ),
+                  onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
                 });
               }}
             >

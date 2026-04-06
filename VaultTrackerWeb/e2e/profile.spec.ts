@@ -1,8 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-async function debugLoginToDashboard(
-  page: import("@playwright/test").Page
-) {
+async function debugLoginToDashboard(page: import("@playwright/test").Page) {
   await page.goto("/login");
   await page.getByRole("button", { name: /debug api session/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
@@ -30,14 +28,10 @@ test.describe("Profile", () => {
       .getByRole("button", { name: /toggle theme/i })
       .click();
 
-    await expect
-      .poll(async () => html.evaluate((el) => el.className))
-      .not.toBe(before);
+    await expect.poll(async () => html.evaluate((el) => el.className)).not.toBe(before);
   });
 
-  test("delete all financial data confirms, shows toast, and signs out", async ({
-    page,
-  }) => {
+  test("delete all financial data confirms, shows toast, and signs out", async ({ page }) => {
     await page.route("**/api/v1/users/me/data", async (route) => {
       if (route.request().method() === "DELETE") {
         await route.fulfill({ status: 204 });
@@ -49,9 +43,7 @@ test.describe("Profile", () => {
     await debugLoginToDashboard(page);
     await openProfile(page);
 
-    await page
-      .getByRole("button", { name: /delete all financial data/i })
-      .click();
+    await page.getByRole("button", { name: /delete all financial data/i }).click();
 
     const dialog = page.getByRole("alertdialog");
     await expect(dialog).toBeVisible();

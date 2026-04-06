@@ -9,7 +9,5 @@ export default function AuthenticatedError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <RouteErrorFallback error={error} reset={reset} scope="authenticated" />
-  );
+  return <RouteErrorFallback error={error} reset={reset} scope="authenticated" />;
 }

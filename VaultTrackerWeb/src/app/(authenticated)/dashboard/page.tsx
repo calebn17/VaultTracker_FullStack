@@ -40,6 +40,8 @@ export default function DashboardPage() {
   const [chartRange, setChartRange] = useState<ChartRange>("6M");
   const [assetCategory, setAssetCategory] = useState<Category | "all">("all");
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
+  /** Stable "now" for client-side chart windowing (avoids impure Date.now in render). */
+  const [chartNowMs] = useState(() => Date.now());
 
   const dashboard = useDashboard();
   const createTx = useCreateTransaction();
@@ -53,9 +55,9 @@ export default function DashboardPage() {
   const chartSnapshots = useMemo(() => {
     const raw = historyForChart.data?.snapshots ?? [];
     if (chartRange !== "1M") return raw;
-    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const cutoff = chartNowMs - 30 * 24 * 60 * 60 * 1000;
     return raw.filter((s) => new Date(s.date).getTime() >= cutoff);
-  }, [historyForChart.data?.snapshots, chartRange]);
+  }, [historyForChart.data?.snapshots, chartRange, chartNowMs]);
 
   const monthChange = useMemo(
     () => computeApproxMonthChange(historyDaily.data?.snapshots ?? []),
@@ -71,9 +73,7 @@ export default function DashboardPage() {
 
   const totals = d?.categoryTotals;
   const liquid = totals ? totals.cash : 0;
-  const investments = totals
-    ? totals.crypto + totals.stocks + totals.retirement
-    : 0;
+  const investments = totals ? totals.crypto + totals.stocks + totals.retirement : 0;
   const realEstate = totals?.realEstate ?? 0;
 
   const heroChange =
@@ -101,13 +101,7 @@ export default function DashboardPage() {
                 heroChange.abs >= 0 ? "text-primary" : "text-destructive"
               )}
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                aria-hidden
-              >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
                 <polyline
                   points="1,9 5,4 8,7 11,2"
                   stroke="currentColor"
@@ -121,14 +115,10 @@ export default function DashboardPage() {
                 {formatCurrency(heroChange.abs)} ({heroChange.pct >= 0 ? "+" : ""}
                 {heroChange.pct.toFixed(1)}%)
               </span>
-              <span className="text-muted-foreground text-[11px] font-normal">
-                last ~30 days
-              </span>
+              <span className="text-muted-foreground text-[11px] font-normal">last ~30 days</span>
             </div>
           ) : (
-            <p className="text-muted-foreground text-[13px]">
-              Add history to see trailing change.
-            </p>
+            <p className="text-muted-foreground text-[13px]">Add history to see trailing change.</p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:pt-2">
@@ -161,12 +151,7 @@ export default function DashboardPage() {
               })
             }
           >
-            <RefreshCw
-              className={cn(
-                "mr-2 size-4",
-                refreshPrices.isPending && "animate-spin"
-              )}
-            />
+            <RefreshCw className={cn("mr-2 size-4", refreshPrices.isPending && "animate-spin")} />
             Refresh prices
           </Button>
         </div>
@@ -174,9 +159,7 @@ export default function DashboardPage() {
 
       {dashboard.isError ? (
         <p className="text-destructive text-sm">
-          {dashboard.error instanceof Error
-            ? dashboard.error.message
-            : "Failed to load dashboard"}
+          {dashboard.error instanceof Error ? dashboard.error.message : "Failed to load dashboard"}
         </p>
       ) : null}
 
@@ -205,9 +188,7 @@ export default function DashboardPage() {
               {formatCurrency(investments)}
             </p>
           )}
-          <p className="text-primary mt-1.5 text-[11px]">
-            Stocks + crypto + retirement
-          </p>
+          <p className="text-primary mt-1.5 text-[11px]">Stocks + crypto + retirement</p>
         </div>
         <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
           <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
@@ -220,9 +201,7 @@ export default function DashboardPage() {
               {formatCurrency(realEstate)}
             </p>
           )}
-          <p className="text-muted-foreground mt-1.5 text-[11px]">
-            Property value
-          </p>
+          <p className="text-muted-foreground mt-1.5 text-[11px]">Property value</p>
         </div>
         <div className="bg-card hover:border-foreground/15 rounded-xl border p-5 transition-colors">
           <p className="text-muted-foreground mb-2.5 text-[10px] tracking-[0.1em] uppercase">
@@ -241,9 +220,7 @@ export default function DashboardPage() {
               {formatCurrency(monthChange.absolute)}
             </p>
           ) : (
-            <p className="text-muted-foreground font-heading text-[22px] font-semibold">
-              —
-            </p>
+            <p className="text-muted-foreground font-heading text-[22px] font-semibold">—</p>
           )}
           <p
             className={cn(
@@ -265,9 +242,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_340px]">
         <div className="bg-card rounded-2xl border p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-heading text-sm font-semibold">
-              Net worth over time
-            </h2>
+            <h2 className="font-heading text-sm font-semibold">Net worth over time</h2>
             <div className="bg-secondary flex gap-1 rounded-md p-0.5">
               {(["1M", "6M", "1Y", "ALL"] as const).map((r) => (
                 <button
@@ -287,15 +262,10 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="h-[260px]">
-            <NetWorthChart
-              data={chartSnapshots}
-              loading={historyForChart.isLoading}
-            />
+            <NetWorthChart data={chartSnapshots} loading={historyForChart.isLoading} />
           </div>
           {historyForChart.isError ? (
-            <p className="text-destructive mt-2 text-sm">
-              Could not load history.
-            </p>
+            <p className="text-destructive mt-2 text-sm">Could not load history.</p>
           ) : null}
         </div>
 
@@ -346,9 +316,7 @@ export default function DashboardPage() {
         initial={null}
         title="Add transaction"
         pending={createTx.isPending}
-        defaultCategory={
-          assetCategory === "all" ? undefined : assetCategory
-        }
+        defaultCategory={assetCategory === "all" ? undefined : assetCategory}
         onSubmit={async (payload) => {
           try {
             await createTx.mutateAsync(payload);

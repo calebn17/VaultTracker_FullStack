@@ -31,8 +31,7 @@ import {
 } from "@/lib/transaction-schema";
 import { cn } from "@/lib/utils";
 
-const formLabel =
-  "text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
+const formLabel = "text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
 
 const controlClass =
   "min-h-10 rounded-lg border-border bg-secondary px-3.5 py-2.5 text-[13px] shadow-none focus-visible:border-primary/40 focus-visible:ring-3 focus-visible:ring-primary/30 dark:bg-secondary dark:focus-visible:ring-primary/40";
@@ -111,9 +110,7 @@ export function TransactionFormDialog({
       transaction_type: values.transaction_type,
       category: values.category,
       asset_name: values.asset_name,
-      symbol: needsSymbol(values.category)
-        ? values.symbol?.trim()
-        : undefined,
+      symbol: needsSymbol(values.category) ? values.symbol?.trim() : undefined,
       quantity: values.quantity,
       price_per_unit: cashLike ? 1 : values.price_per_unit,
       account_name: values.account_name,
@@ -153,14 +150,10 @@ export function TransactionFormDialog({
             <span className={formLabel}>Type</span>
             <Select
               value={form.watch("transaction_type")}
-              onValueChange={(v) =>
-                form.setValue("transaction_type", v as "buy" | "sell")
-              }
+              onValueChange={(v) => form.setValue("transaction_type", v as "buy" | "sell")}
             >
               <SelectTrigger className={selectTriggerClass}>
-                <SelectValue>
-                  {TRANSACTION_TYPE_LABELS[form.watch("transaction_type")]}
-                </SelectValue>
+                <SelectValue>{TRANSACTION_TYPE_LABELS[form.watch("transaction_type")]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="buy">Buy</SelectItem>
@@ -173,9 +166,7 @@ export function TransactionFormDialog({
             <span className={formLabel}>Category</span>
             <Select
               value={form.watch("category")}
-              onValueChange={(v) =>
-                form.setValue("category", v as Category)
-              }
+              onValueChange={(v) => form.setValue("category", v as Category)}
             >
               <SelectTrigger className={selectTriggerClass}>
                 <SelectValue placeholder="Category">
@@ -196,9 +187,7 @@ export function TransactionFormDialog({
             <span className={formLabel}>Asset name</span>
             <Input className={controlClass} {...form.register("asset_name")} />
             {form.formState.errors.asset_name ? (
-              <p className="text-destructive text-xs">
-                {form.formState.errors.asset_name.message}
-              </p>
+              <p className="text-destructive text-xs">{form.formState.errors.asset_name.message}</p>
             ) : null}
           </div>
 
@@ -207,9 +196,7 @@ export function TransactionFormDialog({
               <span className={formLabel}>Symbol</span>
               <Input className={controlClass} {...form.register("symbol")} />
               {form.formState.errors.symbol ? (
-                <p className="text-destructive text-xs">
-                  {form.formState.errors.symbol.message}
-                </p>
+                <p className="text-destructive text-xs">{form.formState.errors.symbol.message}</p>
               ) : null}
             </div>
           ) : null}
@@ -217,14 +204,10 @@ export function TransactionFormDialog({
           <div
             className={cn(
               "flex flex-col gap-1.5",
-              isCashLike(category)
-                ? "col-span-2"
-                : "col-span-2 sm:col-span-1"
+              isCashLike(category) ? "col-span-2" : "col-span-2 sm:col-span-1"
             )}
           >
-            <span className={formLabel}>
-              {isCashLike(category) ? "Amount ($)" : "Quantity"}
-            </span>
+            <span className={formLabel}>{isCashLike(category) ? "Amount ($)" : "Quantity"}</span>
             <Input
               className={controlClass}
               type="number"
@@ -232,9 +215,7 @@ export function TransactionFormDialog({
               {...form.register("quantity", { valueAsNumber: true })}
             />
             {form.formState.errors.quantity ? (
-              <p className="text-destructive text-xs">
-                {form.formState.errors.quantity.message}
-              </p>
+              <p className="text-destructive text-xs">{form.formState.errors.quantity.message}</p>
             ) : null}
           </div>
 
@@ -265,10 +246,7 @@ export function TransactionFormDialog({
             <Select
               value={form.watch("account_type")}
               onValueChange={(v) =>
-                form.setValue(
-                  "account_type",
-                  v as import("@/types/api").AccountType
-                )
+                form.setValue("account_type", v as import("@/types/api").AccountType)
               }
             >
               <SelectTrigger className={selectTriggerClass}>
@@ -286,11 +264,7 @@ export function TransactionFormDialog({
 
           <div className="col-span-2 flex flex-col gap-1.5">
             <span className={formLabel}>Date</span>
-            <Input
-              className={controlClass}
-              type="date"
-              {...form.register("date")}
-            />
+            <Input className={controlClass} type="date" {...form.register("date")} />
           </div>
 
           <div className="col-span-2 mt-2 flex gap-2.5">

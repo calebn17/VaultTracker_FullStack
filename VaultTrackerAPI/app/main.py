@@ -12,16 +12,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import engine, Base
+from app.database import Base, engine
 from app.routers import (
-    dashboard_router,
     accounts_router,
-    assets_router,
-    transactions_router,
-    networth_router,
-    users_router,
     analytics_router,
+    assets_router,
+    dashboard_router,
+    networth_router,
     prices_router,
+    transactions_router,
+    users_router,
 )
 
 
@@ -38,7 +38,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: browsers (e.g. web client, Swagger UI) send an Origin header; native iOS URLSession does not.
+# CORS: browsers (e.g. web client, Swagger UI) send an Origin header;
+# native iOS URLSession does not.
 _origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,

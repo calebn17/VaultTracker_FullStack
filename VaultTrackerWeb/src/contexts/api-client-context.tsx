@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ApiClient } from "@/lib/api-client";
 import { useAuth } from "@/contexts/auth-context";
 
 function apiBaseUrl() {
   const u =
-    process.env.NEXT_PUBLIC_API_URL ??
-    process.env.NEXT_PUBLIC_API_HOST ??
-    "http://localhost:8000";
+    process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://localhost:8000";
   return u.replace(/\/$/, "");
 }
 
@@ -33,11 +26,7 @@ export function ApiClientProvider({ children }: { children: ReactNode }) {
     [getToken, signOutUser, router]
   );
 
-  return (
-    <ApiClientContext.Provider value={client}>
-      {children}
-    </ApiClientContext.Provider>
-  );
+  return <ApiClientContext.Provider value={client}>{children}</ApiClientContext.Provider>;
 }
 
 export function useApiClient() {

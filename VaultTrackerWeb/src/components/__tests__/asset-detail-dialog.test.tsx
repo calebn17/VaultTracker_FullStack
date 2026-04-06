@@ -141,9 +141,7 @@ describe("AssetDetailDialog", () => {
         onOpenChange={() => {}}
       />
     );
-    expect(
-      screen.getByText(/\+\$10,500\.00 \(\+53\.85%\)/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/\+\$10,500\.00 \(\+53\.85%\)/)).toBeInTheDocument();
   });
 
   it("shows only transactions for this asset", () => {
@@ -281,13 +279,9 @@ describe("HoldingsGrid click behavior", () => {
       ],
     };
 
-    render(
-      <HoldingsGrid grouped={grouped} totalNetWorth={30000} />
-    );
+    render(<HoldingsGrid grouped={grouped} totalNetWorth={30000} />);
 
-    await user.click(
-      screen.getByRole("button", { name: "View details for Bitcoin" })
-    );
+    await user.click(screen.getByRole("button", { name: "View details for Bitcoin" }));
     expect(screen.getAllByText("Bitcoin").length).toBeGreaterThan(1);
   });
 });

@@ -8,13 +8,7 @@ import { cn } from "@/lib/utils";
 import { MERIDIAN_CATEGORY_HEX } from "@/components/dashboard/category-summary-list";
 import { AssetDetailDialog } from "@/components/dashboard/asset-detail-dialog";
 
-const ORDER: Category[] = [
-  "crypto",
-  "stocks",
-  "cash",
-  "realEstate",
-  "retirement",
-];
+const ORDER: Category[] = ["crypto", "stocks", "cash", "realEstate", "retirement"];
 
 const LABELS: Record<Category, string> = {
   crypto: "Crypto",
@@ -27,13 +21,7 @@ const LABELS: Record<Category, string> = {
 const tableGrid =
   "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:grid-cols-[2fr_1.2fr_1fr_1fr_0.8fr] gap-x-3 items-center";
 
-export function AssetIcon({
-  label,
-  color,
-}: {
-  label: string;
-  color: string;
-}) {
+export function AssetIcon({ label, color }: { label: string; color: string }) {
   const text = label.slice(0, 3).toUpperCase();
   return (
     <div
@@ -68,12 +56,9 @@ export function HoldingsGrid({
     category: Category;
   } | null>(null);
 
-  const categoriesToShow =
-    categoryFilter === "all" ? ORDER : [categoryFilter];
+  const categoriesToShow = categoryFilter === "all" ? ORDER : [categoryFilter];
 
-  const hasAny = categoriesToShow.some(
-    (cat) => (grouped?.[cat] ?? []).length > 0
-  );
+  const hasAny = categoriesToShow.some((cat) => (grouped?.[cat] ?? []).length > 0);
 
   if (!loading && !hasAny) {
     return (
@@ -113,8 +98,7 @@ export function HoldingsGrid({
         const total = items.reduce((s, h) => s + h.current_value, 0);
         const isOpen = open[cat] ?? true;
         const color = MERIDIAN_CATEGORY_HEX[cat];
-        const groupPct =
-          totalNetWorth > 0 ? ((total / totalNetWorth) * 100).toFixed(1) : "0.0";
+        const groupPct = totalNetWorth > 0 ? ((total / totalNetWorth) * 100).toFixed(1) : "0.0";
         const rowCount = items.length;
 
         if (items.length === 0 && categoryFilter !== "all") {
@@ -140,9 +124,7 @@ export function HoldingsGrid({
                 tableGrid,
                 "bg-secondary/80 border-border hover:bg-secondary w-full cursor-pointer border-b px-5 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               )}
-              onClick={() =>
-                setOpen((o) => ({ ...o, [cat]: !isOpen }))
-              }
+              onClick={() => setOpen((o) => ({ ...o, [cat]: !isOpen }))}
             >
               <div className="flex min-w-0 items-center gap-2.5">
                 <span
@@ -150,36 +132,23 @@ export function HoldingsGrid({
                   style={{ background: color }}
                   aria-hidden
                 />
-                <span
-                  className="font-heading text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase"
-                >
+                <span className="font-heading text-[11px] font-semibold tracking-[0.08em] text-foreground uppercase">
                   {LABELS[cat]}
                 </span>
                 <span className="text-muted-foreground text-[10px]">
                   {rowCount} holding{rowCount === 1 ? "" : "s"}
                 </span>
               </div>
-              <span
-                className="text-right text-xs font-medium tabular-nums"
-                style={{ color }}
-              >
+              <span className="text-right text-xs font-medium tabular-nums" style={{ color }}>
                 {formatCurrency(total)}
               </span>
               <span className="text-muted-foreground hidden text-right text-[11px] md:block">
                 —
               </span>
-              <span className="text-muted-foreground text-right text-[11px]">
-                {groupPct}%
-              </span>
-              <span
-                className="text-muted-foreground hidden justify-end md:flex"
-                aria-hidden
-              >
+              <span className="text-muted-foreground text-right text-[11px]">{groupPct}%</span>
+              <span className="text-muted-foreground hidden justify-end md:flex" aria-hidden>
                 <ChevronDown
-                  className={cn(
-                    "size-3 transition-transform",
-                    !isOpen && "-rotate-90"
-                  )}
+                  className={cn("size-3 transition-transform", !isOpen && "-rotate-90")}
                 />
               </span>
             </button>
@@ -207,9 +176,7 @@ export function HoldingsGrid({
                         <div className="flex min-w-0 items-center gap-3">
                           <AssetIcon label={iconLabel} color={color} />
                           <div className="min-w-0">
-                            <div className="truncate text-[13px] text-foreground">
-                              {h.name}
-                            </div>
+                            <div className="truncate text-[13px] text-foreground">{h.name}</div>
                             <div className="text-muted-foreground text-[10px] tracking-[0.06em] uppercase">
                               {h.symbol ?? LABELS[cat]}
                             </div>

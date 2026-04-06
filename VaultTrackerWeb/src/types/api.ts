@@ -1,16 +1,6 @@
-export type Category =
-  | "crypto"
-  | "stocks"
-  | "cash"
-  | "realEstate"
-  | "retirement";
+export type Category = "crypto" | "stocks" | "cash" | "realEstate" | "retirement";
 
-export type AccountType =
-  | "cryptoExchange"
-  | "brokerage"
-  | "bank"
-  | "retirement"
-  | "other";
+export type AccountType = "cryptoExchange" | "brokerage" | "bank" | "retirement" | "other";
 
 export type TransactionType = "buy" | "sell";
 

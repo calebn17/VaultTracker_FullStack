@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.networth_snapshot import NetWorthSnapshot
+from app.models.user import User
 from app.schemas.networth import NetWorthHistoryResponse, NetWorthSnapshotResponse
 from app.services.cache_service import cache
 
@@ -63,7 +63,9 @@ def _aggregate_snapshots(
 
 @router.get("/history", response_model=NetWorthHistoryResponse)
 async def get_networth_history(
-    period: str = Query("daily", description="daily | weekly | monthly | all (unknown → all snapshots)"),
+    period: str = Query(
+        "daily", description="daily | weekly | monthly | all (unknown → all snapshots)"
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

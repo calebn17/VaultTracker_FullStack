@@ -26,13 +26,8 @@ export function useUpdateAccount() {
   const api = useApiClient();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: AccountUpdate;
-    }) => api.put(`/api/v1/accounts/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: AccountUpdate }) =>
+      api.put(`/api/v1/accounts/${id}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });

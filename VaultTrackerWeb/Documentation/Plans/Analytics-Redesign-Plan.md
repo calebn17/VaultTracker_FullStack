@@ -8,13 +8,13 @@ The current Analytics/Charts page (`/analytics`) has a basic vertical layout wit
 
 ## Data Sources (all existing, no new API calls)
 
-| Hook | Data Used |
-|------|-----------|
-| `useDashboard()` | `totalNetWorth`, `categoryTotals`, `groupedHoldings` (Record\<string, HoldingItem[]\>) |
-| `useAnalytics()` | `allocation` (per-category percentages), `performance` (gain/loss, cost basis, current value) |
-| `useNetWorthHistory("daily")` | For `computeApproxMonthChange` (hero trailing change) |
-| `useNetWorthHistory(period)` | For net worth trend chart |
-| `usePriceLookup(symbol)` | Price lookup utility (kept as-is) |
+| Hook                          | Data Used                                                                                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| `useDashboard()`              | `totalNetWorth`, `categoryTotals`, `groupedHoldings` (Record\<string, HoldingItem[]\>)        |
+| `useAnalytics()`              | `allocation` (per-category percentages), `performance` (gain/loss, cost basis, current value) |
+| `useNetWorthHistory("daily")` | For `computeApproxMonthChange` (hero trailing change)                                         |
+| `useNetWorthHistory(period)`  | For net worth trend chart                                                                     |
+| `usePriceLookup(symbol)`      | Price lookup utility (kept as-is)                                                             |
 
 **New for this page:** `useDashboard()` is not currently called on the analytics page but is needed for `groupedHoldings` and `categoryTotals`. React Query deduplicates if the user visited dashboard first.
 
@@ -53,6 +53,7 @@ Mobile: All cards stack to full-width (`col-span-12`).
 All under `src/components/analytics/`:
 
 ### 1. `portfolio-hero.tsx`
+
 - Props: `totalNetWorth`, `monthChange: {absolute, percent} | null`, `loading`
 - "TOTAL PORTFOLIO" label: `text-primary text-[10px] uppercase tracking-[0.14em]`
 - Value: `font-heading text-5xl md:text-[56px] font-bold tabular-nums tracking-tight`
@@ -60,14 +61,15 @@ All under `src/components/analytics/`:
 - Pattern: mirrors dashboard hero (lines 91-132) with different label text
 
 ### 2. `category-bento-card.tsx` — Single component handling all 5 categories
+
 Rather than 5 separate card files, one component with variant rendering based on `category` prop. This avoids file proliferation since the structure is similar.
 
 ```typescript
 interface CategoryBentoCardProps {
   category: Category;
   holdings: HoldingItem[];
-  totalValue: number;           // from categoryTotals
-  allocationPercent: number;    // from analytics.allocation
+  totalValue: number; // from categoryTotals
+  allocationPercent: number; // from analytics.allocation
   totalNetWorth: number;
   onSelectHolding: (holding: HoldingItem, category: Category) => void;
   loading: boolean;
@@ -75,6 +77,7 @@ interface CategoryBentoCardProps {
 ```
 
 **Category-specific rendering:**
+
 - **stocks**: Table layout (3 cols: Asset, Qty/Units, Value). Blue accent `#64c8f5`. Icon uses show_chart-style badge.
 - **crypto**: Compact vertical list with colored icon dots + name + value. Orange accent `#f5a864`.
 - **realEstate**: Property-style rows (name prominent, value right-aligned). Lime accent `#c8f564`.
@@ -86,6 +89,7 @@ All rows are clickable → calls `onSelectHolding` to open `AssetDetailDialog`.
 Empty state per card: subtle message "No holdings yet" with reduced opacity.
 
 ### 3. `performance-attribution.tsx`
+
 - Props: `performance: AnalyticsResponse["performance"] | undefined`, `loading`
 - Header: "PERFORMANCE SUMMARY" uppercase micro-label
 - 3-column grid of metric tiles:
@@ -97,6 +101,7 @@ Empty state per card: subtle message "No holdings yet" with reduced opacity.
 ## Files to Modify
 
 ### `src/app/(authenticated)/analytics/page.tsx` — Full rewrite
+
 - Calls `useDashboard()` (new), `useAnalytics()`, `useNetWorthHistory` (×2), `usePriceLookup`
 - Computes `monthChange` via `computeApproxMonthChange` (import from `@/lib/networth-change`)
 - Manages `selectedHolding` state for `AssetDetailDialog`
@@ -104,6 +109,7 @@ Empty state per card: subtle message "No holdings yet" with reduced opacity.
 - Keeps the existing period selector for net worth chart (inlined in the chart's grid cell)
 
 ### `src/components/dashboard/holdings-grid.tsx` — Minor edit
+
 - Export the `AssetIcon` component (add `export` keyword) so bento cards can reuse it
 
 ## Styling Approach

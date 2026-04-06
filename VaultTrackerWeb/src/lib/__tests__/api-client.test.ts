@@ -82,9 +82,7 @@ describe("ApiClient", () => {
   });
 
   it("throws ApiError with status on 4xx/5xx", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ detail: "bad" }, 404, "Not Found")
-    );
+    fetchMock.mockResolvedValueOnce(jsonResponse({ detail: "bad" }, 404, "Not Found"));
     const client = new ApiClient(baseUrl, vi.fn().mockResolvedValue("t"), vi.fn());
 
     await expect(client.get("/missing")).rejects.toMatchObject({
@@ -99,10 +97,7 @@ describe("ApiClient", () => {
   });
 
   it("on 401, retries once with force-refreshed token and returns body", async () => {
-    const getToken = vi
-      .fn()
-      .mockResolvedValueOnce("first")
-      .mockResolvedValueOnce("second");
+    const getToken = vi.fn().mockResolvedValueOnce("first").mockResolvedValueOnce("second");
     fetchMock
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(jsonResponse({ ok: true }));
@@ -119,10 +114,9 @@ describe("ApiClient", () => {
         Authorization: "Bearer second",
       }),
     });
-    expect(logger.warn).toHaveBeenCalledWith(
-      "401 — retrying with refreshed token",
-      { endpoint: "/r" }
-    );
+    expect(logger.warn).toHaveBeenCalledWith("401 — retrying with refreshed token", {
+      endpoint: "/r",
+    });
     expect(logger.info).toHaveBeenCalledWith(
       "API request",
       expect.objectContaining({
@@ -139,11 +133,10 @@ describe("ApiClient", () => {
     const client = new ApiClient(baseUrl, vi.fn().mockResolvedValue("t"), vi.fn());
 
     await expect(client.get("/down")).rejects.toThrow("net down");
-    expect(logger.error).toHaveBeenCalledWith(
-      "API request failed (network)",
-      networkErr,
-      { method: "GET", endpoint: "/down" }
-    );
+    expect(logger.error).toHaveBeenCalledWith("API request failed (network)", networkErr, {
+      method: "GET",
+      endpoint: "/down",
+    });
   });
 
   it("logs and rethrows when initial getToken fails", async () => {
@@ -152,11 +145,10 @@ describe("ApiClient", () => {
     const client = new ApiClient(baseUrl, getToken, vi.fn());
 
     await expect(client.get("/x")).rejects.toThrow("no token");
-    expect(logger.error).toHaveBeenCalledWith(
-      "API token request failed",
-      tokenErr,
-      { endpoint: "/x", phase: "initial" }
-    );
+    expect(logger.error).toHaveBeenCalledWith("API token request failed", tokenErr, {
+      endpoint: "/x",
+      phase: "initial",
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -165,43 +157,32 @@ describe("ApiClient", () => {
     fetchMock
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockRejectedValueOnce(netErr);
-    const client = new ApiClient(
-      baseUrl,
-      vi.fn().mockResolvedValue("t"),
-      vi.fn()
-    );
+    const client = new ApiClient(baseUrl, vi.fn().mockResolvedValue("t"), vi.fn());
 
     await expect(client.get("/r")).rejects.toThrow("retry net fail");
-    expect(logger.warn).toHaveBeenCalledWith(
-      "401 — retrying with refreshed token",
-      { endpoint: "/r" }
-    );
-    expect(logger.error).toHaveBeenCalledWith(
-      "API request failed (network)",
-      netErr,
-      { method: "GET", endpoint: "/r" }
-    );
+    expect(logger.warn).toHaveBeenCalledWith("401 — retrying with refreshed token", {
+      endpoint: "/r",
+    });
+    expect(logger.error).toHaveBeenCalledWith("API request failed (network)", netErr, {
+      method: "GET",
+      endpoint: "/r",
+    });
   });
 
   it("logs and rethrows when getToken fails after 401", async () => {
     const tokenErr = new Error("refresh failed");
-    const getToken = vi
-      .fn()
-      .mockResolvedValueOnce("first")
-      .mockRejectedValueOnce(tokenErr);
+    const getToken = vi.fn().mockResolvedValueOnce("first").mockRejectedValueOnce(tokenErr);
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     const client = new ApiClient(baseUrl, getToken, vi.fn());
 
     await expect(client.get("/r")).rejects.toThrow("refresh failed");
-    expect(logger.warn).toHaveBeenCalledWith(
-      "401 — retrying with refreshed token",
-      { endpoint: "/r" }
-    );
-    expect(logger.error).toHaveBeenCalledWith(
-      "API token request failed",
-      tokenErr,
-      { endpoint: "/r", phase: "after_401" }
-    );
+    expect(logger.warn).toHaveBeenCalledWith("401 — retrying with refreshed token", {
+      endpoint: "/r",
+    });
+    expect(logger.error).toHaveBeenCalledWith("API token request failed", tokenErr, {
+      endpoint: "/r",
+      phase: "after_401",
+    });
   });
 
   it("on 401 then 401, calls onUnauthorized and throws ApiError(401)", async () => {
@@ -218,10 +199,9 @@ describe("ApiClient", () => {
       status: 401,
     });
     expect(onUnauthorized).toHaveBeenCalledTimes(1);
-    expect(logger.warn).toHaveBeenCalledWith(
-      "401 — retrying with refreshed token",
-      { endpoint: "/x" }
-    );
+    expect(logger.warn).toHaveBeenCalledWith("401 — retrying with refreshed token", {
+      endpoint: "/x",
+    });
     expect(logger.error).toHaveBeenCalledWith(
       "API error",
       expect.objectContaining({ name: "ApiError", status: 401 }),

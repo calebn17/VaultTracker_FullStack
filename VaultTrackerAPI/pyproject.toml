@@ -1,0 +1,15 @@
+# Install Ruff with the same range as CI (`.github/workflows/ci.yml`): `pip install 'ruff>=0.8,<1'`.
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "C90", "N"]
+
+[tool.ruff.lint.per-file-ignores]
+# Bootstrap script mutates sys.path before app imports.
+"scripts/seed_demo_portfolio.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

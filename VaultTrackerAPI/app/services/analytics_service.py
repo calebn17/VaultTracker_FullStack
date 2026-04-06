@@ -1,5 +1,6 @@
 """
-Portfolio analytics: allocation by category and simple performance from transaction history.
+Portfolio analytics: allocation by category and simple performance from
+transaction history.
 """
 
 from __future__ import annotations
@@ -25,12 +26,18 @@ class AnalyticsService:
                 "percentage": round((value / total * 100) if total > 0 else 0, 1),
             }
 
-        transactions = db.query(Transaction).filter(Transaction.user_id == user.id).all()
+        transactions = (
+            db.query(Transaction).filter(Transaction.user_id == user.id).all()
+        )
         total_invested = sum(
-            t.quantity * t.price_per_unit for t in transactions if t.transaction_type == "buy"
+            t.quantity * t.price_per_unit
+            for t in transactions
+            if t.transaction_type == "buy"
         )
         total_sold = sum(
-            t.quantity * t.price_per_unit for t in transactions if t.transaction_type == "sell"
+            t.quantity * t.price_per_unit
+            for t in transactions
+            if t.transaction_type == "sell"
         )
         cost_basis = total_invested - total_sold
         gain_loss = total - cost_basis

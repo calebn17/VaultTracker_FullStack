@@ -1,8 +1,9 @@
 """
-Test harness: in-memory SQLite (shared via StaticPool), dependency overrides for auth/DB.
+Test harness: in-memory SQLite (shared via StaticPool), dependency overrides
+for auth/DB.
 
-Patches `app.database` engine before `app.main` is imported so lifespan `create_all` hits
-the same database sessions use.
+Patches `app.database` engine before `app.main` is imported so lifespan
+`create_all` hits the same database sessions use.
 """
 
 from __future__ import annotations
@@ -51,7 +52,9 @@ def _vt_break_tests_enabled() -> bool:
 
 
 @pytest.fixture(autouse=True)
-def _vt_inject_broken_behavior_for_falsification_checks(monkeypatch: pytest.MonkeyPatch) -> None:
+def _vt_inject_broken_behavior_for_falsification_checks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """
     Opt-in regression alarm: prove tests actually assert real behavior.
 

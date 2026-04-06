@@ -69,10 +69,8 @@ export const logger = {
           Sentry.captureException(exception, { extra });
         };
         const hasSentryScope =
-          (sentryScope?.tags !== undefined &&
-            Object.keys(sentryScope.tags).length > 0) ||
-          (sentryScope?.contexts !== undefined &&
-            Object.keys(sentryScope.contexts).length > 0);
+          (sentryScope?.tags !== undefined && Object.keys(sentryScope.tags).length > 0) ||
+          (sentryScope?.contexts !== undefined && Object.keys(sentryScope.contexts).length > 0);
         if (hasSentryScope) {
           Sentry.withScope((scope) => {
             for (const [k, v] of Object.entries(sentryScope?.tags ?? {})) {

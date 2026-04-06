@@ -22,11 +22,7 @@ import { useNetWorthHistory } from "@/lib/queries/use-networth";
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(
-      QueryClientProvider,
-      { client: queryClient },
-      children
-    );
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 }
 
@@ -60,9 +56,7 @@ describe("useNetWorthHistory", () => {
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history?period=daily");
     expect(result.current.data?.snapshots).toHaveLength(1);
-    expect(queryClient.getQueryData(["networth", "daily"])).toEqual(
-      historyFixture
-    );
+    expect(queryClient.getQueryData(["networth", "daily"])).toEqual(historyFixture);
   });
 
   it("uses requested period in URL and query key", async () => {
@@ -76,8 +70,6 @@ describe("useNetWorthHistory", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history?period=weekly");
-    expect(queryClient.getQueryData(["networth", "weekly"])).toEqual(
-      historyFixture
-    );
+    expect(queryClient.getQueryData(["networth", "weekly"])).toEqual(historyFixture);
   });
 });

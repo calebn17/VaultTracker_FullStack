@@ -20,12 +20,12 @@ struct AnalyticsView: View {
                 }
             }
 
-            if let p = viewModel.performance {
+            if let performance = viewModel.performance {
                 Section {
                     LabeledContent {
-                        Text(p.totalGainLoss.currencyFormat())
+                        Text(performance.totalGainLoss.currencyFormat())
                             .font(VTFonts.monoBody)
-                            .foregroundStyle(gainLossForeground(p.totalGainLoss))
+                            .foregroundStyle(gainLossForeground(performance.totalGainLoss))
                     } label: {
                         Text("Gain / loss")
                             .foregroundStyle(VTColors.textSubdued)
@@ -33,9 +33,9 @@ struct AnalyticsView: View {
                     .listRowBackground(VTColors.surface)
 
                     LabeledContent {
-                        Text("\(p.totalGainLossPercent.twoDecimalString)%")
+                        Text("\(performance.totalGainLossPercent.twoDecimalString)%")
                             .font(VTFonts.monoBody)
-                            .foregroundStyle(gainLossForeground(p.totalGainLossPercent))
+                            .foregroundStyle(gainLossForeground(performance.totalGainLossPercent))
                     } label: {
                         Text("Gain / loss %")
                             .foregroundStyle(VTColors.textSubdued)
@@ -43,7 +43,7 @@ struct AnalyticsView: View {
                     .listRowBackground(VTColors.surface)
 
                     LabeledContent {
-                        Text(p.costBasis.currencyFormat())
+                        Text(performance.costBasis.currencyFormat())
                             .font(VTFonts.monoBody)
                             .foregroundStyle(VTColors.textPrimary)
                     } label: {
@@ -53,7 +53,7 @@ struct AnalyticsView: View {
                     .listRowBackground(VTColors.surface)
 
                     LabeledContent {
-                        Text(p.currentValue.currencyFormat())
+                        Text(performance.currentValue.currencyFormat())
                             .font(VTFonts.monoBody)
                             .foregroundStyle(VTColors.textPrimary)
                     } label: {

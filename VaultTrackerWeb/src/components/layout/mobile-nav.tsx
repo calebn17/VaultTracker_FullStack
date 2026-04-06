@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  PieChart,
-  ListOrdered,
-  Wallet,
-  User,
-} from "lucide-react";
+import { LayoutDashboard, PieChart, ListOrdered, Wallet, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [

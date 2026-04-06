@@ -27,9 +27,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("firebase/auth", () => ({
-  onAuthStateChanged: vi.fn(
-    (_auth: unknown, _cb: (u: unknown) => void) => () => {}
-  ),
+  onAuthStateChanged: vi.fn((_auth: unknown, _cb: (u: unknown) => void) => () => {}),
   signInWithPopup: mockSignInWithPopup,
   signOut: vi.fn().mockResolvedValue(undefined),
   GoogleAuthProvider: vi.fn(),
@@ -49,11 +47,7 @@ vi.mock("@/lib/auth-debug", () => ({
 
 import { AuthProvider, useAuth } from "../auth-context";
 
-function Inspector({
-  onReady,
-}: {
-  onReady: (ctx: ReturnType<typeof useAuth>) => void;
-}) {
+function Inspector({ onReady }: { onReady: (ctx: ReturnType<typeof useAuth>) => void }) {
   const ctx = useAuth();
   onReady(ctx);
   return <div data-testid="ready" />;
@@ -111,10 +105,7 @@ describe("AuthProvider — logging (Firebase configured)", () => {
       await expect(ctx!.signInWithGoogle()).rejects.toThrow("popup closed");
     });
 
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      "Sign-in failed",
-      expect.any(Error)
-    );
+    expect(mockLogger.error).toHaveBeenCalledWith("Sign-in failed", expect.any(Error));
   });
 
   it("does not log force-refresh warn when not signed in", async () => {
@@ -149,9 +140,7 @@ describe("AuthProvider — logging (Firebase configured)", () => {
       await ctx!.getToken(true);
     });
 
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      "Force-refreshing token after 401"
-    );
+    expect(mockLogger.warn).toHaveBeenCalledWith("Force-refreshing token after 401");
     expect(mockGetIdToken).toHaveBeenCalledWith(true);
   });
 
@@ -170,9 +159,6 @@ describe("AuthProvider — logging (Firebase configured)", () => {
       await expect(ctx!.getToken(false)).rejects.toThrow("token failed");
     });
 
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      "Token refresh failed",
-      expect.any(Error)
-    );
+    expect(mockLogger.error).toHaveBeenCalledWith("Token refresh failed", expect.any(Error));
   });
 });

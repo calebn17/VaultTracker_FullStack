@@ -33,7 +33,9 @@ def test_get_price_tries_crypto_then_stock(client, mock_price_apis):
     assert r2.json()["price"] == 55.0
 
 
-def test_refresh_prices_updates_crypto_holding(client, test_user, db_session, mock_price_apis):
+def test_refresh_prices_updates_crypto_holding(
+    client, test_user, db_session, mock_price_apis
+):
     acct = Account(user_id=test_user.id, name="Ex", account_type="cryptoExchange")
     ast = Asset(
         user_id=test_user.id,

@@ -1,5 +1,6 @@
 """
-Smart transaction creation and update: resolve account + asset server-side, then write rows.
+Smart transaction creation and update: resolve account + asset server-side,
+then write rows.
 """
 
 from __future__ import annotations
@@ -14,12 +15,18 @@ from app.models.asset import Asset
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.transaction import SmartTransactionCreate
-from app.services.asset_sync import record_networth_snapshot, update_asset_from_transaction
+from app.services.asset_sync import (
+    record_networth_snapshot,
+    update_asset_from_transaction,
+)
 from app.services.cache_service import cache
 
 
 class SmartUpdateMissingLinkedAssetError(Exception):
-    """Transaction row exists but its asset_id does not resolve — cannot reverse prior effect."""
+    """
+    Transaction row exists but its asset_id does not resolve — cannot reverse
+    prior effect.
+    """
 
 
 def _resolve_account_and_asset(
@@ -27,7 +34,10 @@ def _resolve_account_and_asset(
     user: User,
     data: SmartTransactionCreate,
 ) -> tuple[Account, Asset]:
-    """Find or create account + asset for a smart payload (shared by smart_create / smart_update)."""
+    """
+    Find or create account + asset for a smart payload
+    (shared by smart_create / smart_update).
+    """
     account = (
         db.query(Account)
         .filter(Account.user_id == user.id, Account.name == data.account_name)
@@ -77,7 +87,9 @@ def _resolve_account_and_asset(
 
 
 class TransactionService:
-    def smart_create(self, data: SmartTransactionCreate, user: User, db: Session) -> Transaction:
+    def smart_create(
+        self, data: SmartTransactionCreate, user: User, db: Session
+    ) -> Transaction:
         account, asset = _resolve_account_and_asset(db, user, data)
 
         when = data.date if data.date is not None else datetime.now(timezone.utc)
@@ -114,8 +126,9 @@ class TransactionService:
         db: Session,
     ) -> Transaction | None:
         """
-        Reverse the existing transaction on its current asset, re-resolve account + asset
-        from the smart payload (same rules as smart_create), then apply the new row fields.
+        Reverse the existing transaction on its current asset, re-resolve
+        account + asset from the smart payload (same rules as smart_create),
+        then apply the new row fields.
         """
         tx = (
             db.query(Transaction)

@@ -2,12 +2,7 @@
 
 import { useMemo } from "react";
 import { format } from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Category, HoldingItem, TransactionType } from "@/types/api";
 import { useTransactions } from "@/lib/queries/use-transactions";
 import { formatCurrency } from "@/lib/format";
@@ -53,25 +48,18 @@ export function AssetDetailDialog({
     lastDate,
     recentTransactions,
   } = useMemo(() => {
-    const filtered = (transactions ?? []).filter(
-      (t) => t.asset_id === holding.id
-    );
+    const filtered = (transactions ?? []).filter((t) => t.asset_id === holding.id);
     const sorted = [...filtered].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
     const costBasis = filtered.reduce(
-      (sum, t) =>
-        t.transaction_type === "buy"
-          ? sum + t.total_value
-          : sum - t.total_value,
+      (sum, t) => (t.transaction_type === "buy" ? sum + t.total_value : sum - t.total_value),
       0
     );
     const unrealizedPnL = holding.current_value - costBasis;
-    const unrealizedPnLPct =
-      costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
-    const avgCostPerUnit =
-      holding.quantity > 0 ? costBasis / holding.quantity : 0;
+    const unrealizedPnLPct = costBasis > 0 ? (unrealizedPnL / costBasis) * 100 : 0;
+    const avgCostPerUnit = holding.quantity > 0 ? costBasis / holding.quantity : 0;
     const lastDate = sorted[0]?.date ?? null;
 
     return {
@@ -98,9 +86,7 @@ export function AssetDetailDialog({
           },
         ]
       : []),
-    ...(category !== "cash"
-      ? [{ label: "Cost Basis", value: formatCurrency(costBasis) }]
-      : []),
+    ...(category !== "cash" ? [{ label: "Cost Basis", value: formatCurrency(costBasis) }] : []),
     ...(!isSimple
       ? [
           { label: "Avg Cost / Unit", value: formatCurrency(avgCostPerUnit) },
@@ -133,9 +119,7 @@ export function AssetDetailDialog({
                 fontFamily: "var(--font-meridian-syne), system-ui, sans-serif",
               }}
             >
-              {(holding.symbol?.trim() || holding.name)
-                .slice(0, 3)
-                .toUpperCase()}
+              {(holding.symbol?.trim() || holding.name).slice(0, 3).toUpperCase()}
             </span>
             <div>
               <DialogTitle className="font-serif text-[22px] font-normal leading-tight">
@@ -172,15 +156,9 @@ export function AssetDetailDialog({
               <table className="w-full text-[12px]">
                 <thead>
                   <tr className="bg-secondary/80 border-b">
-                    <th className="text-muted-foreground px-3 py-2 text-left font-medium">
-                      Date
-                    </th>
-                    <th className="text-muted-foreground px-3 py-2 text-left font-medium">
-                      Type
-                    </th>
-                    <th className="text-muted-foreground px-3 py-2 text-right font-medium">
-                      Qty
-                    </th>
+                    <th className="text-muted-foreground px-3 py-2 text-left font-medium">Date</th>
+                    <th className="text-muted-foreground px-3 py-2 text-left font-medium">Type</th>
+                    <th className="text-muted-foreground px-3 py-2 text-right font-medium">Qty</th>
                     <th className="text-muted-foreground px-3 py-2 text-right font-medium">
                       Price
                     </th>
@@ -198,9 +176,7 @@ export function AssetDetailDialog({
                       <td className="px-3 py-2">
                         <span
                           className={
-                            t.transaction_type === "buy"
-                              ? "text-emerald-400"
-                              : "text-red-400"
+                            t.transaction_type === "buy" ? "text-emerald-400" : "text-red-400"
                           }
                         >
                           {TRANSACTION_TYPE_LABELS[t.transaction_type]}

@@ -21,9 +21,7 @@ test.describe("Transactions", () => {
   });
 
   test("loads with heading and table", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { name: "Transactions" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Transactions" })).toBeVisible();
     await expect(page.getByRole("table")).toBeVisible();
   });
 
@@ -53,9 +51,7 @@ test.describe("Transactions", () => {
     await expect(page.getByText(/transaction added/i)).toBeVisible({
       timeout: 20_000,
     });
-    await expect(
-      page.getByRole("row").filter({ hasText: assetName })
-    ).toBeVisible({
+    await expect(page.getByRole("row").filter({ hasText: assetName })).toBeVisible({
       timeout: 20_000,
     });
   });
@@ -81,9 +77,7 @@ test.describe("Transactions", () => {
     const row = page.getByRole("row").filter({ hasText: assetName });
     await row.getByRole("button", { name: "Delete" }).click();
 
-    await expect(
-      page.getByRole("alertdialog", { name: /delete transaction/i })
-    ).toBeVisible();
+    await expect(page.getByRole("alertdialog", { name: /delete transaction/i })).toBeVisible();
 
     await page
       .getByRole("alertdialog")
@@ -91,8 +85,6 @@ test.describe("Transactions", () => {
       .click();
 
     await expect(page.getByText(/deleted/i)).toBeVisible({ timeout: 20_000 });
-    await expect(
-      page.getByRole("cell", { name: assetName })
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("cell", { name: assetName })).not.toBeVisible({ timeout: 10_000 });
   });
 });

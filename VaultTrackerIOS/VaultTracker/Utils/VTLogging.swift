@@ -30,8 +30,11 @@ enum VTLogCrashlyticsSupport {
         return String(cleaned.prefix(32))
     }
 
-    /// All `setCustomValue` pairs for one non-fatal: `vt_category`, `vt_level`, then `vt_ctx_0`…`vt_ctx_{N-1}`.
-    /// Slot `i` is `"\(sanitizedKeySegment(originalKey))=\(String(describing: value))"` for the *i*-th context entry in ascending key order, or `""` if unused (clears a previous upload for that slot).
+    /// All `setCustomValue` pairs for one non-fatal: `vt_category`, `vt_level`, then
+    /// `vt_ctx_0`…`vt_ctx_{N-1}`. Slot `index` is
+    /// `"\(sanitizedKeySegment(originalKey))=\(String(describing: value))"` for the
+    /// *index*-th context entry in ascending key order, or `""` if unused (clears a
+    /// previous upload for that slot).
     static func crashlyticsCustomKeyValues(
         category: VTLogCategory,
         isWarning: Bool,
@@ -43,13 +46,13 @@ enum VTLogCrashlyticsSupport {
             ("vt_level", isWarning ? "warn" : "error")
         ]
         let sorted = (context ?? [:]).sorted { $0.key < $1.key }
-        for i in 0..<slotCount {
-            if i < sorted.count {
-                let (key, value) = sorted[i]
+        for index in 0..<slotCount {
+            if index < sorted.count {
+                let (key, value) = sorted[index]
                 let segment = sanitizedKeySegment(key)
-                result.append(("vt_ctx_\(i)", "\(segment)=\(String(describing: value))"))
+                result.append(("vt_ctx_\(index)", "\(segment)=\(String(describing: value))"))
             } else {
-                result.append(("vt_ctx_\(i)", ""))
+                result.append(("vt_ctx_\(index)", ""))
             }
         }
         return result

@@ -104,12 +104,12 @@ final class AddAssetFormViewModel: ObservableObject {
             finalQuantity = priceValue
             finalPricePerUnit = 1.0
         default:
-            guard let q = Double(quantity) else {
+            guard let parsedQuantity = Double(quantity) else {
                 shouldShowAlert = true
                 alertMessage = "Quantity must be a valid number"
                 return nil
             }
-            finalQuantity = q
+            finalQuantity = parsedQuantity
             finalPricePerUnit = priceValue
         }
 

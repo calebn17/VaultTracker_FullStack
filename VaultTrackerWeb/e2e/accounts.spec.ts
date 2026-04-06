@@ -5,9 +5,7 @@ import { test, expect } from "@playwright/test";
  * link after landing on /dashboard — do NOT use page.goto("/accounts") which
  * would clear the debug session and redirect to /login.
  */
-async function debugLoginAndGoToAccounts(
-  page: import("@playwright/test").Page
-) {
+async function debugLoginAndGoToAccounts(page: import("@playwright/test").Page) {
   await page.goto("/login");
   await page.getByRole("button", { name: /debug api session/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
@@ -23,12 +21,8 @@ test.describe("Accounts", () => {
   });
 
   test("loads with Accounts heading and list UI", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { name: "Accounts" })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /add account/i })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Accounts" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /add account/i })).toBeVisible();
     await expect(page.getByText("Loading…")).not.toBeVisible({
       timeout: 15_000,
     });

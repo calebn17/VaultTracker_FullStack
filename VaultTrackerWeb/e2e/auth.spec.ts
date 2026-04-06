@@ -10,16 +10,12 @@ test.describe("Login", () => {
 
   test("shows debug sign-in in development", async ({ page }) => {
     await page.goto("/login");
-    await expect(
-      page.getByRole("button", { name: /debug api session/i })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /debug api session/i })).toBeVisible();
   });
 });
 
 test.describe("Auth guard", () => {
-  test("unauthenticated visit to /dashboard redirects to /login", async ({
-    page,
-  }) => {
+  test("unauthenticated visit to /dashboard redirects to /login", async ({ page }) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/login/);
   });

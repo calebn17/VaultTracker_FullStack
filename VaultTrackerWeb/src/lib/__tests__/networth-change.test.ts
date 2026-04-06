@@ -7,9 +7,7 @@ describe("computeApproxMonthChange", () => {
   });
 
   it("returns null for single snapshot", () => {
-    expect(
-      computeApproxMonthChange([{ date: "2026-03-01", value: 100_000 }])
-    ).toBeNull();
+    expect(computeApproxMonthChange([{ date: "2026-03-01", value: 100_000 }])).toBeNull();
   });
 
   it("computes correct absolute and percent change", () => {

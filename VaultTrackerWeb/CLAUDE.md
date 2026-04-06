@@ -17,11 +17,15 @@ See `Documentation/Web App Spec.md` Phase 7 for the open checklist items (7.3–
 npm run dev           # Dev server at localhost:3000
 npm run build         # Production build
 npm run lint          # ESLint
+npx prettier --check .  # Format check (same as CI lint-web)
+npx prettier --write .  # Apply Prettier project-wide (respects .prettierignore)
 npm run test          # Vitest (unit + component), single run
 npm run test:watch    # Vitest watch mode
 npm run test:coverage # Vitest with coverage
 npm run test:e2e      # Playwright (starts dev server via playwright.config unless one is already running)
 ```
+
+**CI (`lint-web`):** On pull requests, GitHub Actions runs `npm ci`, `prettier --check`, then ESLint with **JSON output piped to reviewdog** (check annotations + optional PR review comments). Fix blocking ESLint **errors** locally with `npm run lint` before pushing. Warnings (e.g. `no-console: warn`) do not fail ESLint’s exit code unless you tighten rules.
 
 ## Testing
 
@@ -31,12 +35,12 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 **Where tests live**
 
-| Area | Location |
-|------|----------|
-| Unit | `src/lib/__tests__/*.test.ts` |
-| React Query hooks | `src/lib/queries/__tests__/*.test.tsx` |
-| Components / context | `src/components/__tests__/`, `src/contexts/__tests__/` |
-| E2E | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`) |
+| Area                 | Location                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| Unit                 | `src/lib/__tests__/*.test.ts`                                                                  |
+| React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                         |
+| Components / context | `src/components/__tests__/`, `src/contexts/__tests__/`                                         |
+| E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`) |
 
 **Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
 
@@ -83,33 +87,33 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 ### Key Files
 
-| File | Purpose |
-|---|---|
-| `src/lib/logger.ts` | Logging facade — `info` dev-only (console); `warn`/`error` use console in dev and **Sentry** in production (`captureMessage` with `level: warning` for `warn`; `captureException` with `error ?? new Error(message)` and `{ extra }` for `error`, matching the logging design plan). Optional 4th arg `LoggerErrorSentryScope` (`tags` / `contexts`) wraps `captureException` in `Sentry.withScope` (used by route error fallback). Do not log PII. Repeat `captureException` on the **same error object** is ignored by the SDK (`__sentry_captured__`). |
-| `instrumentation-client.ts` | Sentry client `Sentry.init` + `onRouterTransitionStart` (`@sentry/nextjs` v10; replaces legacy `sentry.client.config.ts`) |
-| `src/instrumentation.ts` | Next.js hook: loads `sentry.server.config` / `sentry.edge.config`; exports `onRequestError` |
-| `sentry.server.config.ts` | Node server Sentry init |
-| `sentry.edge.config.ts` | Edge runtime Sentry init |
-| `next.config.ts` | Wrapped with `withSentryConfig` (optional `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` for source maps in CI) |
-| `src/lib/api-client.ts` | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry; logs network `fetch` failures and `getToken` failures |
-| `src/lib/firebase.ts` | Firebase app initialization (client-only) |
-| `src/lib/auth-debug.ts` | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`) |
-| `src/types/api.ts` | TypeScript mirrors of all backend Pydantic schemas |
-| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook; logs sign-in success (`uid` for tracing), failure, sign-out, forced token refresh (`warn` only when a `currentUser` exists), and `getIdToken` failures |
-| `src/contexts/api-client-context.tsx` | `ApiClientProvider` + `useApiClient()` hook; reads base URL from env |
-| `src/components/route-error-fallback.tsx` | Shared client UI for App Router error boundaries — `logger.error` with optional Sentry scope (tag `route_error_scope`) via logger’s 4th argument; WeakSet dedupes Strict Mode double effects; digest only when present |
-| `src/app/error.tsx` | Root error boundary (client); does not catch errors in the root layout (see `global-error.tsx`) |
-| `src/app/global-error.tsx` | Root layout render errors — required `<html>` / `<body>`, same fallback UI as segment boundaries |
-| `src/app/(authenticated)/error.tsx` | Authenticated segment error boundary (client) |
-| `src/lib/queries/` | One file per resource: `use-dashboard.ts`, `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-networth.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts` |
-| `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics and recent transactions (client filter on cached `useTransactions`); opened from `holdings-grid.tsx` and analytics category cards. **Cash** hides Quantity, Avg Cost / Unit, Unrealized P&L, and **Cost Basis** (current value is the meaningful figure). **Real estate** hides Quantity, Avg Cost / Unit, and Unrealized P&L but **still shows Cost Basis**. Recent transactions table lists at most five rows, newest first. |
+| File                                               | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/logger.ts`                                | Logging facade — `info` dev-only (console); `warn`/`error` use console in dev and **Sentry** in production (`captureMessage` with `level: warning` for `warn`; `captureException` with `error ?? new Error(message)` and `{ extra }` for `error`, matching the logging design plan). Optional 4th arg `LoggerErrorSentryScope` (`tags` / `contexts`) wraps `captureException` in `Sentry.withScope` (used by route error fallback). Do not log PII. Repeat `captureException` on the **same error object** is ignored by the SDK (`__sentry_captured__`). |
+| `instrumentation-client.ts`                        | Sentry client `Sentry.init` + `onRouterTransitionStart` (`@sentry/nextjs` v10; replaces legacy `sentry.client.config.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `src/instrumentation.ts`                           | Next.js hook: loads `sentry.server.config` / `sentry.edge.config`; exports `onRequestError`                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `sentry.server.config.ts`                          | Node server Sentry init                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `sentry.edge.config.ts`                            | Edge runtime Sentry init                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `next.config.ts`                                   | Wrapped with `withSentryConfig` (optional `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` for source maps in CI)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `src/lib/api-client.ts`                            | `ApiClient` class — wraps `fetch`, injects JWT, 401 retry; logs network `fetch` failures and `getToken` failures                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `src/lib/firebase.ts`                              | Firebase app initialization (client-only)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `src/lib/auth-debug.ts`                            | Build-time debug auth constants (`DEBUG_AUTH_AVAILABLE`, `DEBUG_AUTH_TOKEN`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `src/types/api.ts`                                 | TypeScript mirrors of all backend Pydantic schemas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `src/contexts/auth-context.tsx`                    | `AuthProvider` + `useAuth()` hook; logs sign-in success (`uid` for tracing), failure, sign-out, forced token refresh (`warn` only when a `currentUser` exists), and `getIdToken` failures                                                                                                                                                                                                                                                                                                                                                                 |
+| `src/contexts/api-client-context.tsx`              | `ApiClientProvider` + `useApiClient()` hook; reads base URL from env                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `src/components/route-error-fallback.tsx`          | Shared client UI for App Router error boundaries — `logger.error` with optional Sentry scope (tag `route_error_scope`) via logger’s 4th argument; WeakSet dedupes Strict Mode double effects; digest only when present                                                                                                                                                                                                                                                                                                                                    |
+| `src/app/error.tsx`                                | Root error boundary (client); does not catch errors in the root layout (see `global-error.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `src/app/global-error.tsx`                         | Root layout render errors — required `<html>` / `<body>`, same fallback UI as segment boundaries                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `src/app/(authenticated)/error.tsx`                | Authenticated segment error boundary (client)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `src/lib/queries/`                                 | One file per resource: `use-dashboard.ts`, `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-networth.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts`                                                                                                                                                                                                                                                                                                                                                                               |
+| `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics and recent transactions (client filter on cached `useTransactions`); opened from `holdings-grid.tsx` and analytics category cards. **Cash** hides Quantity, Avg Cost / Unit, Unrealized P&L, and **Cost Basis** (current value is the meaningful figure). **Real estate** hides Quantity, Avg Cost / Unit, and Unrealized P&L but **still shows Cost Basis**. Recent transactions table lists at most five rows, newest first.                                                                                       |
 
 ### API Client Pattern
 
 `ApiClient` is at `src/lib/api-client.ts`. Base URL is read as:
 
 ```typescript
-process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://localhost:8000"
+process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://localhost:8000";
 ```
 
 Both env var names work; `NEXT_PUBLIC_API_URL` takes precedence.
@@ -120,13 +124,13 @@ All authenticated routes live under `src/app/(authenticated)/` with an auth-guar
 
 Unauthenticated routes: `/login` and `/` (redirects based on auth state).
 
-| Route | Purpose |
-|---|---|
-| `/dashboard` | Net worth chart, category bar, holdings grid (asset row opens read-only asset detail modal), price refresh |
-| `/analytics` | Bento grid: portfolio hero, category holding cards (opens asset detail), net worth chart, performance summary, price lookup |
-| `/transactions` | Sortable table, add/edit/delete, CSV export |
-| `/accounts` | Account CRUD |
-| `/profile` | User info, sign out, theme toggle, delete all data |
+| Route           | Purpose                                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `/dashboard`    | Net worth chart, category bar, holdings grid (asset row opens read-only asset detail modal), price refresh                  |
+| `/analytics`    | Bento grid: portfolio hero, category holding cards (opens asset detail), net worth chart, performance summary, price lookup |
+| `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                 |
+| `/accounts`     | Account CRUD                                                                                                                |
+| `/profile`      | User info, sign out, theme toggle, delete all data                                                                          |
 
 ### React Query Hook Pattern
 
@@ -150,9 +154,9 @@ Delete mutations should also invalidate their own resource key (e.g. `["accounts
 These values are shared with the API and iOS — renaming anything here is a **breaking change**:
 
 ```typescript
-type Category = "crypto" | "stocks" | "cash" | "realEstate" | "retirement"
-type AccountType = "cryptoExchange" | "brokerage" | "bank" | "retirement" | "other"
-type TransactionType = "buy" | "sell"
+type Category = "crypto" | "stocks" | "cash" | "realEstate" | "retirement";
+type AccountType = "cryptoExchange" | "brokerage" | "bank" | "retirement" | "other";
+type TransactionType = "buy" | "sell";
 ```
 
 Defined in `src/types/api.ts`. Mirror of backend schemas in `VaultTrackerAPI/app/schemas/`.

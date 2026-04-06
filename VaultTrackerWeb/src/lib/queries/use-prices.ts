@@ -21,9 +21,7 @@ export function usePriceLookup(symbol: string) {
   return useQuery({
     queryKey: ["price", symbol.toUpperCase()],
     queryFn: () =>
-      api.get<SinglePriceResponse>(
-        `/api/v1/prices/${encodeURIComponent(symbol.trim())}`
-      ),
+      api.get<SinglePriceResponse>(`/api/v1/prices/${encodeURIComponent(symbol.trim())}`),
     enabled: symbol.trim().length > 0,
   });
 }

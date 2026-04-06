@@ -27,11 +27,7 @@ import {
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(
-      QueryClientProvider,
-      { client: queryClient },
-      children
-    );
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
   };
 }
 
@@ -45,7 +41,12 @@ function makeQueryClient() {
 }
 
 const accountFixture: AccountResponse[] = [
-  { id: "acc-1", name: "Coinbase", account_type: "cryptoExchange", created_at: "2026-01-01T00:00:00Z" },
+  {
+    id: "acc-1",
+    name: "Coinbase",
+    account_type: "cryptoExchange",
+    created_at: "2026-01-01T00:00:00Z",
+  },
   { id: "acc-2", name: "Chase Checking", account_type: "bank", created_at: "2026-01-15T00:00:00Z" },
 ];
 
@@ -72,7 +73,12 @@ describe("useAccounts", () => {
 
 describe("useCreateAccount", () => {
   it("calls api.post with the correct path and body", async () => {
-    mockPost.mockResolvedValue({ id: "acc-3", name: "Kraken", account_type: "cryptoExchange", created_at: "" });
+    mockPost.mockResolvedValue({
+      id: "acc-3",
+      name: "Kraken",
+      account_type: "cryptoExchange",
+      created_at: "",
+    });
     const queryClient = makeQueryClient();
 
     const { result } = renderHook(() => useCreateAccount(), {

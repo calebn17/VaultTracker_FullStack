@@ -47,11 +47,7 @@ export function NetWorthChart({
               <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid
-            strokeDasharray="4 4"
-            className="stroke-border/80"
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="4 4" className="stroke-border/80" vertical={false} />
           <XAxis
             dataKey="t"
             type="number"
