@@ -20,6 +20,9 @@ dist/
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/hooks.json
+!.cursor/hooks/
+!.cursor/hooks/**
 
 # Web (Next.js) — source is tracked; ignore deps and build output
 VaultTrackerWeb/node_modules/
