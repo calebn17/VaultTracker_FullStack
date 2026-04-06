@@ -10,8 +10,9 @@ dangerous_patterns=(
   "git push.*--force"
   "DROP TABLE"
   "DROP DATABASE"
-  "curl.*|.*sh"
-  "wget.*|.*bash"
+  # Pipe download to shell (not arbitrary paths ending in .sh)
+  "\\bcurl\\b[^|]*\\|[^|]*\\bsh\\b"
+  "\\bwget\\b[^|]*\\|[^|]*\\bbash\\b"
 )
 
 for pattern in "${dangerous_patterns[@]}"; do

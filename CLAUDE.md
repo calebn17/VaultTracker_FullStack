@@ -61,7 +61,10 @@ Both API and iOS must agree on the debug token. In the API `.env`: `DEBUG_AUTH_E
 
 ## Cursor agent hooks
 
-- **[`.cursor/hooks.json`](.cursor/hooks.json)** registers **`beforeShellExecution`**: runs [`.cursor/hooks/block-dangerous.sh`](.cursor/hooks/block-dangerous.sh) before the agent runs a terminal command. It denies commands matching a small list (e.g. `rm -rf`, `git reset --hard`, forced push, pipe-to-shell curls). Requires **`jq`** on your PATH. See [Cursor hooks](https://cursor.com/docs/hooks).
+- **[`.cursor/hooks.json`](.cursor/hooks.json)** registers:
+  - **`beforeShellExecution`** — [`.cursor/hooks/block-dangerous.sh`](.cursor/hooks/block-dangerous.sh) blocks a small set of risky shell patterns (e.g. `rm -rf`, `git reset --hard`, forced push, curl/wget piped to shell).
+  - **`preToolUse`** (Write / StrReplace / etc.) — [`.cursor/hooks/protect-files.sh`](.cursor/hooks/protect-files.sh) blocks edits to protected paths (e.g. `.env*`, `.git/*`, lockfiles, `*.pem` / `*.key`, `secrets/*`).
+- Requires **`jq`** on your PATH. See [Cursor hooks](https://cursor.com/docs/hooks).
 
 ## Best practices
 
