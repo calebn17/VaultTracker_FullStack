@@ -42,6 +42,10 @@ The MVP builds a calculation engine on the backend and a dedicated page on the w
 
 Add relationship to `User` model: `fire_profile = relationship("FIREProfile", uselist=False, back_populates="user", cascade="all, delete-orphan")`.
 
+### `DELETE /users/me/data` behaviour
+
+`fire_profiles` **is included** in the data wipe. Rationale: a user resetting their financial data should start with a clean FIRE slate — stale income/expense assumptions from a prior portfolio would produce misleading projections. The delete handler in `app/routers/users.py` must add an explicit `db.query(FIREProfile).filter(FIREProfile.user_id == current_user.id).delete()` before the commit (the SQLAlchemy cascade does not fire on bulk deletes, so it must be explicit).
+
 ---
 
 ## 2. API Endpoints
@@ -86,9 +90,11 @@ Create or update (upsert) the user's FIRE inputs.
 ### `GET /fire/projection`
 Compute FIRE projection using saved profile + live portfolio data. **404** if no profile exists. Returns `FIREProjectionResponse`.
 
-**Response:**
+**Response (reachable case):**
 ```json
 {
+  "status": "reachable",
+  "unreachableReason": null,
   "inputs": {
     "currentAge": 32,
     "annualIncome": 145000,
@@ -111,7 +117,7 @@ Compute FIRE projection using saved profile + live portfolio data. **404** if no
   "fireTargets": {
     "leanFire": { "targetAmount": 1085000, "yearsToTarget": 10, "targetAge": 42 },
     "fire": { "targetAmount": 1550000, "yearsToTarget": 14, "targetAge": 46 },
-    "fatFire": { "targetAmount": 2325000, "yearsToTarget": 18, "targetAge": 50 }
+    "fatFire": { "targetAmount": 2325000, "yearsToTarget": null, "targetAge": null }
   },
   "projectionCurve": [
     { "age": 32, "year": 2026, "projectedValue": 312450 },
@@ -131,7 +137,32 @@ Compute FIRE projection using saved profile + live portfolio data. **404** if no
 }
 ```
 
-`goalAssessment` is `null` when `targetRetirementAge` is not set.
+**Response (unreachable case — annual savings ≤ 0):**
+```json
+{
+  "status": "unreachable",
+  "unreachableReason": "non_positive_savings",
+  "inputs": { ... },
+  "fireTargets": {
+    "leanFire": { "targetAmount": 1085000, "yearsToTarget": null, "targetAge": null },
+    "fire":     { "targetAmount": 1550000, "yearsToTarget": null, "targetAge": null },
+    "fatFire":  { "targetAmount": 2325000, "yearsToTarget": null, "targetAge": null }
+  },
+  "projectionCurve": [],
+  "monthlyBreakdown": { "monthlySurplus": 0, "monthsToFire": null },
+  "goalAssessment": null
+}
+```
+
+**`status` values:**
+- `"reachable"` — annual savings > 0; at least one FIRE tier is reachable within `PROJECTION_YEARS`. Individual tiers that are not reached within the window have `yearsToTarget: null` and `targetAge: null`.
+- `"unreachable"` — annual savings ≤ 0; no tier is computable. Web should replace the chart with the unreachable copy.
+
+**`unreachableReason` values:** `null` (reachable) | `"non_positive_savings"` (income ≤ expenses).
+
+`monthlyBreakdown.monthsToFire` is months to **Regular FIRE** specifically (25 × annual expenses), not the minimum across tiers. It is `null` when status is `"unreachable"` or Regular FIRE is not reached within `PROJECTION_YEARS`.
+
+`goalAssessment` is `null` when `targetRetirementAge` is not set, or when status is `"unreachable"`.
 
 ---
 
@@ -178,11 +209,11 @@ PROJECTION_YEARS = 30
 - Returns `None` if target not reached within projection window
 
 **`compute_goal_assessment(profile, curve, fire_target) -> dict | None`**
-- Only computed when `target_retirement_age` is set
+- Only computed when `target_retirement_age` is set and status is `"reachable"`
 - Checks projected value at goal age vs Regular FIRE target
 - `status`: "ahead" if projected > target, "on_track" if within 5%, "behind" otherwise
 - `gapAmount`: target − projected at goal age (negative means surplus)
-- `requiredSavingsRate`: back-solve for the savings rate needed to hit FIRE at goal age
+- `requiredSavingsRate`: solved via binary search on annual savings (bounds: 0 to `annualIncome`). For each candidate savings, run the same discrete yearly recursion — `V_{n+1} = V_n × (1 + real_return) + savings` — over `(target_retirement_age − current_age)` years starting from current net worth. Find the smallest annual savings where `V` at goal age ≥ Regular FIRE target. Express result as `requiredAnnualSavings / annualIncome`. Terminate search when interval is < $1.
 
 **`get_projection(user_id, db) -> FIREProjectionResponse`**
 - Orchestrator: fetches profile + dashboard data, runs all calculations, assembles response
@@ -191,7 +222,7 @@ PROJECTION_YEARS = 30
 
 - **Zero net worth:** Valid — projection starts from 0, driven by savings alone
 - **100% cash allocation:** Blended return = 2% nominal, −1% real. FIRE takes much longer.
-- **Expenses ≥ income:** Annual savings ≤ 0. FIRE is unreachable — return `yearsToTarget: null` and a clear message
+- **Expenses ≥ income:** Annual savings ≤ 0. Return `status: "unreachable"`, `unreachableReason: "non_positive_savings"`, all tier `yearsToTarget`/`targetAge` as `null`, empty `projectionCurve`, and `monthsToFire: null`
 - **No assets in portfolio:** Use 0 for net worth, skip allocation breakdown, use a default 7% blended return
 - **Target retirement age already passed current age:** Validation rejects this at the API layer
 
@@ -289,6 +320,7 @@ const fireInputSchema = z.object({
 | `app/services/fire_service.py` | Create | Calculation engine |
 | `app/api/fire.py` | Create | FastAPI router with 3 endpoints |
 | `app/main.py` | Edit | Register fire router |
+| `app/routers/users.py` | Edit | Add `FIREProfile` deletion to `DELETE /users/me/data` |
 | `tests/test_fire.py` | Create | Unit + integration tests |
 
 ### Web (`VaultTrackerWeb/`)
