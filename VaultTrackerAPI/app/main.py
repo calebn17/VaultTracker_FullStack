@@ -1,7 +1,7 @@
 # FastAPI application entry point for VaultTracker API.
 #
 # Routers included (all prefixed /api/v1):
-#   dashboard, accounts, assets, transactions, networth, users, analytics, prices
+#   dashboard, fire, accounts, assets, transactions, networth, users, analytics, prices
 #
 # Database tables are created on startup via SQLAlchemy's create_all.
 # CORS allowed origins come from settings (comma-separated). Tighten for production.
@@ -19,6 +19,7 @@ from app.routers import (
     analytics_router,
     assets_router,
     dashboard_router,
+    fire_router,
     networth_router,
     prices_router,
     transactions_router,
@@ -52,6 +53,7 @@ app.add_middleware(
 
 # Mount routers with /api/v1 prefix
 app.include_router(dashboard_router, prefix="/api/v1")
+app.include_router(fire_router, prefix="/api/v1")
 app.include_router(accounts_router, prefix="/api/v1")
 app.include_router(assets_router, prefix="/api/v1")
 app.include_router(transactions_router, prefix="/api/v1")

@@ -163,11 +163,11 @@ app/
   dependencies.py  # get_current_user — the auth dependency
   models/          # SQLAlchemy ORM models
   schemas/         # Pydantic request/response models
-  routers/         # accounts, assets, transactions, networth, dashboard, users, analytics, prices
-  services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service, dashboard_aggregate, fire_service
+  routers/         # accounts, assets, transactions, networth, dashboard, fire, users, analytics, prices
+  services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service, dashboard_aggregate, fire_service, fire_projection
 ```
 
-**FIRE calculator (in progress):** [`app/services/fire_service.py`](app/services/fire_service.py) holds spec constants and pure helpers (`compute_blended_return`, `compute_fire_targets`, `generate_projection_curve`, `find_crossover_year`, `compute_goal_assessment`) with no DB/HTTP — HTTP assembly comes in a later step. Verify: `./venv/bin/python -m pytest tests/test_fire.py -q`.
+**FIRE calculator:** Routes under `/api/v1/fire`: `GET/PUT /fire/profile`, `GET /fire/projection`. [`app/services/fire_service.py`](app/services/fire_service.py) is pure math; [`app/services/fire_projection.py`](app/services/fire_projection.py) builds the projection from the saved profile plus [`aggregate_dashboard`](app/services/dashboard_aggregate.py). Verify: `./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py -q`.
 
 ### Authentication
 
