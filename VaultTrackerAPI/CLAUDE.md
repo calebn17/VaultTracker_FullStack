@@ -164,8 +164,10 @@ app/
   models/          # SQLAlchemy ORM models
   schemas/         # Pydantic request/response models
   routers/         # accounts, assets, transactions, networth, dashboard, users, analytics, prices
-  services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service
+  services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service, dashboard_aggregate, fire_service
 ```
+
+**FIRE calculator (in progress):** [`app/services/fire_service.py`](app/services/fire_service.py) holds spec constants and pure helpers (`compute_blended_return`, `compute_fire_targets`, `generate_projection_curve`, `find_crossover_year`, `compute_goal_assessment`) with no DB/HTTP — HTTP assembly comes in a later step. Verify: `./venv/bin/python -m pytest tests/test_fire.py -q`.
 
 ### Authentication
 
