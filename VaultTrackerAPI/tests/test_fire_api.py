@@ -8,6 +8,25 @@ def test_get_fire_profile_404_without_row(client, test_user, db_session):
     assert r.status_code == 404
 
 
+def test_delete_user_data_removes_fire_profile(client, test_user, db_session):
+    client.put(
+        "/api/v1/fire/profile",
+        json={
+            "currentAge": 33,
+            "annualIncome": 90_000,
+            "annualExpenses": 45_000,
+            "targetRetirementAge": 55,
+        },
+    )
+    assert client.get("/api/v1/fire/profile").status_code == 200
+
+    r_del = client.delete("/api/v1/users/me/data")
+    assert r_del.status_code == 204
+
+    r = client.get("/api/v1/fire/profile")
+    assert r.status_code == 404
+
+
 def test_put_get_fire_profile_round_trip(client, test_user, db_session):
     body = {
         "currentAge": 35,

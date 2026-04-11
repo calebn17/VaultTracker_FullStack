@@ -167,7 +167,7 @@ app/
   services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service, dashboard_aggregate, fire_service, fire_projection
 ```
 
-**FIRE calculator:** Routes under `/api/v1/fire`: `GET/PUT /fire/profile`, `GET /fire/projection`. [`app/services/fire_service.py`](app/services/fire_service.py) is pure math; [`app/services/fire_projection.py`](app/services/fire_projection.py) builds the projection from the saved profile plus [`aggregate_dashboard`](app/services/dashboard_aggregate.py). Verify: `./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py -q`.
+**FIRE calculator:** Routes under `/api/v1/fire`: `GET/PUT /fire/profile`, `GET /fire/projection`. [`app/services/fire_service.py`](app/services/fire_service.py) is pure math; [`app/services/fire_projection.py`](app/services/fire_projection.py) builds the projection from the saved profile plus [`aggregate_dashboard`](app/services/dashboard_aggregate.py). `DELETE /api/v1/users/me/data` removes the user’s `fire_profiles` row via an explicit bulk delete (same pattern as other wipe tables). Verify: `./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py -q`.
 
 ### Authentication
 
