@@ -127,3 +127,89 @@ export interface AccountUpdate {
   name?: string;
   account_type?: AccountType;
 }
+
+/** FIRE calculator PUT body / form — infer from Zod in `@/lib/fire/fire-input-schema`. */
+export type { FireProfileInputForm } from "@/lib/fire/fire-input-schema";
+
+export type FireProjectionStatus = "reachable" | "beyond_horizon" | "unreachable";
+
+export interface FireProfileResponse {
+  id: string;
+  currentAge: number;
+  annualIncome: number;
+  annualExpenses: number;
+  targetRetirementAge: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FireProjectionInputs {
+  currentAge: number;
+  annualIncome: number;
+  annualExpenses: number;
+  currentNetWorth: number;
+  targetRetirementAge: number | null;
+}
+
+export interface FireAllocationSlice {
+  value: number;
+  percentage: number;
+  expectedReturn: number;
+}
+
+export interface FireAllocation {
+  crypto: FireAllocationSlice;
+  stocks: FireAllocationSlice;
+  cash: FireAllocationSlice;
+  realEstate: FireAllocationSlice;
+  retirement: FireAllocationSlice;
+}
+
+export interface FireTargetTier {
+  targetAmount: number;
+  yearsToTarget: number | null;
+  targetAge: number | null;
+}
+
+export interface FireTargets {
+  leanFire: FireTargetTier;
+  fire: FireTargetTier;
+  fatFire: FireTargetTier;
+}
+
+export interface FireProjectionCurvePoint {
+  age: number;
+  year: number;
+  projectedValue: number;
+}
+
+export interface FireMonthlyBreakdown {
+  monthlySurplus: number;
+  monthsToFire: number | null;
+}
+
+export type FireGoalAssessmentStatus = "ahead" | "on_track" | "behind";
+
+export interface FireGoalAssessment {
+  targetAge: number;
+  requiredSavingsRate: number;
+  currentSavingsRate: number;
+  status: FireGoalAssessmentStatus;
+  gapAmount: number;
+}
+
+export interface FireProjectionResponse {
+  status: FireProjectionStatus;
+  unreachableReason: "non_positive_savings" | null;
+  inputs: FireProjectionInputs;
+  allocation: FireAllocation | null;
+  blendedReturn: number | null;
+  realBlendedReturn: number | null;
+  inflationRate: number | null;
+  annualSavings: number | null;
+  savingsRate: number | null;
+  fireTargets: FireTargets;
+  projectionCurve: FireProjectionCurvePoint[];
+  monthlyBreakdown: FireMonthlyBreakdown;
+  goalAssessment: FireGoalAssessment | null;
+}
