@@ -12,7 +12,7 @@
 
 ---
 
-## Execution discipline (`.cursor/rules/vaulttracker-plan-todos.mdc`)
+## Execution discipline (`.cursor/rules/vaulttracker.mdc` — Plans and todo granularity)
 
 - **One todo = one commit** — Each item below is a single logical commit; wording maps to the suggested commit subject.
 - **Stop for review** — After each commit, pause: summarize what changed and wait for the user before the next item. **Exception:** batch only if the user explicitly asks to skip review, batch, or “do the rest.”
@@ -23,7 +23,7 @@
 
 2. **`feat(dashboard): open AssetDetailDialog on asset row click`** — Update `src/components/dashboard/holdings-grid.tsx` and extend the test file with the HoldingsGrid describe block.
 
-3. **`docs(web): note asset detail modal in CLAUDE.md`** — After the user confirms the feature or asks for documentation/commits: one short bullet in `VaultTrackerWeb/CLAUDE.md` (repo root) per `.cursor/rules/vaulttracker-claude-sync.mdc`.
+3. **`docs(web): note asset detail modal in CLAUDE.md`** — After the user confirms the feature or asks for documentation/commits: one short bullet in `VaultTrackerWeb/CLAUDE.md` (repo root) per `.cursor/rules/vaulttracker.mdc` (CLAUDE.md sync).
 
 ---
 

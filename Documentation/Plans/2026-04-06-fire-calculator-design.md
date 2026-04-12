@@ -31,8 +31,8 @@ The MVP builds a calculation engine on the backend and a dedicated page on the w
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
-| `id` | UUID | PK | |
-| `user_id` | UUID | FK → users, unique | One profile per user |
+| `id` | String | PK | UUID string, same pattern as `users.id` / other tables |
+| `user_id` | String | FK → `users.id`, unique | One profile per user |
 | `current_age` | Integer | NOT NULL | |
 | `annual_income` | Float | NOT NULL | Post-tax |
 | `annual_expenses` | Float | NOT NULL | Drives FIRE number |
@@ -89,6 +89,8 @@ Create or update (upsert) the user's FIRE inputs.
 
 ### `GET /fire/projection`
 Compute FIRE projection using saved profile + live portfolio data. **404** if no profile exists. Returns `FIREProjectionResponse`.
+
+**Portfolio inputs:** Category **values** and **total net worth** must come from the **same aggregation as `GET /api/v1/dashboard`** (`categoryTotals` per category, `totalNetWorth`). Derive each category **percentage** as `categoryValue / totalNetWorth` when `totalNetWorth > 0`; if net worth is 0, follow the empty-portfolio rule in §3 (no fabricated percentages). Prefer a **shared helper** used by both the dashboard router and `fire_service` so FIRE and the dashboard never disagree.
 
 **Response (reachable case):**
 ```json
@@ -155,14 +157,15 @@ Compute FIRE projection using saved profile + live portfolio data. **404** if no
 ```
 
 **`status` values:**
-- `"reachable"` — annual savings > 0; at least one FIRE tier is reachable within `PROJECTION_YEARS`. Individual tiers that are not reached within the window have `yearsToTarget: null` and `targetAge: null`.
-- `"unreachable"` — annual savings ≤ 0; no tier is computable. Web should replace the chart with the unreachable copy.
+- `"reachable"` — annual savings > 0 **and** at least one FIRE tier crosses its target within `PROJECTION_YEARS`. Tiers not reached in that window still have `yearsToTarget: null` and `targetAge: null`.
+- `"beyond_horizon"` — annual savings > 0 but **no** tier crosses within `PROJECTION_YEARS` (all three have `yearsToTarget` / `targetAge` null). Return a normal `projectionCurve` and target **amounts**; web should explain that no target is hit within the projection window (copy distinct from non-positive savings).
+- `"unreachable"` — annual savings ≤ 0; no meaningful timeline. Web should replace the chart with the unreachable copy.
 
-**`unreachableReason` values:** `null` (reachable) | `"non_positive_savings"` (income ≤ expenses).
+**`unreachableReason` values:** `null` when status is `"reachable"` or `"beyond_horizon"` | `"non_positive_savings"` only when status is `"unreachable"` (income ≤ expenses).
 
-`monthlyBreakdown.monthsToFire` is months to **Regular FIRE** specifically (25 × annual expenses), not the minimum across tiers. It is `null` when status is `"unreachable"` or Regular FIRE is not reached within `PROJECTION_YEARS`.
+`monthlyBreakdown.monthsToFire` is months to **Regular FIRE** specifically (25 × annual expenses), not the minimum across tiers. It is `null` when status is `"unreachable"` or `"beyond_horizon"`, or when status is `"reachable"` but Regular FIRE is not reached within `PROJECTION_YEARS`.
 
-`goalAssessment` is `null` when `targetRetirementAge` is not set, or when status is `"unreachable"`.
+`goalAssessment` is `null` when `targetRetirementAge` is not set, or when status is `"unreachable"`. When status is `"beyond_horizon"`, still compute `goalAssessment` if `targetRetirementAge` is set (projected value at goal age uses the same discrete return/savings model as the chart). When the goal age is past the fixed projection window, `goalAssessment.computedBeyondProjectionHorizon` is `true` so clients can label extrapolated figures.
 
 ---
 
@@ -190,7 +193,7 @@ PROJECTION_YEARS = 30
 ### Core Functions
 
 **`compute_blended_return(category_allocations: dict) -> tuple[float, float]`**
-- Input: `{category: {value, percentage}}` from dashboard data
+- Input: `{category: {value, percentage}}` built from dashboard totals (see `GET /fire/projection` — same numbers as `GET /dashboard`).
 - Weighted average: `Σ(percentage/100 × DEFAULT_RETURNS[category])`
 - Returns `(nominal_return, real_return)` where `real_return = nominal - DEFAULT_INFLATION`
 
@@ -209,14 +212,14 @@ PROJECTION_YEARS = 30
 - Returns `None` if target not reached within projection window
 
 **`compute_goal_assessment(profile, curve, fire_target) -> dict | None`**
-- Only computed when `target_retirement_age` is set and status is `"reachable"`
+- Only computed when `target_retirement_age` is set and status is `"reachable"` or `"beyond_horizon"`
 - Checks projected value at goal age vs Regular FIRE target
 - `status`: "ahead" if projected > target, "on_track" if within 5%, "behind" otherwise
 - `gapAmount`: target − projected at goal age (negative means surplus)
 - `requiredSavingsRate`: solved via binary search on annual savings (bounds: 0 to `annualIncome`). For each candidate savings, run the same discrete yearly recursion — `V_{n+1} = V_n × (1 + real_return) + savings` — over `(target_retirement_age − current_age)` years starting from current net worth. Find the smallest annual savings where `V` at goal age ≥ Regular FIRE target. Express result as `requiredAnnualSavings / annualIncome`. Terminate search when interval is < $1.
 
 **`get_projection(user_id, db) -> FIREProjectionResponse`**
-- Orchestrator: fetches profile + dashboard data, runs all calculations, assembles response
+- Orchestrator: loads profile, obtains category totals + net worth via the **same logic as the dashboard** (shared helper), runs all calculations, sets `status` to `"reachable"` | `"beyond_horizon"` | `"unreachable"` from tier crossovers and savings sign, assembles response
 
 ### Edge Cases
 
@@ -224,6 +227,7 @@ PROJECTION_YEARS = 30
 - **100% cash allocation:** Blended return = 2% nominal, −1% real. FIRE takes much longer.
 - **Expenses ≥ income:** Annual savings ≤ 0. Return `status: "unreachable"`, `unreachableReason: "non_positive_savings"`, all tier `yearsToTarget`/`targetAge` as `null`, empty `projectionCurve`, and `monthsToFire: null`
 - **No assets in portfolio:** Use 0 for net worth, skip allocation breakdown, use a default 7% blended return
+- **Positive savings but no tier within `PROJECTION_YEARS`:** `status: "beyond_horizon"`; non-empty `projectionCurve`; all tier `yearsToTarget` / `targetAge` null; `monthsToFire: null`
 - **Target retirement age already passed current age:** Validation rejects this at the API layer
 
 ---
@@ -244,7 +248,7 @@ Home | Analytics | FIRE Calc | Transactions | Accounts
 Two-column layout (stacks on mobile):
 
 **Left Panel — Inputs:**
-- Hero headline: "You can achieve Financial Independence in **X YEARS** by age **Y**" (updates dynamically from projection results)
+- Hero headline: "You can achieve Financial Independence in **X YEARS** by age **Y**" when Regular FIRE is reached within the window; for `beyond_horizon`, use alternate copy (no fake years); for `unreachable`, hide or replace with the savings warning
 - Form fields:
   - Current Age (number, "Yrs" suffix)
   - Annual Income, Post-Tax (currency input)
@@ -276,7 +280,8 @@ Two-column layout (stacks on mobile):
 1. **First visit (no profile):** Empty form, no results. User fills in inputs and clicks "Run Simulation."
 2. **Return visit (profile exists):** Form pre-filled from saved inputs. Projection auto-runs on page load using saved inputs + current portfolio data. Results display immediately.
 3. **Changing inputs:** User edits form fields and clicks "Run Simulation" to save new inputs and recompute.
-4. **Unreachable FIRE:** If savings rate is zero or negative, show a message instead of the chart: "At your current savings rate, FIRE is not achievable. Consider reducing expenses or increasing income."
+4. **Unreachable FIRE (`status: "unreachable"`):** Show a message instead of the chart: "At your current savings rate, FIRE is not achievable. Consider reducing expenses or increasing income."
+5. **Beyond horizon (`status: "beyond_horizon"`):** Show the chart plus copy that no Lean/Regular/Fat target is reached within the 30-year window (distinct from the non-positive-savings message).
 
 ### Components
 
@@ -298,7 +303,8 @@ const fireInputSchema = z.object({
   currentAge: z.number().int().min(18).max(100),
   annualIncome: z.number().min(0),
   annualExpenses: z.number().min(0),
-  targetRetirementAge: z.number().int().min(19).max(100).nullable(),
+  // No fixed min here — e.g. currentAge 18 allows target 19 via refine below (matches API).
+  targetRetirementAge: z.number().int().max(100).nullable(),
 }).refine(
   (data) => !data.targetRetirementAge || data.targetRetirementAge > data.currentAge,
   { message: "Target age must be greater than current age", path: ["targetRetirementAge"] }
@@ -317,8 +323,11 @@ const fireInputSchema = z.object({
 | `app/models/__init__.py` | Edit | Import FIREProfile |
 | `app/models/user.py` | Edit | Add `fire_profile` relationship |
 | `app/schemas/fire.py` | Create | Pydantic schemas for input/response |
+| `app/services/dashboard_aggregate.py` | Create | Shared aggregation for `GET /dashboard` (category totals, `totalNetWorth`, grouped holdings); `fire_service` uses the totals + net worth slice only |
 | `app/services/fire_service.py` | Create | Calculation engine |
-| `app/api/fire.py` | Create | FastAPI router with 3 endpoints |
+| `app/routers/dashboard.py` | Edit | Call `dashboard_aggregate` instead of inlining the asset loop |
+| `app/routers/fire.py` | Create | FastAPI router with 3 endpoints (same layout as other resources) |
+| `app/routers/__init__.py` | Edit | Export `fire_router` |
 | `app/main.py` | Edit | Register fire router |
 | `app/routers/users.py` | Edit | Add `FIREProfile` deletion to `DELETE /users/me/data` |
 | `tests/test_fire.py` | Create | Unit + integration tests |
@@ -337,6 +346,8 @@ const fireInputSchema = z.object({
 | `src/types/api.ts` | Edit | Add FIRE types |
 | `src/components/layout/site-header.tsx` | Edit | Add FIRE Calc nav link |
 | `src/components/layout/mobile-nav.tsx` | Edit | Add FIRE Calc mobile nav |
+| `src/components/fire/__tests__/*.tsx` | Create | RTL tests for FIRE components (forms, conditional results UI) |
+| `e2e/fire.spec.ts` | Create | Playwright UI flows for `/fire` (see §6) |
 
 ---
 
@@ -350,7 +361,7 @@ const fireInputSchema = z.object({
 - Projection curve generation over 30 years
 - Crossover year detection (found and not found)
 - Goal assessment (ahead/on_track/behind)
-- Edge cases: zero net worth, negative savings, 100% single asset class, empty portfolio
+- Edge cases: zero net worth, negative savings, 100% single asset class, empty portfolio, `beyond_horizon` status when no tier crosses within `PROJECTION_YEARS`
 
 **Integration tests (API endpoints):**
 - PUT profile → GET profile round-trip
@@ -358,12 +369,44 @@ const fireInputSchema = z.object({
 - GET projection with valid profile
 - GET projection with no profile → 404
 - GET projection with zero/negative savings → unreachable FIRE response
+- GET projection with positive savings but no tier within `PROJECTION_YEARS` → `status: "beyond_horizon"`, non-empty curve, all tier timelines null
 
-### Web Tests
+### Web — unit and hooks (Vitest)
 
-- Form validation (Zod schema) via Vitest
-- React Query hook behavior (mock API responses)
-- Component rendering with projection data
+- Form validation: `fireInputSchema` (Zod) in `src/lib/__tests__/` or next to schema
+- React Query: `useFireProfile` / `useFireProjection` / `useSaveFireProfile` with mocked `ApiClient` (`src/lib/queries/__tests__/`)
+
+### Web — UI component tests (Vitest + React Testing Library)
+
+Use **Testing Library** (`@testing-library/react`, `user-event`) in `src/components/fire/__tests__/` to exercise visible behavior without a browser. Wrap with the same providers the page uses (e.g. `QueryClientProvider`, auth/api mocks).
+
+Suggested cases:
+
+- **Inputs form:** invalid target age shows validation message; submit calls save mutation with expected payload (mock `useMutation`).
+- **Results region:** when projection query returns `status: "reachable"`, chart (or its container), summary cards, and targets table show expected labels/values from fixture data.
+- **`unreachable`:** unreachable copy is shown; chart region hidden or replaced (match implementation).
+- **`beyond_horizon`:** chart still present; distinct message or banner vs `unreachable` (assert copy / `role` / test id as appropriate).
+- **Hero headline:** switches between success-style headline, beyond-horizon copy, and hidden/disabled state for `unreachable` (fixture-driven).
+
+### Web — E2E UI tests (Playwright)
+
+Add **`e2e/fire.spec.ts`** following [`VaultTrackerWeb/Documentation/Testing Plan.md`](../../VaultTrackerWeb/Documentation/Testing%20Plan.md): **Chromium**, `baseURL` localhost:3000, debug session via **client navigation** (not a cold `page.goto("/fire")` after login — same caveat as other e2e specs).
+
+**Auth:** `debugLoginToDashboard` then navigate to FIRE via **header or mobile nav** link (`FIRE Calc` / `href="/fire"`), consistent with [`e2e/dashboard.spec.ts`](../../VaultTrackerWeb/e2e/dashboard.spec.ts).
+
+**API strategy:**
+
+- **Stubbed (recommended for CI):** `page.route` for `GET/PUT /api/v1/fire/profile` and `GET /api/v1/fire/projection` with JSON fixtures (`reachable`, `unreachable`, `beyond_horizon`) so tests do not require a running API or seeded portfolio. Optionally stub `GET /api/v1/dashboard` if the page fetches it separately for read-only net worth / allocation.
+- **Integrated (optional local):** same flows against real `NEXT_PUBLIC_API_URL` + API with `DEBUG_AUTH_ENABLED` and seeded data — document as manual or nightly, not required for default CI.
+
+**E2E scenarios (minimal set):**
+
+1. After debug login, **FIRE Calc** nav opens `/fire` and shows the inputs form (heading or main landmark).
+2. **Run Simulation** with stubs: profile PUT returns 200; projection GET returns `reachable` — assert a visible result (e.g. table row, stat text, or chart svg) tied to fixture values.
+3. Stub **`unreachable`** — assert savings warning is visible and chart is not (per UI spec).
+4. Stub **`beyond_horizon`** — assert chart (or projection area) visible and horizon-specific copy is present.
+
+**Commands:** `npm run test:e2e` (or `npx playwright test e2e/fire.spec.ts` from `VaultTrackerWeb/`). Align with existing `playwright.config.ts` `webServer` / `reuseExistingServer` behavior.
 
 ### Manual Verification
 
@@ -375,6 +418,8 @@ const fireInputSchema = z.object({
 6. Verify values match manual calculation
 7. Refresh page — verify auto-load works with saved profile
 8. Test edge cases: zero income, expenses > income
+9. Scenario with positive savings but no FIRE line crossed within 30 years → `beyond_horizon` messaging + chart still visible
+10. From `VaultTrackerWeb/`: `npx playwright test e2e/fire.spec.ts` (or full `npm run test:e2e`) with app running or via Playwright `webServer`
 
 ---
 

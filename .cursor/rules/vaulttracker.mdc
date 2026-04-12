@@ -1,0 +1,148 @@
+---
+description: VaultTracker agent rules — change communication, design for scale, security, plans/todos, pre-commit lint, CLAUDE.md sync, Web/API pair-programming checkpoints
+alwaysApply: true
+---
+
+# VaultTracker — agent rules
+
+Consolidated project guidance for Cursor. All sections apply unless the user asks for minimal output or to skip review.
+
+---
+
+## Change communication
+
+When you make or review code changes in this repository:
+
+1. **Keep the user in the loop** — For each logical batch of work (a feature slice, a refactor phase, or a fix), briefly state what you are doing or just did so they can follow along without reading every hunk.
+
+2. **High-level diff summary** — After edits, summarize the **diff** in plain language:
+   - **Files touched** (paths or areas: API, Home, tests, etc.)
+   - **Behavior change** (what the app or tests do differently now)
+   - **Why** (spec, bug, cleanup) when it is not obvious
+
+   Prefer short bullets or a few sentences per area; do not paste the entire patch unless asked.
+
+3. **Order** — Present summaries in a sensible order (e.g. types/contracts → networking → services → UI → tests → config).
+
+4. **Checkpoints** — After risky or user-visible changes (environment URLs, auth, data models), note what to **build, run, or test** to verify.
+
+This complements phase-specific plans (e.g. iOS Backend 2.0 refactor) and should apply to all VaultTracker work unless the user asks for minimal output only.
+
+---
+
+## Design for scale
+
+- **Design for scale.** Prefer patterns that stay sound as portfolios and traffic grow: respect existing layering (API services vs routers; Web data hooks vs UI; iOS managers vs views), avoid unbounded queries and accidental N+1 or O(n²) paths where lists and aggregations are involved, and use pagination, batching, caching, and indexing in line with how each subproject already handles reads and writes. When a shortcut trades clarity or performance for speed, call that out and fix it before it becomes load-bearing.
+
+Aligned with root [`CLAUDE.md`](../../CLAUDE.md) **Best practices**.
+
+---
+
+## Security
+
+- **Security.** Never commit secrets, API keys, or production credentials; keep `.env*`, private keys, and service tokens out of repos, screenshots, and chat. On the **API**, verify identity on every protected route (Firebase JWT or the documented local debug path only where intended), scope every read/write by `user_id`, validate and bound inputs at boundaries, and return errors that do not leak stack traces, tokens, or other users’ data. On **clients** (Web/iOS), use TLS to the API, follow existing auth flows, and avoid logging PII, tokens, or full payloads.
+
+Aligned with root [`CLAUDE.md`](../../CLAUDE.md) **Best practices**.
+
+---
+
+## Plans and todo granularity
+
+When you **create or execute a plan** (including `TodoWrite` / task lists in chat):
+
+### Todo items must be committable units
+
+- **One bullet = one logical commit** — Each todo should represent a coherent change that could be committed on its own (tests + implementation for that slice, or one isolated refactor), not a vague mega-task.
+- **Split large work** — Prefer several small todos over one todo that mixes unrelated files or concerns.
+- **Name todos for the diff** — Wording should map clearly to what would appear in a commit message (e.g. “Add smart PUT handler tests” not “Do backend”).
+
+### Todo items must be testable
+
+- **Verifiable completion** — Each todo must spell out (implicitly or in the plan) how you know it is done: automated tests, lint/build, a manual check, or another observable outcome — not an open-ended “improve X” with no check.
+- **Prefer runnable proof for code** — When the slice changes application or API behavior, default to including or extending **tests** (or an equivalent automated check) in that same todo so the commit is both committable and falsifiable.
+
+### Stop for review after each todo
+
+- **After completing a single todo item**, **pause**: summarize what changed, then **wait for the user to review** before starting the next item.
+- **Exception** — Only continue through multiple todos without stopping if the user explicitly asks to batch, skip review, or “do the rest.”
+
+This pairs with **Change communication** (what to summarize) and optional checkpoint modes in **Web implementation (pair programming)** below.
+
+---
+
+## CLAUDE.md sync
+
+When **a plan or implementation slice is finished** (user confirms completion, or you deliver the last planned step), **or** when the user **asks you to make commits** (or prepare a commit / PR):
+
+**Before every commit** — Run linting (and each subproject’s usual static checks, e.g. typecheck) for **all** areas your diff touches; fix failures before committing unless the user explicitly approves an exception.
+
+1. **Update documentation in `CLAUDE.md`** so the next session stays accurate — commands, architecture notes, env vars, new scripts, or workflows you added or changed.
+
+2. **Choose the file:**
+   - Prefer the **local** `CLAUDE.md` for the subproject you touched, if it exists: `VaultTrackerAPI/CLAUDE.md`, `VaultTrackerWeb/CLAUDE.md`, `VaultTrackerIOS/VaultTracker/CLAUDE.md`.
+   - If there is **no** `CLAUDE.md` in that subproject, update the **repository root** `CLAUDE.md`.
+
+3. **What to add** — Short, durable bullets: new files, new commands, behavior changes, how to verify. Do **not** paste full plans or duplicate long specs; point to existing docs when detail belongs elsewhere.
+
+4. **Edge case** — Pure typo or formatting-only edits may omit `CLAUDE.md` unless the user asked for commits (then ensure the commit message still describes the change).
+
+This complements **Change communication** (session summaries) with **persistent** subproject context.
+
+---
+
+## Web implementation (pair programming / learning)
+
+Use this when implementing or extending **VaultTrackerWeb** or **backend endpoints** that exist primarily for the web client (e.g. smart transaction update). It complements **Change communication** above.
+
+### High-level architecture (for learning)
+
+```mermaid
+flowchart LR
+  subgraph client [Browser]
+    Next[Next.js App Router]
+    FB[Firebase Auth Web SDK]
+    RQ[TanStack Query]
+    Next --> FB
+    Next --> RQ
+  end
+  subgraph api [VaultTrackerAPI]
+    FastAPI[FastAPI /api/v1]
+    Svc[Services layer]
+    DB[(PostgreSQL)]
+    Cache[In-memory TTL cache]
+    FastAPI --> Svc
+    Svc --> DB
+    FastAPI --> Cache
+  end
+  FB -->|ID token JWT Bearer| FastAPI
+  RQ -->|fetch + Authorization| FastAPI
+```
+
+- **Thin client:** The web app does not resolve assets/accounts, join data, or compute net worth. It renders API responses and sends CRUD/smart payloads the backend validates and applies.
+- **Identity:** Same Firebase project as iOS. The backend verifies the JWT (or debug bypass locally) and scopes all rows by `user_id`.
+- **State:** Server-fetched data lives in **TanStack Query** (cache, refetch, mutations with invalidation). Theme and auth user/session stay in **React context** (or `next-themes` for appearance).
+- **Backend:** Routers stay thin; **services** own resolution, snapshots, and price calls; **cache** speeds read-heavy routes until writes invalidate per user.
+
+### Learning checkpoints (pair-programming pauses)
+
+The **Web app implementation** plan defines checkpoints **CP-B1** … **CP-D1** (full table in `.cursor/plans/`, file name `web_app_implementation_start_*.plan.md`).
+
+- **Default:** A plain **“execute”** may ship work in **larger batches**; still give high-level summaries per **Change communication** above. The first full VaultTrackerWeb build was done that way—**checkpoints were not used as live stops**.
+- **Checkpoint mode:** When the user says **“use the plan checkpoints”**, **“pause after each CP”**, or similar, work in **small batches** and **stop** after each checkpoint. At each stop explain **what** changed, **why** it matters, and **how to verify** when helpful. They may ask for deeper detail before **continue**.
+- **Retrospective:** They can ask for a walkthrough in CP order **without new code** to map each stop to files already in the repo.
+
+Summary labels:
+
+| Label | Area | Typical stop-after |
+|-------|------|-------------------|
+| CP-B1/B2 | API | `PUT …/transactions/{id}/smart` + `smart_update` + tests |
+| CP-W1–W6 | Web | Scaffold → client/types → providers → shell → dashboard → transactions |
+| CP-D1 | Docs | Spec + System Design contract for smart PUT |
+
+If the plan file differs from this rule, **follow the plan** and update this rule when the checkpoint scheme changes.
+
+### Related docs
+
+- [VaultTrackerWeb/Documentation/Web App Spec.md](VaultTrackerWeb/Documentation/Web%20App%20Spec.md)
+- [VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md](VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md)
+- [Documentation/VaultTracker System Design.md](Documentation/VaultTracker%20System%20Design.md)
