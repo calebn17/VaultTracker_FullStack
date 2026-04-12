@@ -70,7 +70,13 @@ Both API and iOS must agree on the debug token. In the API `.env`: `DEBUG_AUTH_E
 
 - **Avoid duplicating code.** When the same logic appears in more than one place, extract it into a shared helper, utility, or abstraction (service layer, hook, extension, etc.) so behavior stays consistent and fixes land in one place.
 
+- **Design for testability.** Keep deterministic logic in small units with explicit inputs and outputs; push I/O (HTTP, DB, filesystem, device APIs) to the edges so tests can use fakes, fixtures, or narrow integration slices. Avoid wiring the whole stack inside constructors or hidden singletons when a seam (injected dependency, factory, or thin adapter) keeps the same feature easier to verify and to land in committable steps.
+
 - **Write tests that can fail and that matter.** Each test should exercise real behavior: given a concrete **input**, assert a distinct **expected outcome** from the code under test. Skip tests added only to pad coverage or “have a test”—and avoid tautologies (e.g. comparing a literal to itself or re-stating constants without invoking production logic). If breaking the implementation would not plausibly turn the test red, the test is not doing useful work.
+
+- **Design for scale.** Prefer patterns that stay sound as portfolios and traffic grow: respect existing layering (API services vs routers; Web data hooks vs UI; iOS managers vs views), avoid unbounded queries and accidental N+1 or O(n²) paths where lists and aggregations are involved, and use pagination, batching, caching, and indexing in line with how each subproject already handles reads and writes. When a shortcut trades clarity or performance for speed, call that out and fix it before it becomes load-bearing.
+
+- **Security.** Never commit secrets, API keys, or production credentials; keep `.env*`, private keys, and service tokens out of repos, screenshots, and chat. On the **API**, verify identity on every protected route (Firebase JWT or the documented local debug path only where intended), scope every read/write by `user_id`, validate and bound inputs at boundaries, and return errors that do not leak stack traces, tokens, or other users’ data. On **clients** (Web/iOS), use TLS to the API, follow existing auth flows, and avoid logging PII, tokens, or full payloads.
 
 ## Quick Commands
 
