@@ -2,6 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import React from "react";
+import { ApiError } from "@/lib/api-client";
 import type { FireProfileResponse, FireProjectionResponse } from "@/types/api";
 
 const mockGet = vi.fn();
@@ -88,6 +89,19 @@ describe("useFireProfile", () => {
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/fire/profile");
     expect(result.current.data?.currentAge).toBe(35);
+  });
+
+  it("treats 404 as no profile (null data)", async () => {
+    mockGet.mockRejectedValue(new ApiError("not found", 404));
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useFireProfile(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toBeNull();
   });
 });
 

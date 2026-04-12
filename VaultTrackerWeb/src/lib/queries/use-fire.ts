@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "@/contexts/api-client-context";
+import { ApiError } from "@/lib/api-client";
 import type {
   FireProfileInputForm,
   FireProfileResponse,
@@ -10,7 +11,16 @@ export function useFireProfile() {
   const api = useApiClient();
   return useQuery({
     queryKey: ["fire", "profile"],
-    queryFn: () => api.get<FireProfileResponse>("/api/v1/fire/profile"),
+    queryFn: async () => {
+      try {
+        return await api.get<FireProfileResponse>("/api/v1/fire/profile");
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) {
+          return null;
+        }
+        throw e;
+      }
+    },
     retry: false,
   });
 }

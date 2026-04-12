@@ -10,7 +10,8 @@ from app.services.dashboard_aggregate import aggregate_dashboard
 def test_aggregate_dashboard_sums_categories_and_skips_empty_positions(
     db_session: Session,
 ) -> None:
-    # Two funded assets count toward totals; a dust position (both fields < 1e-9) is omitted.
+    # Two funded assets count toward totals; a dust position (both fields < 1e-9)
+    # is omitted.
     user = User(firebase_id="dash-agg-user")
     db_session.add(user)
     db_session.commit()

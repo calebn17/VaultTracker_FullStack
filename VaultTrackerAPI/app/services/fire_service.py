@@ -206,9 +206,7 @@ def compute_goal_assessment(
     gap_amount = fire_target - projected
     status = _goal_status(projected, fire_target)
 
-    current_rate = (
-        annual_savings / annual_income if annual_income > 0 else 0.0
-    )
+    current_rate = annual_savings / annual_income if annual_income > 0 else 0.0
 
     required_rate = _required_annual_savings_rate(
         net_worth=net_worth,

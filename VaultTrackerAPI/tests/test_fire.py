@@ -185,7 +185,8 @@ def test_required_savings_rate_binary_search_flat_return() -> None:
 
 
 def test_compute_goal_assessment_extrapolates_when_goal_past_curve() -> None:
-    # Curve has 5 points; goal at +10 years still gets an assessment via _value_at_horizon.
+    # Curve has 5 points; goal at +10 years still gets an assessment via
+    # _value_at_horizon.
     profile = {
         "current_age": 30,
         "target_retirement_age": 40,

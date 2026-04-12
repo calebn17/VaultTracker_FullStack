@@ -196,6 +196,8 @@ export interface FireGoalAssessment {
   currentSavingsRate: number;
   status: FireGoalAssessmentStatus;
   gapAmount: number;
+  /** True when goal age is past the chart window; figures use the same model extrapolated. */
+  computedBeyondProjectionHorizon: boolean;
 }
 
 export interface FireProjectionResponse {

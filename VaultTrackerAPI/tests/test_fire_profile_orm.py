@@ -9,7 +9,8 @@ from app.models.user import User
 def test_fire_profile_round_trip_persist_and_query_by_user_id(
     db_session: Session,
 ) -> None:
-    # Saving a profile and loading it again by user_id returns the same fields and timestamps.
+    # Saving a profile and loading it again by user_id returns the same fields
+    # and timestamps.
     user = User(firebase_id="fire-orm-test-user")
     db_session.add(user)
     db_session.commit()
@@ -39,7 +40,8 @@ def test_fire_profile_round_trip_persist_and_query_by_user_id(
 
 
 def test_fire_profile_optional_target_age_null(db_session: Session) -> None:
-    # A profile without a target retirement age stores and reloads with null for that column.
+    # A profile without a target retirement age stores and reloads with null for
+    # that column.
     user = User(firebase_id="fire-orm-null-target")
     db_session.add(user)
     db_session.commit()
@@ -60,7 +62,8 @@ def test_fire_profile_optional_target_age_null(db_session: Session) -> None:
 
 
 def test_user_fire_profile_relationship(db_session: Session) -> None:
-    # After commit, the User ORM object exposes the linked FIRE profile through fire_profile.
+    # After commit, the User ORM object exposes the linked FIRE profile through
+    # fire_profile.
     user = User(firebase_id="fire-orm-rel")
     db_session.add(user)
     db_session.commit()
