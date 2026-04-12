@@ -3,8 +3,10 @@ Users router (/api/v1/users).
 
 Currently exposes a single endpoint: DELETE /users/me/data, which wipes all
 financial data for the authenticated user in FK dependency order —
-transactions → snapshots → assets → accounts — while preserving the user row
-itself. Invalidates per-user response caches (dashboard, analytics, net worth).
+transactions → snapshots → assets → accounts — plus saved FIRE calculator
+inputs (`fire_profiles`), while preserving the user row itself. Bulk SQLAlchemy
+deletes do not run ORM cascades; `FIREProfile` rows are removed explicitly.
+Invalidates per-user response caches (dashboard, analytics, net worth).
 This endpoint is used by integration tests to reset state between runs.
 """
 
@@ -15,6 +17,7 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.account import Account
 from app.models.asset import Asset
+from app.models.fire_profile import FIREProfile
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -29,8 +32,8 @@ async def clear_user_data(
 ):
     """
     Delete all financial data for the current user.
-    Removes all transactions, assets, accounts, and net worth snapshots.
-    The user account itself is preserved.
+    Removes all transactions, assets, accounts, net worth snapshots, and the
+    FIRE profile row (if any). The user account itself is preserved.
     """
     db.query(Transaction).filter(Transaction.user_id == current_user.id).delete()
     db.query(NetWorthSnapshot).filter(
@@ -38,5 +41,6 @@ async def clear_user_data(
     ).delete()
     db.query(Asset).filter(Asset.user_id == current_user.id).delete()
     db.query(Account).filter(Account.user_id == current_user.id).delete()
+    db.query(FIREProfile).filter(FIREProfile.user_id == current_user.id).delete()
     db.commit()
     cache.invalidate_user(current_user.id)

@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- Dev-only console output; production paths use Sentry. */
 import * as Sentry from "@sentry/nextjs";
 
 function isProd(): boolean {

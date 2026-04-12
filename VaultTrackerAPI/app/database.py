@@ -21,6 +21,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+# Register all models on Base.metadata before create_all() (see app.main lifespan).
+import app.models  # noqa: E402, F401
+
 
 def get_db():
     db = SessionLocal()
