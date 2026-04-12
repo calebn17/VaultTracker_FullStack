@@ -41,7 +41,7 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 | React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                         |
 | Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/contexts/__tests__/`     |
 | App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `fire/page.test.tsx`)                            |
-| E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`) |
+| E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`, `fire`) |
 
 **Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
 
@@ -49,7 +49,9 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 **E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` or `/accounts` should use **client navigation** (e.g. sidebar links **Transactions** / **Accounts**). To return to the dashboard from another route, use the **Home** link (not `page.goto("/dashboard")`).
 
-**E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser. **`analytics.spec.ts`** (price lookup) and **`profile.spec.ts`** (delete all data) stub selected API routes so they pass without mutating real data or depending on live price quotes.
+**E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser. **`analytics.spec.ts`** (price lookup) and **`profile.spec.ts`** (delete all data) stub selected API routes so they pass without mutating real data or depending on live price quotes. **`fire.spec.ts`** stubs `GET/PUT /api/v1/fire/profile` and `GET /api/v1/fire/projection` with JSON fixtures (reachable, unreachable, beyond_horizon) so FIRE flows pass without a running API.
+
+**FIRE E2E navigation:** After debug login, open `/fire` via the header link **FIRE Calc** (client navigation), not `page.goto("/fire")`, so the debug session is preserved.
 
 **Auth UI copy:** Login uses **Continue with Google** (when Firebase is configured). Success toasts for new transactions use **Transaction added** (not “created”).
 
