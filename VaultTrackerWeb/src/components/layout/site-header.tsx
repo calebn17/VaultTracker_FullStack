@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { format } from "date-fns";
-import { LayoutDashboard, PieChart, ListOrdered, Wallet, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, PieChart, ListOrdered, Wallet, Sun, Moon, Flame } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/auth-context";
 const links = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/analytics", label: "Analytics", icon: PieChart },
+  { href: "/fire", label: "FIRE Calc", icon: Flame },
   { href: "/transactions", label: "Transactions", icon: ListOrdered },
   { href: "/accounts", label: "Accounts", icon: Wallet },
 ] as const;

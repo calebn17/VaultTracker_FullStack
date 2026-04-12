@@ -39,7 +39,8 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 | -------------------- | ---------------------------------------------------------------------------------------------- |
 | Unit                 | `src/lib/__tests__/*.test.ts`                                                                  |
 | React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                         |
-| Components / context | `src/components/__tests__/`, `src/contexts/__tests__/`                                         |
+| Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/contexts/__tests__/`       |
+| App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `fire/page.test.tsx`)                            |
 | E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`) |
 
 **Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
@@ -129,6 +130,7 @@ Unauthenticated routes: `/login` and `/` (redirects based on auth state).
 | --------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `/dashboard`    | Net worth chart, category bar, holdings grid (asset row opens read-only asset detail modal), price refresh                  |
 | `/analytics`    | Bento grid: portfolio hero, category holding cards (opens asset detail), net worth chart, performance summary, price lookup |
+| `/fire`         | FIRE calculator (inputs + projection UI — expand in later slices)                                                          |
 | `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                 |
 | `/accounts`     | Account CRUD                                                                                                                |
 | `/profile`      | User info, sign out, theme toggle, delete all data                                                                          |
