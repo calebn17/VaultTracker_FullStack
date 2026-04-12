@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("firebase/auth", () => ({
-  onAuthStateChanged: vi.fn((_auth: unknown, _cb: (u: unknown) => void) => {
+  onAuthStateChanged: vi.fn(() => {
     return () => {};
   }),
   signInWithPopup: mockSignInWithPopup,

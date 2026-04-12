@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -156,6 +155,8 @@ export function TransactionTable({
     });
   }, [data, typeFilter, categoryFilter, accountFilter, globalFilter]);
 
+  // TanStack Table's API is not memoization-friendly for React Compiler; intentional.
+  // eslint-disable-next-line react-hooks/incompatible-library -- useReactTable
   const table = useReactTable({
     data: filteredData,
     columns,

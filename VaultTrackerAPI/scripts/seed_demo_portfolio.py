@@ -31,6 +31,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.account import Account
 from app.models.asset import Asset
+from app.models.fire_profile import FIREProfile
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -39,6 +40,33 @@ from app.services.cache_service import cache
 from app.services.transaction_service import TransactionService
 
 DEFAULT_FIREBASE_ID = "debug-user"
+
+# Defaults aligned with the web FIRE form (`fire-inputs-form` / fire-input-schema).
+_DEFAULT_FIRE_AGE = 30
+_DEFAULT_FIRE_INCOME = 0.0
+_DEFAULT_FIRE_EXPENSES = 0.0
+
+
+def ensure_demo_fire_profile(db: Session, user_id: str) -> None:
+    """
+    Create a FIRE profile row if missing so GET /fire/profile and projection work
+    after seeding (the demo seed does not run through PUT /fire/profile).
+    """
+    existing = (
+        db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
+    )
+    if existing is not None:
+        return
+    db.add(
+        FIREProfile(
+            user_id=user_id,
+            current_age=_DEFAULT_FIRE_AGE,
+            annual_income=_DEFAULT_FIRE_INCOME,
+            annual_expenses=_DEFAULT_FIRE_EXPENSES,
+            target_retirement_age=None,
+        )
+    )
+    db.commit()
 
 
 def clear_user_financial_data(db: Session, user_id: str) -> None:
@@ -244,6 +272,9 @@ def run_seed(firebase_id: str, clear_first: bool) -> None:
             svc.smart_create(row, user, db)
             if i % 20 == 0 or i == len(txs):
                 print(f"  Applied {i}/{len(txs)} transactions…")
+
+        ensure_demo_fire_profile(db, user.id)
+        print("  Ensured demo FIRE profile (GET /fire/profile will succeed).")
 
         print(
             f"Done. Seeded {len(txs)} smart transactions for "

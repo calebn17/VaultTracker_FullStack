@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PieChart, ListOrdered, Wallet, User } from "lucide-react";
+import { LayoutDashboard, PieChart, ListOrdered, Wallet, User, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/analytics", label: "Analytics", icon: PieChart },
+  { href: "/fire", label: "FIRE", icon: Flame },
   { href: "/transactions", label: "Txns", icon: ListOrdered },
   { href: "/accounts", label: "Accts", icon: Wallet },
   { href: "/profile", label: "Profile", icon: User },

@@ -6,6 +6,19 @@ from app.schemas.account import (
 )
 from app.schemas.asset import AssetBase, AssetCreate, AssetResponse
 from app.schemas.dashboard import CategoryTotals, DashboardResponse, GroupedHolding
+from app.schemas.fire import (
+    FIREAllocation,
+    FIREAllocationSlice,
+    FIREFireTargets,
+    FIREFireTargetTier,
+    FIREGoalAssessment,
+    FIREMonthlyBreakdown,
+    FIREProfileInput,
+    FIREProfileResponse,
+    FIREProjectionCurvePoint,
+    FIREProjectionInputs,
+    FIREProjectionResponse,
+)
 from app.schemas.networth import NetWorthHistoryResponse, NetWorthSnapshotResponse
 from app.schemas.transaction import (
     TransactionBase,
@@ -35,4 +48,15 @@ __all__ = [
     "GroupedHolding",
     "NetWorthSnapshotResponse",
     "NetWorthHistoryResponse",
+    "FIREProfileInput",
+    "FIREProfileResponse",
+    "FIREProjectionInputs",
+    "FIREAllocationSlice",
+    "FIREAllocation",
+    "FIREFireTargetTier",
+    "FIREFireTargets",
+    "FIREProjectionCurvePoint",
+    "FIREMonthlyBreakdown",
+    "FIREGoalAssessment",
+    "FIREProjectionResponse",
 ]

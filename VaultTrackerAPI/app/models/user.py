@@ -36,3 +36,9 @@ class User(Base):
     networth_snapshots = relationship(
         "NetWorthSnapshot", back_populates="user", cascade="all, delete-orphan"
     )
+    fire_profile = relationship(
+        "FIREProfile",
+        uselist=False,
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

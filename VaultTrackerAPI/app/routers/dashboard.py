@@ -13,11 +13,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models.asset import Asset
 from app.models.user import User
-from app.schemas.dashboard import CategoryTotals, DashboardResponse, GroupedHolding
-from app.services.asset_sync import is_empty_position
+from app.schemas.dashboard import DashboardResponse
 from app.services.cache_service import cache
+from app.services.dashboard_aggregate import aggregate_dashboard
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -36,47 +35,6 @@ async def get_dashboard(
     if cached is not None:
         return DashboardResponse.model_validate(cached)
 
-    assets = db.query(Asset).filter(Asset.user_id == current_user.id).all()
-
-    # Calculate category totals
-    category_totals = {
-        "crypto": 0.0,
-        "stocks": 0.0,
-        "cash": 0.0,
-        "realEstate": 0.0,
-        "retirement": 0.0,
-    }
-
-    grouped_holdings: dict[str, list[GroupedHolding]] = {
-        "crypto": [],
-        "stocks": [],
-        "cash": [],
-        "realEstate": [],
-        "retirement": [],
-    }
-
-    for asset in assets:
-        category = asset.category
-        if category in category_totals:
-            if is_empty_position(asset):
-                continue
-            category_totals[category] += asset.current_value
-            grouped_holdings[category].append(
-                GroupedHolding(
-                    id=asset.id,
-                    name=asset.name,
-                    symbol=asset.symbol,
-                    quantity=asset.quantity,
-                    current_value=asset.current_value,
-                )
-            )
-
-    total_net_worth = sum(category_totals.values())
-
-    result = DashboardResponse(
-        totalNetWorth=total_net_worth,
-        categoryTotals=CategoryTotals(**category_totals),
-        groupedHoldings=grouped_holdings,
-    )
+    result = aggregate_dashboard(db, current_user.id)
     cache.set(cache_key, result.model_dump(mode="python"))
     return result
