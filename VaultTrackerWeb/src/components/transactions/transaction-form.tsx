@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,7 +88,12 @@ export function TransactionFormDialog({
     }
   }, [open, initial, defaultCategory, form]);
 
-  const category = form.watch("category");
+  const watchedCategory = useWatch({ control: form.control, name: "category" });
+  const watchedTransactionType = useWatch({ control: form.control, name: "transaction_type" });
+  const watchedAccountType = useWatch({ control: form.control, name: "account_type" });
+  const category = watchedCategory ?? defaults.category;
+  const transactionType = watchedTransactionType ?? defaults.transaction_type;
+  const accountType = watchedAccountType ?? defaults.account_type;
 
   useEffect(() => {
     const allowed = ACCOUNT_TYPES_BY_CATEGORY[category];
@@ -149,11 +154,11 @@ export function TransactionFormDialog({
           <div className="flex flex-col gap-1.5">
             <span className={formLabel}>Type</span>
             <Select
-              value={form.watch("transaction_type")}
+              value={transactionType}
               onValueChange={(v) => form.setValue("transaction_type", v as "buy" | "sell")}
             >
               <SelectTrigger className={selectTriggerClass}>
-                <SelectValue>{TRANSACTION_TYPE_LABELS[form.watch("transaction_type")]}</SelectValue>
+                <SelectValue>{TRANSACTION_TYPE_LABELS[transactionType]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="buy">Buy</SelectItem>
@@ -165,13 +170,11 @@ export function TransactionFormDialog({
           <div className="flex flex-col gap-1.5">
             <span className={formLabel}>Category</span>
             <Select
-              value={form.watch("category")}
+              value={category}
               onValueChange={(v) => form.setValue("category", v as Category)}
             >
               <SelectTrigger className={selectTriggerClass}>
-                <SelectValue placeholder="Category">
-                  {CATEGORY_LABELS[form.watch("category")]}
-                </SelectValue>
+                <SelectValue placeholder="Category">{CATEGORY_LABELS[category]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="crypto">Crypto</SelectItem>
@@ -244,7 +247,7 @@ export function TransactionFormDialog({
           <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
             <span className={formLabel}>Account type</span>
             <Select
-              value={form.watch("account_type")}
+              value={accountType}
               onValueChange={(v) =>
                 form.setValue("account_type", v as import("@/types/api").AccountType)
               }

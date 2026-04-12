@@ -167,7 +167,21 @@ app/
   services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service, dashboard_aggregate, fire_service, fire_projection
 ```
 
-**FIRE calculator:** Routes under `/api/v1/fire`: `GET/PUT /fire/profile`, `GET /fire/projection`. [`app/services/fire_service.py`](app/services/fire_service.py) is pure math; [`app/services/fire_projection.py`](app/services/fire_projection.py) builds the projection from the saved profile plus [`aggregate_dashboard`](app/services/dashboard_aggregate.py). `DELETE /api/v1/users/me/data` removes the user’s `fire_profiles` row via an explicit bulk delete (same pattern as other wipe tables). Verify: `./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py -q`.
+### FIRE calculator (`/api/v1/fire`)
+
+| Path | Role |
+|------|------|
+| `GET/PUT /api/v1/fire/profile` | Persisted inputs (one row per user, `user_id` unique). |
+| `GET /api/v1/fire/projection` | Live projection from saved profile + [`aggregate_dashboard`](app/services/dashboard_aggregate.py) (same totals as dashboard). |
+
+**Files:** [`app/routers/fire.py`](app/routers/fire.py), [`app/models/fire_profile.py`](app/models/fire_profile.py), [`app/schemas/fire.py`](app/schemas/fire.py), [`app/services/fire_service.py`](app/services/fire_service.py) (constants + pure math), [`app/services/fire_projection.py`](app/services/fire_projection.py) (response assembly). **`DELETE /api/v1/users/me/data`** bulk-deletes `fire_profiles` for the user (cascade alone does not run on bulk delete).
+
+**Verify:**
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py tests/test_fire_schemas.py tests/test_fire_profile_orm.py -q
+```
 
 ### Authentication
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,8 @@ export function AccountFormDialog({
     }
   }, [open, initial, form]);
 
+  const accountType = useWatch({ control: form.control, name: "account_type" });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -78,7 +80,7 @@ export function AccountFormDialog({
           <div className="grid gap-2">
             <Label>Type</Label>
             <Select
-              value={form.watch("account_type")}
+              value={accountType ?? "bank"}
               onValueChange={(v) => form.setValue("account_type", v as AccountType)}
             >
               <SelectTrigger>
