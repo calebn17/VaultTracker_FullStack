@@ -10,6 +10,7 @@ from typing import Literal, cast
 from sqlalchemy.orm import Session
 
 from app.models.fire_profile import FIREProfile
+from app.schemas.dashboard import CategoryTotals
 from app.schemas.fire import (
     FIREAllocation,
     FIREAllocationSlice,
@@ -26,6 +27,34 @@ from app.services import fire_service as fs
 from app.services.dashboard_aggregate import aggregate_dashboard
 
 _CATEGORY_KEYS = ("crypto", "stocks", "cash", "realEstate", "retirement")
+
+
+def _allocation_and_blended_from_totals(
+    nw: float, ct: CategoryTotals
+) -> tuple[FIREAllocation | None, float, float]:
+    """
+    Category breakdown + nominal / real blended returns (same rules as the
+    reachable projection path). Used for unreachable responses too so the UI
+    can show portfolio mix and expected return while the chart is hidden.
+    """
+    if nw > 1e-9:
+        alloc_for_blended: dict[str, dict[str, float]] = {}
+        for key in _CATEGORY_KEYS:
+            val = float(getattr(ct, key))
+            pct = (val / nw) * 100.0
+            alloc_for_blended[key] = {"value": val, "percentage": pct}
+        nominal, real_br = fs.compute_blended_return(alloc_for_blended)
+        slices = {
+            key: FIREAllocationSlice(
+                value=float(getattr(ct, key)),
+                percentage=(float(getattr(ct, key)) / nw) * 100.0,
+                expectedReturn=fs.DEFAULT_RETURNS[key],
+            )
+            for key in _CATEGORY_KEYS
+        }
+        return (FIREAllocation(**slices), nominal, real_br)
+    nominal, real_br = fs.compute_blended_return({})
+    return (None, nominal, real_br)
 
 
 def profile_to_response(profile: FIREProfile) -> FIREProfileResponse:
@@ -79,15 +108,17 @@ def build_fire_projection(db: Session, profile: FIREProfile) -> FIREProjectionRe
             ),
         )
 
+    allocation, nominal, real_br = _allocation_and_blended_from_totals(nw, ct)
+
     if annual_savings <= 0:
         return FIREProjectionResponse(
             status="unreachable",
             unreachableReason="non_positive_savings",
             inputs=inputs,
-            allocation=None,
-            blendedReturn=None,
-            realBlendedReturn=None,
-            inflationRate=None,
+            allocation=allocation,
+            blendedReturn=nominal,
+            realBlendedReturn=real_br,
+            inflationRate=fs.DEFAULT_INFLATION,
             annualSavings=None,
             savingsRate=None,
             fireTargets=tiers_all_null(),
@@ -97,26 +128,6 @@ def build_fire_projection(db: Session, profile: FIREProfile) -> FIREProjectionRe
             ),
             goalAssessment=None,
         )
-
-    alloc_for_blended: dict[str, dict[str, float]] = {}
-    allocation: FIREAllocation | None = None
-    if nw > 1e-9:
-        for key in _CATEGORY_KEYS:
-            val = float(getattr(ct, key))
-            pct = (val / nw) * 100.0
-            alloc_for_blended[key] = {"value": val, "percentage": pct}
-        nominal, real_br = fs.compute_blended_return(alloc_for_blended)
-        slices = {
-            key: FIREAllocationSlice(
-                value=float(getattr(ct, key)),
-                percentage=(float(getattr(ct, key)) / nw) * 100.0,
-                expectedReturn=fs.DEFAULT_RETURNS[key],
-            )
-            for key in _CATEGORY_KEYS
-        }
-        allocation = FIREAllocation(**slices)
-    else:
-        nominal, real_br = fs.compute_blended_return({})
 
     internal_curve = fs.generate_projection_curve(
         nw, annual_savings, real_br, years=fs.PROJECTION_YEARS

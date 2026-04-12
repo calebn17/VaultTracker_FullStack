@@ -1,11 +1,19 @@
 """Integration tests for /api/v1/fire (TestClient)."""
 
+import pytest
+
 from app.models.asset import Asset
 
 
-def test_get_fire_profile_404_without_row(client, test_user, db_session):
+def test_get_fire_profile_creates_defaults_when_missing(client, test_user, db_session):
     r = client.get("/api/v1/fire/profile")
-    assert r.status_code == 404
+    assert r.status_code == 200
+    data = r.json()
+    assert data["currentAge"] == 30
+    assert data["annualIncome"] == 0
+    assert data["annualExpenses"] == 0
+    assert data["targetRetirementAge"] is None
+    assert "id" in data
 
 
 def test_delete_user_data_removes_fire_profile(client, test_user, db_session):
@@ -24,7 +32,12 @@ def test_delete_user_data_removes_fire_profile(client, test_user, db_session):
     assert r_del.status_code == 204
 
     r = client.get("/api/v1/fire/profile")
-    assert r.status_code == 404
+    assert r.status_code == 200
+    reset = r.json()
+    assert reset["currentAge"] == 30
+    assert reset["annualIncome"] == 0
+    assert reset["annualExpenses"] == 0
+    assert reset["targetRetirementAge"] is None
 
 
 def test_put_get_fire_profile_round_trip(client, test_user, db_session):
@@ -83,9 +96,20 @@ def test_put_fire_profile_validation_error(client, test_user, db_session):
     assert r.status_code == 422
 
 
-def test_get_projection_404_without_profile(client, test_user, db_session):
+def test_get_projection_creates_profile_when_missing(client, test_user, db_session):
     r = client.get("/api/v1/fire/projection")
-    assert r.status_code == 404
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "unreachable"
+    assert body["unreachableReason"] == "non_positive_savings"
+    assert body["inputs"]["currentAge"] == 30
+    assert body["inputs"]["annualIncome"] == 0
+    assert body["inputs"]["annualExpenses"] == 0
+    # No holdings: empty-portfolio default return still shown for the form label.
+    assert body["allocation"] is None
+    assert body["blendedReturn"] == pytest.approx(0.07)
+    assert body["realBlendedReturn"] == pytest.approx(0.04)
+    assert body["inflationRate"] == pytest.approx(0.03)
 
 
 def test_fire_projection_unreachable_non_positive_savings(
@@ -108,6 +132,44 @@ def test_fire_projection_unreachable_non_positive_savings(
     assert body["projectionCurve"] == []
     assert body["monthlyBreakdown"]["monthsToFire"] is None
     assert body["goalAssessment"] is None
+    assert body["allocation"] is None
+    assert body["blendedReturn"] == pytest.approx(0.07)
+
+
+def test_fire_projection_unreachable_still_shows_blend_with_holdings(
+    client, test_user, db_session
+):
+    """Non-positive savings hides the chart but portfolio mix + return still show."""
+    client.put(
+        "/api/v1/fire/profile",
+        json={
+            "currentAge": 35,
+            "annualIncome": 40_000,
+            "annualExpenses": 50_000,
+            "targetRetirementAge": None,
+        },
+    )
+    db_session.add(
+        Asset(
+            user_id=test_user.id,
+            name="Test",
+            symbol="TST",
+            category="stocks",
+            quantity=1.0,
+            current_value=100_000.0,
+        )
+    )
+    db_session.commit()
+
+    r = client.get("/api/v1/fire/projection")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "unreachable"
+    assert body["allocation"] is not None
+    assert body["allocation"]["stocks"]["percentage"] == pytest.approx(100.0)
+    assert body["blendedReturn"] == pytest.approx(0.08)
+    assert body["realBlendedReturn"] == pytest.approx(0.05)
+    assert body["inputs"]["currentNetWorth"] == pytest.approx(100_000.0)
 
 
 def test_fire_projection_beyond_horizon(client, test_user, db_session):

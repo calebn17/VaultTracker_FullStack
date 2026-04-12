@@ -2,7 +2,7 @@
 FIRE calculator routes (/api/v1/fire).
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,39 @@ from app.services.fire_projection import build_fire_projection, profile_to_respo
 
 router = APIRouter(prefix="/fire", tags=["FIRE"])
 
+# Defaults aligned with web FIRE form and `seed_demo_portfolio.ensure_demo_fire_profile`.
+_DEFAULT_FIRE_AGE = 30
+_DEFAULT_FIRE_INCOME = 0.0
+_DEFAULT_FIRE_EXPENSES = 0.0
+
+
+def _get_or_create_fire_profile(db: Session, user_id: str) -> FIREProfile:
+    row = (
+        db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
+    )
+    if row is not None:
+        return row
+    row = FIREProfile(
+        user_id=user_id,
+        current_age=_DEFAULT_FIRE_AGE,
+        annual_income=_DEFAULT_FIRE_INCOME,
+        annual_expenses=_DEFAULT_FIRE_EXPENSES,
+        target_retirement_age=None,
+    )
+    db.add(row)
+    try:
+        db.commit()
+        db.refresh(row)
+        return row
+    except IntegrityError:
+        db.rollback()
+        row = (
+            db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
+        )
+        if row is None:
+            raise
+        return row
+
 
 def _apply_fire_profile_input(row: FIREProfile, body: FIREProfileInput) -> None:
     row.current_age = body.currentAge
@@ -32,15 +65,7 @@ async def get_fire_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    row = (
-        db.query(FIREProfile)
-        .filter(FIREProfile.user_id == current_user.id)
-        .one_or_none()
-    )
-    if row is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="FIRE profile not found"
-        )
+    row = _get_or_create_fire_profile(db, current_user.id)
     return profile_to_response(row)
 
 
@@ -97,13 +122,5 @@ async def get_fire_projection(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    row = (
-        db.query(FIREProfile)
-        .filter(FIREProfile.user_id == current_user.id)
-        .one_or_none()
-    )
-    if row is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="FIRE profile not found"
-        )
+    row = _get_or_create_fire_profile(db, current_user.id)
     return build_fire_projection(db, row)
