@@ -127,7 +127,10 @@ const projectionBeyondHorizon = {
 
 function stubFireApi(
   page: import("@playwright/test").Page,
-  projection: typeof projectionReachable | typeof projectionUnreachable | typeof projectionBeyondHorizon
+  projection:
+    | typeof projectionReachable
+    | typeof projectionUnreachable
+    | typeof projectionBeyondHorizon
 ) {
   return page.route("**/api/v1/fire/**", async (route) => {
     const url = route.request().url();
@@ -201,7 +204,9 @@ test.describe("FIRE calculator", () => {
     });
     await expect(page.getByText(/\$1,375,000/)).toBeVisible();
 
-    await expect(page.locator("[data-slot='fire-projection-chart'] .recharts-surface")).toBeVisible();
+    await expect(
+      page.locator("[data-slot='fire-projection-chart'] .recharts-surface")
+    ).toBeVisible();
   });
 
   test("unreachable projection shows savings warning and hides chart", async ({ page }) => {
@@ -229,6 +234,8 @@ test.describe("FIRE calculator", () => {
     await expect(page.getByText(/30-year projection window/i)).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.locator("[data-slot='fire-projection-chart'] .recharts-surface")).toBeVisible();
+    await expect(
+      page.locator("[data-slot='fire-projection-chart'] .recharts-surface")
+    ).toBeVisible();
   });
 });

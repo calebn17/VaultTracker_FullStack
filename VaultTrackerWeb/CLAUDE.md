@@ -35,12 +35,12 @@ npm run test:e2e      # Playwright (starts dev server via playwright.config unle
 
 **Where tests live**
 
-| Area                 | Location                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| Unit                 | `src/lib/__tests__/*.test.ts`                                                                  |
-| React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                         |
-| Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/contexts/__tests__/`     |
-| App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `fire/page.test.tsx`)                            |
+| Area                 | Location                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| Unit                 | `src/lib/__tests__/*.test.ts`                                                                          |
+| React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                                 |
+| Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/contexts/__tests__/`             |
+| App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `fire/page.test.tsx`)                                    |
 | E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`, `fire`) |
 
 **Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.

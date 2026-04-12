@@ -19,16 +19,14 @@ from app.services.fire_projection import build_fire_projection, profile_to_respo
 
 router = APIRouter(prefix="/fire", tags=["FIRE"])
 
-# Defaults aligned with web FIRE form and `seed_demo_portfolio.ensure_demo_fire_profile`.
+# Defaults aligned with web FIRE form; see seed_demo_portfolio.ensure_demo_fire_profile.
 _DEFAULT_FIRE_AGE = 30
 _DEFAULT_FIRE_INCOME = 0.0
 _DEFAULT_FIRE_EXPENSES = 0.0
 
 
 def _get_or_create_fire_profile(db: Session, user_id: str) -> FIREProfile:
-    row = (
-        db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
-    )
+    row = db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
     if row is not None:
         return row
     row = FIREProfile(
@@ -45,9 +43,7 @@ def _get_or_create_fire_profile(db: Session, user_id: str) -> FIREProfile:
         return row
     except IntegrityError:
         db.rollback()
-        row = (
-            db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
-        )
+        row = db.query(FIREProfile).filter(FIREProfile.user_id == user_id).one_or_none()
         if row is None:
             raise
         return row
