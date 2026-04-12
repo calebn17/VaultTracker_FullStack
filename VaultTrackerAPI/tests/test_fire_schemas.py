@@ -188,6 +188,7 @@ def test_fire_projection_response_reachable_example_from_spec() -> None:
     assert model.allocation.crypto.percentage == 14.4
     assert model.goalAssessment is not None
     assert model.goalAssessment.status == "behind"
+    assert model.goalAssessment.computedBeyondProjectionHorizon is False
 
 
 def test_fire_projection_response_unreachable_example_from_spec() -> None:

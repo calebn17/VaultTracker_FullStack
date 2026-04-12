@@ -3,6 +3,7 @@ FIRE calculator routes (/api/v1/fire).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,6 +18,13 @@ from app.schemas.fire import (
 from app.services.fire_projection import build_fire_projection, profile_to_response
 
 router = APIRouter(prefix="/fire", tags=["FIRE"])
+
+
+def _apply_fire_profile_input(row: FIREProfile, body: FIREProfileInput) -> None:
+    row.current_age = body.currentAge
+    row.annual_income = body.annualIncome
+    row.annual_expenses = body.annualExpenses
+    row.target_retirement_age = body.targetRetirementAge
 
 
 @router.get("/profile", response_model=FIREProfileResponse)
@@ -57,11 +65,29 @@ async def upsert_fire_profile(
         )
         db.add(row)
     else:
-        row.current_age = body.currentAge
-        row.annual_income = body.annualIncome
-        row.annual_expenses = body.annualExpenses
-        row.target_retirement_age = body.targetRetirementAge
-    db.commit()
+        _apply_fire_profile_input(row, body)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        row = (
+            db.query(FIREProfile)
+            .filter(FIREProfile.user_id == current_user.id)
+            .one_or_none()
+        )
+        if row is None:
+            raise
+        _apply_fire_profile_input(row, body)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+    except Exception:
+        db.rollback()
+        raise
+
     db.refresh(row)
     return profile_to_response(row)
 

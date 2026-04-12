@@ -172,7 +172,13 @@ def compute_goal_assessment(
 ) -> dict[str, Any] | None:
     """
     Compare projected value at goal age to Regular FIRE target; binary-search
-    required savings rate. None when target_retirement_age is missing.
+    required savings rate.
+
+    None when target_retirement_age is missing or goal age is in the past.
+
+    If goal age is beyond the supplied projection curve, projected wealth uses
+    the same discrete model as the curve (_value_at_horizon); callers should
+    surface ``computedBeyondProjectionHorizon`` to the client.
     """
     tra = profile.get("target_retirement_age")
     if tra is None:
@@ -182,17 +188,27 @@ def compute_goal_assessment(
     annual_income = float(profile["annual_income"])
     annual_expenses = float(profile["annual_expenses"])
     net_worth = float(profile.get("current_net_worth", 0.0))
+    annual_savings = annual_income - annual_expenses
 
     years_to_goal = tra - current_age
-    if years_to_goal < 0 or years_to_goal >= len(curve):
+    if years_to_goal < 0:
         return None
 
-    projected = curve[years_to_goal]["projectedValue"]
+    if years_to_goal < len(curve):
+        projected = curve[years_to_goal]["projectedValue"]
+        beyond_chart = False
+    else:
+        projected = _value_at_horizon(
+            net_worth, annual_savings, real_return, years_to_goal
+        )
+        beyond_chart = True
+
     gap_amount = fire_target - projected
     status = _goal_status(projected, fire_target)
 
-    savings = annual_income - annual_expenses
-    current_rate = savings / annual_income if annual_income > 0 else 0.0
+    current_rate = (
+        annual_savings / annual_income if annual_income > 0 else 0.0
+    )
 
     required_rate = _required_annual_savings_rate(
         net_worth=net_worth,
@@ -208,4 +224,5 @@ def compute_goal_assessment(
         "currentSavingsRate": current_rate,
         "status": status,
         "gapAmount": gap_amount,
+        "computedBeyondProjectionHorizon": beyond_chart,
     }

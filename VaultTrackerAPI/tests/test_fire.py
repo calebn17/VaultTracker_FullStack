@@ -132,6 +132,7 @@ def test_compute_goal_assessment_ahead_on_track_behind() -> None:
         real_return=real_ret,
     )
     assert ahead is not None
+    assert ahead["computedBeyondProjectionHorizon"] is False
     assert ahead["status"] == "ahead"
     assert ahead["gapAmount"] == pytest.approx(-100_000.0)
 
@@ -167,6 +168,7 @@ def test_compute_goal_assessment_current_savings_rate() -> None:
     curve[10] = {"projectedValue": 1.0}
     out = fs.compute_goal_assessment(profile, curve, fire_target=2.0, real_return=0.0)
     assert out is not None
+    assert out["computedBeyondProjectionHorizon"] is False
     assert out["currentSavingsRate"] == pytest.approx(0.75)
 
 
@@ -182,8 +184,8 @@ def test_required_savings_rate_binary_search_flat_return() -> None:
     assert rate == pytest.approx(0.05, abs=1e-4)
 
 
-def test_compute_goal_assessment_none_when_goal_age_off_curve() -> None:
-    # Curve has 5 points (ages 0–4 from start); goal at +10 is out of range.
+def test_compute_goal_assessment_extrapolates_when_goal_past_curve() -> None:
+    # Curve has 5 points; goal at +10 years still gets an assessment via _value_at_horizon.
     profile = {
         "current_age": 30,
         "target_retirement_age": 40,
@@ -192,9 +194,11 @@ def test_compute_goal_assessment_none_when_goal_age_off_curve() -> None:
         "current_net_worth": 0.0,
     }
     short_curve = [{"projectedValue": float(i)} for i in range(5)]
-    assert (
-        fs.compute_goal_assessment(
-            profile, short_curve, fire_target=1.0, real_return=0.0
-        )
-        is None
+    out = fs.compute_goal_assessment(
+        profile, short_curve, fire_target=1.0, real_return=0.0
     )
+    assert out is not None
+    assert out["computedBeyondProjectionHorizon"] is True
+    # 10 years × 50k savings, r=0
+    assert out["gapAmount"] == pytest.approx(1.0 - 500_000.0)
+    assert out["status"] == "ahead"

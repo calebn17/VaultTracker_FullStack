@@ -96,6 +96,13 @@ class FIREGoalAssessment(BaseModel):
     currentSavingsRate: float
     status: Literal["ahead", "on_track", "behind"]
     gapAmount: float
+    computedBeyondProjectionHorizon: bool = Field(
+        default=False,
+        description=(
+            "True when goal age is past the fixed projection window; wealth at "
+            "goal age uses the same return/savings model as the chart, extrapolated."
+        ),
+    )
 
 
 class FIREProjectionResponse(BaseModel):

@@ -127,6 +127,7 @@ def test_fire_projection_beyond_horizon(client, test_user, db_session):
     assert body["unreachableReason"] is None
     assert len(body["projectionCurve"]) == 31
     assert body["monthlyBreakdown"]["monthsToFire"] is None
+    assert body["goalAssessment"] is None
     for tier in (
         body["fireTargets"]["leanFire"],
         body["fireTargets"]["fire"],
@@ -134,6 +135,29 @@ def test_fire_projection_beyond_horizon(client, test_user, db_session):
     ):
         assert tier["yearsToTarget"] is None
         assert tier["targetAge"] is None
+
+
+def test_fire_projection_beyond_horizon_goal_assessment_extrapolated(
+    client, test_user, db_session
+):
+    # Goal age beyond PROJECTION_YEARS window: still return goalAssessment + flag.
+    client.put(
+        "/api/v1/fire/profile",
+        json={
+            "currentAge": 28,
+            "annualIncome": 35_000,
+            "annualExpenses": 33_000,
+            "targetRetirementAge": 65,
+        },
+    )
+    r = client.get("/api/v1/fire/projection")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "beyond_horizon"
+    ga = body["goalAssessment"]
+    assert ga is not None
+    assert ga["targetAge"] == 65
+    assert ga["computedBeyondProjectionHorizon"] is True
 
 
 def test_fire_projection_reachable_when_already_over_regular_target(
