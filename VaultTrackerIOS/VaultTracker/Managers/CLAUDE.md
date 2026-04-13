@@ -6,7 +6,7 @@ Application-layer services that ViewModels depend on. No SwiftUI code lives here
 
 | File | Role |
 |------|------|
-| `AuthManager.swift` | Firebase auth state machine, exposed as `@EnvironmentObject` |
+| `AuthManager.swift` | Firebase auth state machine, exposed as `@EnvironmentObject`; 5s watchdog if the auth listener never fires (tests inject shorter `authListenerTimeoutNanoseconds`) |
 | `FirebaseAuthBackend.swift` | `FirebaseAuthBackend` protocol, `AuthUserInfo`, `LiveFirebaseAuthBackend` — test seams for auth |
 | `DataService.swift` | Concrete `DataServiceProtocol` — delegates all I/O to `APIService` |
 | `DataServiceProtocol.swift` | Interface ViewModels code against; enables lightweight mock testing |

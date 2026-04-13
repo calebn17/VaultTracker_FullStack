@@ -31,13 +31,18 @@ struct AuthManagerTests {
 
         var currentUser: (any AuthUserInfo)?
 
+        /// When `false`, the listener is never invoked (simulates a broken Firebase listener). Default matches Firebase’s immediate callback with cached state.
+        var invokeInitialListener = true
+
         func addStateDidChangeListener(
             _ listener: @escaping ((any AuthUserInfo)?) -> Void
         ) -> AuthListenerHandle {
             callback = listener
             let handle = AuthListenerHandle()
             storedHandle = handle
-            listener(currentUser)
+            if invokeInitialListener {
+                listener(currentUser)
+            }
             return handle
         }
 
@@ -140,6 +145,25 @@ struct AuthManagerTests {
         #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
     }
 #endif
+
+    @Test func authListenerTimeoutFallsBackToUnauthenticated() async throws {
+        let fake = FakeFirebaseAuthBackend()
+        fake.invokeInitialListener = false
+        fake.currentUser = nil
+        let spy = VTLoggingSpy()
+        let manager = AuthManager(
+            authBackend: fake,
+            notificationCenter: NotificationCenter(),
+            log: spy,
+            authListenerTimeoutNanoseconds: 100_000_000
+        )
+        #expect(manager.authenticationState == .authenticating)
+        try await Task.sleep(for: .milliseconds(250))
+        #expect(manager.authenticationState == .unauthenticated)
+        #expect(spy.entries.contains {
+            $0.level == .warn && $0.message == "Auth listener timeout — falling back to unauthenticated"
+        })
+    }
 
     @Test func signOutLogsInfoThroughBackend() async throws {
 #if DEBUG
