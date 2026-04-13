@@ -61,6 +61,7 @@ export class ApiClient {
       token = await this.getToken(false);
     } catch (e) {
       logger.error("API token request failed", e, { endpoint, phase: "initial" });
+      this.onUnauthorized();
       throw e;
     }
 
@@ -76,6 +77,7 @@ export class ApiClient {
           endpoint,
           phase: "after_401",
         });
+        this.onUnauthorized();
         throw e;
       }
       const retry = await fetchWithAuth(freshToken);

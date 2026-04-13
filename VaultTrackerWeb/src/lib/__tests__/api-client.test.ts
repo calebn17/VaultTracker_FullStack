@@ -142,9 +142,11 @@ describe("ApiClient", () => {
   it("logs and rethrows when initial getToken fails", async () => {
     const tokenErr = new Error("no token");
     const getToken = vi.fn().mockRejectedValue(tokenErr);
-    const client = new ApiClient(baseUrl, getToken, vi.fn());
+    const onUnauthorized = vi.fn();
+    const client = new ApiClient(baseUrl, getToken, onUnauthorized);
 
     await expect(client.get("/x")).rejects.toThrow("no token");
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
     expect(logger.error).toHaveBeenCalledWith("API token request failed", tokenErr, {
       endpoint: "/x",
       phase: "initial",
@@ -173,9 +175,11 @@ describe("ApiClient", () => {
     const tokenErr = new Error("refresh failed");
     const getToken = vi.fn().mockResolvedValueOnce("first").mockRejectedValueOnce(tokenErr);
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
-    const client = new ApiClient(baseUrl, getToken, vi.fn());
+    const onUnauthorized = vi.fn();
+    const client = new ApiClient(baseUrl, getToken, onUnauthorized);
 
     await expect(client.get("/r")).rejects.toThrow("refresh failed");
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
     expect(logger.warn).toHaveBeenCalledWith("401 — retrying with refreshed token", {
       endpoint: "/r",
     });
