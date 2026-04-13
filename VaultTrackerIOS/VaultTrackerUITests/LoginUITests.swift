@@ -15,7 +15,6 @@ final class LoginUITests: BaseTestCase {
         let app = launchApp()
         let login = LoginPage(app: app).waitForScreen(timeout: 10)
         XCTAssertTrue(login.googleSignInButton.waitForExistence(timeout: 5))
-        XCTAssertTrue(login.appleSignInButton.exists)
         XCTAssertTrue(login.debugLoginButton.exists)
     }
 

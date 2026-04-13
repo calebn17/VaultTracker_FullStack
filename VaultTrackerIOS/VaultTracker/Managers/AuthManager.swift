@@ -129,11 +129,6 @@ final class AuthManager: ObservableObject {
         }
     }
 
-    func signInWithApple() async throws {
-        // TODO: Implement Sign in with Apple
-        log.warn("Sign in with Apple not yet implemented", category: .auth)
-    }
-
     func signOut() throws {
         log.info("User signed out", category: .auth)
 #if DEBUG

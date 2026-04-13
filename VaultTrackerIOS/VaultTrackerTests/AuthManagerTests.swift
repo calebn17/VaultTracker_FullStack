@@ -180,14 +180,6 @@ struct AuthManagerTests {
         #expect(spy.entries.contains { $0.level == .info && $0.message == "User signed out" })
     }
 
-    @Test func signInWithAppleLogsNotImplementedWarn() async throws {
-        let spy = VTLoggingSpy()
-        let manager = AuthManager(authBackend: FakeFirebaseAuthBackend(), notificationCenter: NotificationCenter(), log: spy)
-        await Task.yield()
-        try await manager.signInWithApple()
-        #expect(spy.entries.contains { $0.level == .warn && $0.message == "Sign in with Apple not yet implemented" })
-    }
-
     /// Disabled until Google Sign-In can be stubbed (injectable presenter / `GIDSignIn` seam).
     @Test(.disabled("Requires real Google Sign-In / host UI; bypass needs injectable GIDSign-In or Utilities seam."))
     func signInWithGoogleLogsErrorWhenPresentationUnavailable() async throws {

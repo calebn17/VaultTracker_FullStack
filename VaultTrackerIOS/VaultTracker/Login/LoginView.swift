@@ -44,32 +44,6 @@ struct LoginView: View {
             .padding(.horizontal)
             .accessibilityIdentifier("googleSignInButton")
 
-            // Apple Sign-In Button (Placeholder)
-            Button(action: {
-                Task {
-                    do {
-                        try await authManager.signInWithApple()
-                    } catch {
-                        // AuthManager already logs sign-in failures
-                    }
-                }
-            }) {
-                HStack {
-                    Image(systemName: "applelogo")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                    Text("Sign in with Apple")
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.black)
-                .foregroundStyle(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .accessibilityIdentifier("appleSignInButton")
-            
             Spacer()
 
 #if DEBUG

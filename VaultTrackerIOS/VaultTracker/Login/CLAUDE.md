@@ -13,8 +13,9 @@ Entry screen shown when `AuthManager.authenticationState == .unauthenticated`.
 | Button | Status |
 |--------|--------|
 | Google Sign-In | Implemented — calls `AuthManager.signInWithGoogle()` |
-| Apple Sign-In | Placeholder — `signInWithApple()` is not yet implemented |
 | Debug Login | DEBUG builds only — calls `AuthManager.signInDebug()`, bypasses Firebase |
+
+Apple Sign-In is not shown until it is implemented end-to-end.
 
 ## Debug Login
 

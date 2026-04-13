@@ -8,7 +8,7 @@ Portfolio tracker that shows net worth, asset holdings, analytics, and transacti
 VaultTracker/
 ├── DesignSystem/       # Digital Ledger tokens: VTColors, VTFonts (VTTypography.swift), VTComponents (button/chip/surface)
 ├── MainView/           # App entry point, root TabView (Home / Analytics / Profile), auth state switch; forces dark + nav/tab chrome
-├── Login/              # Google / Apple sign-in screen
+├── Login/              # Google sign-in screen
 ├── Loading/            # Splash screen during Firebase auth check
 ├── Home/               # Dashboard: net worth, category breakdown, history chart, price refresh
 ├── AddAssetModal/      # Sheet for recording buy/sell transactions via smart endpoint
