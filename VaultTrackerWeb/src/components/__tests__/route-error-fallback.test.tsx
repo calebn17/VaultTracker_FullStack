@@ -73,7 +73,10 @@ describe("RouteErrorFallback", () => {
     render(<RouteErrorFallback error={err} reset={reset} scope="authenticated" />);
 
     expect(screen.getByRole("heading", { name: /session problem/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /return to login/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: /return to login/i })).toHaveAttribute(
+      "href",
+      "/login"
+    );
     expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
   });
 
