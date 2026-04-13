@@ -1,5 +1,5 @@
 ---
-description: VaultTracker agent rules — change communication, design for scale, security, plans/todos, pre-commit lint, CLAUDE.md sync, Web/API pair-programming checkpoints
+description: VaultTracker agent rules — change communication, design for scale, security, plans/todos (checklist sync), pre-commit lint, CLAUDE.md sync, Web/API pair-programming checkpoints
 alwaysApply: true
 ---
 
@@ -65,6 +65,11 @@ When you **create or execute a plan** (including `TodoWrite` / task lists in cha
 
 - **After completing a single todo item**, **pause**: summarize what changed, then **wait for the user to review** before starting the next item.
 - **Exception** — Only continue through multiple todos without stopping if the user explicitly asks to batch, skip review, or “do the rest.”
+
+### Keep the checklist in sync
+
+- **When a todo is finished** — Update the task list (e.g. `TodoWrite`) right away: mark that item **completed**, and do not leave items **in_progress** once the work is done.
+- **Accuracy** — The checklist the user sees should match what is actually done; refresh it after each completed unit of work, not only at the end of a session.
 
 This pairs with **Change communication** (what to summarize) and optional checkpoint modes in **Web implementation (pair programming)** below.
 
