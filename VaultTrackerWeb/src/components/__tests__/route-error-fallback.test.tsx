@@ -12,6 +12,13 @@ vi.mock("@/lib/logger", () => ({
   },
 }));
 
+vi.mock("next/link", () => ({
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+import { ApiError } from "@/lib/api-client";
 import { RouteErrorFallback } from "../route-error-fallback";
 
 describe("RouteErrorFallback", () => {
@@ -57,5 +64,25 @@ describe("RouteErrorFallback", () => {
 
     await user.click(screen.getByRole("button", { name: /try again/i }));
     expect(reset).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows Return to login for ApiError 401", () => {
+    const err = new ApiError("unauthorized", 401);
+    const reset = vi.fn();
+
+    render(<RouteErrorFallback error={err} reset={reset} scope="authenticated" />);
+
+    expect(screen.getByRole("heading", { name: /session problem/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /return to login/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
+
+  it("shows Return to login when message is Not signed in", () => {
+    const err = new Error("Not signed in");
+    const reset = vi.fn();
+
+    render(<RouteErrorFallback error={err} reset={reset} scope="root" />);
+
+    expect(screen.getByRole("link", { name: /return to login/i })).toBeInTheDocument();
   });
 });
