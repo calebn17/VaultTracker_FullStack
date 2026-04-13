@@ -1,5 +1,5 @@
 ---
-description: VaultTracker agent rules — change communication, design for scale, security, plans/todos, pre-commit lint, CLAUDE.md sync, Web/API pair-programming checkpoints
+description: VaultTracker agent rules — change communication, design for scale, security, plans/todos (checklist sync), pre-commit lint + Prettier (web), CLAUDE.md sync, Web/API pair-programming checkpoints
 alwaysApply: true
 ---
 
@@ -66,6 +66,11 @@ When you **create or execute a plan** (including `TodoWrite` / task lists in cha
 - **After completing a single todo item**, **pause**: summarize what changed, then **wait for the user to review** before starting the next item.
 - **Exception** — Only continue through multiple todos without stopping if the user explicitly asks to batch, skip review, or “do the rest.”
 
+### Keep the checklist in sync
+
+- **When a todo is finished** — Update the task list (e.g. `TodoWrite`) right away: mark that item **completed**, and do not leave items **in_progress** once the work is done.
+- **Accuracy** — The checklist the user sees should match what is actually done; refresh it after each completed unit of work, not only at the end of a session.
+
 This pairs with **Change communication** (what to summarize) and optional checkpoint modes in **Web implementation (pair programming)** below.
 
 ---
@@ -75,6 +80,18 @@ This pairs with **Change communication** (what to summarize) and optional checkp
 When **a plan or implementation slice is finished** (user confirms completion, or you deliver the last planned step), **or** when the user **asks you to make commits** (or prepare a commit / PR):
 
 **Before every commit** — Run linting (and each subproject’s usual static checks, e.g. typecheck) for **all** areas your diff touches; fix failures before committing unless the user explicitly approves an exception.
+
+### Prettier (VaultTrackerWeb)
+
+CI (`lint-web`) runs **`npx prettier --check .`** from **`VaultTrackerWeb/`** (Prettier is separate from ESLint). If the diff touches **anything** under `VaultTrackerWeb/`—including `CLAUDE.md`, tests, config, `src/**`—run formatting before commit:
+
+```bash
+cd VaultTrackerWeb
+npx prettier --write .
+npx prettier --check .
+```
+
+Use `--write` on specific paths instead of `.` when the change set is small. **Do not rely on ESLint alone** to catch formatting; unformatted Markdown and TS/TSX commonly fail CI with no type or lint error.
 
 1. **Update documentation in `CLAUDE.md`** so the next session stays accurate — commands, architecture notes, env vars, new scripts, or workflows you added or changed.
 

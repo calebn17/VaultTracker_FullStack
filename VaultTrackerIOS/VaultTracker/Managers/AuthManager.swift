@@ -37,21 +37,30 @@ final class AuthManager: ObservableObject {
 
     private var authListenerHandle: AuthListenerHandle?
     private var authenticationRequiredObserver: NSObjectProtocol?
+    private var authTimeoutTask: Task<Void, Never>?
+
+    /// If Firebase never invokes the auth state listener (broken SDK edge case), fall back after this delay.
+    /// `nil` disables (tests only).
+    private let authListenerTimeoutNanoseconds: UInt64?
 
     private var cancellables = Set<AnyCancellable>()
 
     init(
         authBackend: any FirebaseAuthBackend = LiveFirebaseAuthBackend(),
         notificationCenter: NotificationCenter = .default,
-        log: any VTLogging = VTLog.shared
+        log: any VTLogging = VTLog.shared,
+        authListenerTimeoutNanoseconds: UInt64? = 5_000_000_000
     ) {
         self.authBackend = authBackend
         self.notificationCenter = notificationCenter
         self.log = log
+        self.authListenerTimeoutNanoseconds = authListenerTimeoutNanoseconds
         setupSubscribers()
+        scheduleAuthListenerTimeout()
     }
 
     deinit {
+        authTimeoutTask?.cancel()
         if let authListenerHandle {
             authBackend.removeStateDidChangeListener(authListenerHandle)
         }
@@ -60,9 +69,27 @@ final class AuthManager: ObservableObject {
         }
     }
 
+    private func cancelAuthListenerTimeout() {
+        authTimeoutTask?.cancel()
+        authTimeoutTask = nil
+    }
+
+    private func scheduleAuthListenerTimeout() {
+        guard let nanos = authListenerTimeoutNanoseconds else { return }
+        cancelAuthListenerTimeout()
+        authTimeoutTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: nanos)
+            guard let self else { return }
+            guard authenticationState == .authenticating else { return }
+            log.warn("Auth listener timeout — falling back to unauthenticated", category: .auth)
+            authenticationState = .unauthenticated
+        }
+    }
+
     private func setupSubscribers() {
         authListenerHandle = authBackend.addStateDidChangeListener { [weak self] user in
             Task { @MainActor in
+                self?.cancelAuthListenerTimeout()
                 self?.user = user
                 self?.authenticationState = user == nil ? .unauthenticated : .authenticated
             }
@@ -102,11 +129,6 @@ final class AuthManager: ObservableObject {
         }
     }
 
-    func signInWithApple() async throws {
-        // TODO: Implement Sign in with Apple
-        log.warn("Sign in with Apple not yet implemented", category: .auth)
-    }
-
     func signOut() throws {
         log.info("User signed out", category: .auth)
 #if DEBUG
@@ -127,6 +149,7 @@ final class AuthManager: ObservableObject {
     /// well-known debug token.  Only available in DEBUG builds; requires
     /// DEBUG_AUTH_ENABLED=true in the backend .env.
     func signInDebug() {
+        cancelAuthListenerTimeout()
         AuthTokenProvider.shared.isDebugSession = true
         authenticationState = .authenticated
     }

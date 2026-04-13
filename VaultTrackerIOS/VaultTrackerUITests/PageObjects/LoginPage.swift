@@ -4,7 +4,6 @@ struct LoginPage {
     let app: XCUIApplication
 
     var googleSignInButton: XCUIElement { app.identified("googleSignInButton") }
-    var appleSignInButton: XCUIElement { app.identified("appleSignInButton") }
     var debugLoginButton: XCUIElement { app.identified("debugLoginButton") }
     var loadingView: XCUIElement { app.identified("loadingView") }
 
