@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { ApiClient } from "@/lib/api-client";
 import { useAuth } from "@/contexts/auth-context";
@@ -14,16 +15,24 @@ function apiBaseUrl() {
 const ApiClientContext = createContext<ApiClient | null>(null);
 
 export function ApiClientProvider({ children }: { children: ReactNode }) {
-  const { getToken, signOutUser } = useAuth();
+  const { getToken, signOutUser, user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (user === null) {
+      queryClient.clear();
+    }
+  }, [user, queryClient]);
 
   const client = useMemo(
     () =>
       new ApiClient(apiBaseUrl(), getToken, () => {
+        queryClient.clear();
         void signOutUser();
         router.push("/login");
       }),
-    [getToken, signOutUser, router]
+    [getToken, signOutUser, router, queryClient]
   );
 
   return <ApiClientContext.Provider value={client}>{children}</ApiClientContext.Provider>;
