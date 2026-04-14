@@ -1,6 +1,6 @@
 # VaultTracker iOS Refactor — Plan
 
-> **Purpose:** AI-agent consumable spec for refactoring the iOS app to consume Backend 2.0 endpoints. Read the [iOS Context](_brain/VaultTracker_Brain/Legacy/Vault%20Tracker%20-%20iOS%20Context.md) and [Backend 2.0 Spec](_brain/VaultTracker_Brain/Legacy/Vault%20Tracker%20-%20Backend%202.0%20Spec.md) first.
+> **Purpose:** AI-agent consumable spec for refactoring the iOS app to consume Backend 2.0 endpoints. Read the [iOS Context](VaultTracker/VaultTrackerSecondBrain/Archive/Vault%20Tracker%20-%20iOS%20Context.md) and [Backend 2.0 Spec](VaultTracker/VaultTrackerSecondBrain/Archive/Vault%20Tracker%20-%20Backend%202.0%20Spec.md) first.
 
 ---
 
@@ -228,61 +228,61 @@ The old `createTransaction()` method did parallel fetches to resolve the domain 
 ## Implementation Todo List
 
 ### Phase 1: Point to Production
-- [x] **1.1** Update `APIConfiguration.swift` — set `.production` to `https://vaulttracker-api.onrender.com`, switch `environment` to `.production`
+- [ ] **1.1** Update `APIConfiguration.swift` — set `.production` to `https://vaulttracker-api.onrender.com`, switch `environment` to `.production`
 - [ ] **1.2** Build & run — verify login, dashboard, add transaction, net worth chart all work against production
 
 ### Phase 2: Smart Transaction Endpoint
-- [x] **2.1** Add `APISmartTransactionCreateRequest` model to `API/Models/APITransactionModels.swift` with snake_case CodingKeys
-- [x] **2.2** Add `smartTransaction` endpoint constant to `APIConfiguration.swift`
-- [x] **2.3** Add `createSmartTransaction()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
-- [x] **2.4** Add `createSmartTransaction()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
-- [x] **2.5** Rewrite `HomeViewModel.onSave()` — replace ~60 lines of asset/account resolution with single smart endpoint call
-- [x] **2.6** Simplify `AddAssetFormViewModel.save()` — remove `getOrCreateAccount()`, return raw form fields instead of resolved `Transaction`
-- [x] **2.7** Add `createSmartTransaction()` stub to `MockDataService.swift`
+- [ ] **2.1** Add `APISmartTransactionCreateRequest` model to `API/Models/APITransactionModels.swift` with snake_case CodingKeys
+- [ ] **2.2** Add `smartTransaction` endpoint constant to `APIConfiguration.swift`
+- [ ] **2.3** Add `createSmartTransaction()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
+- [ ] **2.4** Add `createSmartTransaction()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
+- [ ] **2.5** Rewrite `HomeViewModel.onSave()` — replace ~60 lines of asset/account resolution with single smart endpoint call
+- [ ] **2.6** Simplify `AddAssetFormViewModel.save()` — remove `getOrCreateAccount()`, return raw form fields instead of resolved `Transaction`
+- [ ] **2.7** Add `createSmartTransaction()` stub to `MockDataService.swift`
 - [ ] **2.8** Test — add transaction for new asset + new account -> verify both auto-created, dashboard updates
 
 ### Phase 3: Enriched Transaction Responses
-- [x] **3.1** Add `APIAssetSummary`, `APIAccountSummary`, `APIEnrichedTransactionResponse` models to `APITransactionModels.swift`
-- [x] **3.2** Update `fetchTransactions()` return type in `APIServiceProtocol.swift` to `[APIEnrichedTransactionResponse]`; update `APIService.swift` decode
-- [x] **3.3** Simplify `DataService.fetchAllTransactions()` — single fetch instead of 3 parallel fetches + join
-- [x] **3.4** Add `toDomain(_ response: APIEnrichedTransactionResponse)` to `TransactionMapper.swift`
-- [x] **3.5** Check if `fetchAssets()` / `fetchAccounts()` / `fetchAsset(id:)` are still needed elsewhere; remove if unused
+- [ ] **3.1** Add `APIAssetSummary`, `APIAccountSummary`, `APIEnrichedTransactionResponse` models to `APITransactionModels.swift`
+- [ ] **3.2** Update `fetchTransactions()` return type in `APIServiceProtocol.swift` to `[APIEnrichedTransactionResponse]`; update `APIService.swift` decode
+- [ ] **3.3** Simplify `DataService.fetchAllTransactions()` — single fetch instead of 3 parallel fetches + join
+- [ ] **3.4** Add `toDomain(_ response: APIEnrichedTransactionResponse)` to `TransactionMapper.swift`
+- [ ] **3.5** Check if `fetchAssets()` / `fetchAccounts()` / `fetchAsset(id:)` are still needed elsewhere; remove if unused
 - [ ] **3.6** Test — transaction list displays asset name, symbol, account inline
 
 ### Phase 4: Analytics Tab
-- [x] **4.1** Create `API/Models/APIAnalyticsModels.swift` — `APIAllocationEntry`, `APIPerformanceBlock`, `APIAnalyticsResponse`
-- [x] **4.2** Add `analytics` endpoint constant to `APIConfiguration.swift`
-- [x] **4.3** Add `fetchAnalytics()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
-- [x] **4.4** Add `fetchAnalytics()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
-- [x] **4.5** Create `Analytics/AnalyticsViewModel.swift` — fetch analytics, map to view state
-- [x] **4.6** Create `Analytics/AnalyticsView.swift` — allocation chart + performance summary (gain/loss, cost basis, current value)
-- [x] **4.7** Add Analytics tab to `VaultTrackerApp.swift` TabView (3rd tab)
-- [x] **4.8** Add `fetchAnalytics()` stub to `MockDataService.swift`
+- [ ] **4.1** Create `API/Models/APIAnalyticsModels.swift` — `APIAllocationEntry`, `APIPerformanceBlock`, `APIAnalyticsResponse`
+- [ ] **4.2** Add `analytics` endpoint constant to `APIConfiguration.swift`
+- [ ] **4.3** Add `fetchAnalytics()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
+- [ ] **4.4** Add `fetchAnalytics()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
+- [ ] **4.5** Create `Analytics/AnalyticsViewModel.swift` — fetch analytics, map to view state
+- [ ] **4.6** Create `Analytics/AnalyticsView.swift` — allocation chart + performance summary (gain/loss, cost basis, current value)
+- [ ] **4.7** Add Analytics tab to `VaultTrackerApp.swift` TabView (3rd tab)
+- [ ] **4.8** Add `fetchAnalytics()` stub to `MockDataService.swift`
 - [ ] **4.9** Test — analytics tab shows correct allocation % and gain/loss numbers
 
 ### Phase 5: Price Refresh
-- [x] **5.1** Create `API/Models/APIPriceModels.swift` — `APIPriceRefreshResult`, `APIPriceUpdate`, `APIPriceError`
-- [x] **5.2** Add `priceRefresh` endpoint constant to `APIConfiguration.swift`
-- [x] **5.3** Add `refreshPrices()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
-- [x] **5.4** Add `refreshPrices()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
-- [x] **5.5** Add `refreshPrices()` method to `HomeViewModel.swift` — calls service then reloads dashboard
-- [x] **5.6** Add "Refresh Prices" toolbar button to `HomeView.swift`
-- [x] **5.7** Add `refreshPrices()` stub to `MockDataService.swift`
+- [ ] **5.1** Create `API/Models/APIPriceModels.swift` — `APIPriceRefreshResult`, `APIPriceUpdate`, `APIPriceError`
+- [ ] **5.2** Add `priceRefresh` endpoint constant to `APIConfiguration.swift`
+- [ ] **5.3** Add `refreshPrices()` to `APIServiceProtocol.swift` + implement in `APIService.swift`
+- [ ] **5.4** Add `refreshPrices()` to `DataServiceProtocol.swift` + implement in `DataService.swift`
+- [ ] **5.5** Add `refreshPrices()` method to `HomeViewModel.swift` — calls service then reloads dashboard
+- [ ] **5.6** Add "Refresh Prices" toolbar button to `HomeView.swift`
+- [ ] **5.7** Add `refreshPrices()` stub to `MockDataService.swift`
 - [ ] **5.8** Test — tap refresh -> crypto/stock values update from CoinGecko/Alpha Vantage
 
 ### Phase 6: Period-Aggregated Net Worth
-- [x] **6.1** Add period segmented control (Daily / Weekly / Monthly) to `HomeView.swift` or `NetWorthChartView.swift`
-- [x] **6.2** Add `@Published var selectedPeriod` to `HomeViewModel.swift`, wire `rebuildHistoricalSnapshots()` to pass it
+- [ ] **6.1** Add period segmented control (Daily / Weekly / Monthly) to `HomeView.swift` or `NetWorthChartView.swift`
+- [ ] **6.2** Add `@Published var selectedPeriod` to `HomeViewModel.swift`, wire `rebuildHistoricalSnapshots()` to pass it
 - [ ] **6.3** Test — toggle period -> chart re-aggregates correctly
 
 ### Phase 7: Cleanup
-- [x] **7.1** Remove `HomeViewModel.onSave()` old resolution logic (replaced by smart endpoint in 2.5)
-- [x] **7.2** Remove `AddAssetFormViewModel.getOrCreateAccount()` (replaced in 2.6)
-- [x] **7.3** Remove unused `APIService.fetchAsset(id:)` if no longer called
-- [x] **7.4** Remove old `TransactionMapper` overloads that took separate asset/account dictionaries
-- [x] **7.5** Remove or keep old `DataService.createTransaction()` — remove if nothing calls it post-migration _(removed `APIService.createTransaction` / `APITransactionCreateRequest`; `DataService` never exposed `createTransaction`.)_
-- [x] **7.6** Update all test files — `HomeViewModelTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`
-- [ ] **7.7** Final build + full test pass _(serial runs: OK. Parallel integration runs: see **Integration tests: parallel vs serial** under Verification — revisit.)_
+- [ ] **7.1** Remove `HomeViewModel.onSave()` old resolution logic (replaced by smart endpoint in 2.5)
+- [ ] **7.2** Remove `AddAssetFormViewModel.getOrCreateAccount()` (replaced in 2.6)
+- [ ] **7.3** Remove unused `APIService.fetchAsset(id:)` if no longer called
+- [ ] **7.4** Remove old `TransactionMapper` overloads that took separate asset/account dictionaries
+- [ ] **7.5** Remove or keep old `DataService.createTransaction()` — remove if nothing calls it post-migration
+- [ ] **7.6** Update all test files — `HomeViewModelTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`
+- [ ] **7.7** Final build + full test pass
 
 ---
 
@@ -297,10 +297,6 @@ The old `createTransaction()` method did parallel fetches to resolve the domain 
 7. Toggle net worth chart period (Daily/Weekly/Monthly) -> chart re-aggregates
 8. Run existing unit tests + integration tests -> all pass
 9. Verify old `POST /transactions` endpoint still works (backward compat) for any remaining callers
-
-### Integration tests: parallel vs serial
-
-Unit tests and integration tests **pass when run serially**. **Some integration tests fail under parallel test execution** (multiple simulators / concurrent workers), likely due to **shared backend state** (e.g. `clearAllData`, debug auth, single user) and **cross-test concurrency** rather than app code bugs. **Revisit later:** per-worker isolation, stronger test ordering, or restricting integration suites to a serialized test plan / single worker.
 
 ---
 

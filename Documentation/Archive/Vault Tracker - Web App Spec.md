@@ -7,7 +7,7 @@ title: Vault Tracker - Web App Spec
 
 # VaultTracker Web App — Design Spec
 
-> **Purpose:** AI-agent consumable spec for building the Next.js web application. This is a thin client — all business logic lives in the backend (see [Backend 2.0 Spec](_brain/VaultTracker_Brain/Legacy/Vault%20Tracker%20-%20Backend%202.0%20Spec.md)). Read the [Backend Context](_brain/VaultTracker_Brain/Legacy/Vault%20Tracker%20-%20Backend%20Context.md) for the current API surface.
+> **Purpose:** AI-agent consumable spec for building the Next.js web application. This is a thin client — all business logic lives in the backend (see [Backend 2.0 Spec](VaultTracker/VaultTrackerSecondBrain/Archive/Vault%20Tracker%20-%20Backend%202.0%20Spec.md)). Read the [Backend Context](VaultTracker/VaultTrackerSecondBrain/Archive/Vault%20Tracker%20-%20Backend%20Context.md) for the current API surface.
 
 ---
 
@@ -29,15 +29,15 @@ The web app is a responsive dashboard for tracking personal net worth. It consum
 
 ### Pages
 
-| Route           | Page                                                 | Auth | Data Source                                                                                  |
-| --------------- | ---------------------------------------------------- | ---- | -------------------------------------------------------------------------------------------- |
-| `/`             | Redirect                                             | No   | —                                                                                            |
-| `/login`        | Google Sign-In                                       | No   | Firebase Auth                                                                                |
-| `/dashboard`    | Net worth, chart, categories, holdings, price lookup | Yes  | `GET /dashboard` + `GET /networth/history` + `GET /prices/{symbol}`                          |
-| `/analytics`    | Allocation donut, trends, gain/loss                  | Yes  | `GET /analytics`                                                                             |
-| `/transactions` | Sortable table + add/edit/delete                     | Yes  | `GET /transactions` (enriched) + `POST /transactions/smart` + `PUT /transactions/{id}/smart` |
-| `/accounts`     | Account CRUD + linked assets                         | Yes  | `GET /accounts` + CRUD                                                                       |
-| `/profile`      | User info, sign out, theme, delete data              | Yes  | Firebase Auth + `DELETE /users/me/data`                                                      |
+| Route | Page | Auth | Data Source |
+|-------|------|------|-------------|
+| `/` | Redirect | No | — |
+| `/login` | Google Sign-In | No | Firebase Auth |
+| `/dashboard` | Net worth, chart, categories, holdings, price lookup | Yes | `GET /dashboard` + `GET /networth/history` + `GET /prices/{symbol}` |
+| `/analytics` | Allocation donut, trends, gain/loss | Yes | `GET /analytics` |
+| `/transactions` | Sortable table + add/edit/delete | Yes | `GET /transactions` (enriched) + `POST /transactions/smart` |
+| `/accounts` | Account CRUD + linked assets | Yes | `GET /accounts` + CRUD |
+| `/profile` | User info, sign out, theme, delete data | Yes | Firebase Auth + `DELETE /users/me/data` |
 
 ---
 
@@ -45,19 +45,19 @@ The web app is a responsive dashboard for tracking personal net worth. It consum
 
 ### Tech Stack
 
-| Layer        | Technology                   |
-| ------------ | ---------------------------- |
-| Framework    | Next.js 14+ (App Router)     |
-| Language     | TypeScript 5.x               |
-| Styling      | Tailwind CSS 3.x             |
-| Components   | shadcn/ui                    |
-| Server state | TanStack React Query 5.x     |
-| Charts       | Recharts 2.x                 |
-| Tables       | TanStack Table 8.x           |
-| Forms        | React Hook Form + Zod        |
-| Auth         | Firebase Auth (Web SDK) 10.x |
-| HTTP         | Native fetch (wrapped)       |
-| Deployment   | Vercel (free tier)           |
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14+ (App Router) |
+| Language | TypeScript 5.x |
+| Styling | Tailwind CSS 3.x |
+| Components | shadcn/ui |
+| Server state | TanStack React Query 5.x |
+| Charts | Recharts 2.x |
+| Tables | TanStack Table 8.x |
+| Forms | React Hook Form + Zod |
+| Auth | Firebase Auth (Web SDK) 10.x |
+| HTTP | Native fetch (wrapped) |
+| Deployment | Vercel (free tier) |
 
 ### Directory Structure
 
@@ -163,7 +163,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
         ...options?.headers,
       },
@@ -175,7 +175,7 @@ class ApiClient {
       const retry = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
         headers: {
-          Authorization: `Bearer ${freshToken}`,
+          "Authorization": `Bearer ${freshToken}`,
           "Content-Type": "application/json",
           ...options?.headers,
         },
@@ -192,9 +192,7 @@ class ApiClient {
     return response.json();
   }
 
-  get<T>(endpoint: string) {
-    return this.request<T>(endpoint);
-  }
+  get<T>(endpoint: string) { return this.request<T>(endpoint); }
 
   post<T>(endpoint: string, body: unknown) {
     return this.request<T>(endpoint, {
@@ -246,9 +244,6 @@ export interface HoldingItem {
 
 export interface EnrichedTransaction {
   id: string;
-  user_id: string;
-  asset_id: string;
-  account_id: string;
   transaction_type: TransactionType;
   quantity: number;
   price_per_unit: number;
@@ -267,7 +262,6 @@ export interface AccountResponse {
 
 export interface AssetResponse {
   id: string;
-  user_id: string;
   name: string;
   symbol: string | null;
   category: Category;
@@ -291,13 +285,7 @@ export interface NetWorthHistoryResponse {
 }
 
 export interface PriceRefreshResponse {
-  updated: Array<{
-    asset_id: string;
-    symbol: string;
-    old_value: number;
-    new_value: number;
-    price: number;
-  }>;
+  updated: Array<{ asset_id: string; symbol: string; old_value: number; new_value: number; price: number }>;
   skipped: string[];
   errors: Array<{ symbol: string; error: string }>;
 }
@@ -361,7 +349,8 @@ export function useTransactions() {
 export function useCreateTransaction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SmartTransactionCreate) => api.post("/api/v1/transactions/smart", data),
+    mutationFn: (data: SmartTransactionCreate) =>
+      api.post("/api/v1/transactions/smart", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });
@@ -375,8 +364,8 @@ export function useCreateTransaction() {
 export function useUpdateTransaction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: SmartTransactionCreate }) =>
-      api.put(`/api/v1/transactions/${id}/smart`, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<SmartTransactionCreate> }) =>
+      api.put(`/api/v1/transactions/${id}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });
@@ -501,12 +490,11 @@ export function useDeleteUserData() {
 }
 ```
 
-### Add / edit transaction form
+### Add Transaction Form
 
-Create calls `POST /api/v1/transactions/smart`. Edit sends the same payload shape to `PUT /api/v1/transactions/{id}/smart` (server reverses the old row on its asset, then re-resolves account + asset like create). **No resolution logic lives in the client.**
+The form calls `POST /api/v1/transactions/smart`. **No resolution logic lives in the client.**
 
 Fields:
-
 - Transaction type: buy / sell (radio group)
 - Category: crypto / stocks / cash / realEstate / retirement (select)
 - Asset name: text input (e.g., "Bitcoin", "AAPL", "Savings")
@@ -520,7 +508,6 @@ Fields:
 - Date: date picker (defaults to today)
 
 Validation via Zod:
-
 ```typescript
 const transactionSchema = z.object({
   transaction_type: z.enum(["buy", "sell"]),
@@ -539,18 +526,18 @@ const transactionSchema = z.object({
 
 TanStack Table with these columns:
 
-| Column   | Source              | Sortable | Filterable     |
-| -------- | ------------------- | -------- | -------------- |
-| Date     | `date`              | Yes      | No             |
-| Type     | `transaction_type`  | No       | Yes (buy/sell) |
-| Asset    | `asset.name`        | Yes      | Yes (search)   |
-| Symbol   | `asset.symbol`      | No       | No             |
-| Category | `asset.category`    | No       | Yes (select)   |
-| Account  | `account.name`      | No       | Yes (select)   |
-| Quantity | `quantity`          | Yes      | No             |
-| Price    | `price_per_unit`    | Yes      | No             |
-| Total    | `total_value`       | Yes      | No             |
-| Actions  | edit/delete buttons | No       | No             |
+| Column | Source | Sortable | Filterable |
+|--------|--------|----------|------------|
+| Date | `date` | Yes | No |
+| Type | `transaction_type` | No | Yes (buy/sell) |
+| Asset | `asset.name` | Yes | Yes (search) |
+| Symbol | `asset.symbol` | No | No |
+| Category | `asset.category` | No | Yes (select) |
+| Account | `account.name` | No | Yes (select) |
+| Quantity | `quantity` | Yes | No |
+| Price | `price_per_unit` | Yes | No |
+| Total | `total_value` | Yes | No |
+| Actions | edit/delete buttons | No | No |
 
 Pagination: client-side, 20 rows per page.
 
@@ -559,7 +546,6 @@ CSV export: downloads all transactions as CSV (date, type, asset, symbol, catego
 ### Responsive Layout
 
 **Desktop (> 1024px):**
-
 ```
 ┌──────────┬─────────────────────────────────────┐
 │          │                                     │
@@ -575,7 +561,6 @@ CSV export: downloads all transactions as CSV (date, type, asset, symbol, catego
 ```
 
 **Mobile (< 768px):**
-
 ```
 ┌─────────────────────────────────────┐
 │                                     │
@@ -626,73 +611,73 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 
 ### Phase 1: Project Scaffolding
 
-- [x] **1.1** `npx create-next-app@latest VaultTrackerWeb --typescript --tailwind --app --src-dir` (scaffold inside the monorepo)
-- [x] **1.2** `npx shadcn@latest init` + add components: button, card, input, dialog, sheet, toast, table, dropdown-menu, avatar, badge, separator, tabs, skeleton, select, popover, calendar
-- [x] **1.3** `npm install @tanstack/react-query @tanstack/react-table recharts react-hook-form @hookform/resolvers zod firebase date-fns next-themes`
-- [x] **1.4** Set up `lib/firebase.ts` — Firebase app init, auth exports
-- [x] **1.5** Set up `lib/api-client.ts` — fetch wrapper with JWT + 401 retry
-- [x] **1.6** Set up `contexts/auth-context.tsx` — `onAuthStateChanged`, token management
-- [x] **1.7** Set up React Query provider in `app/layout.tsx`
-- [x] **1.8** Set up dark mode — `next-themes` or ThemeContext + Tailwind `class` strategy
-- [x] **1.9** Set up `types/api.ts` — all TypeScript types matching backend schemas (use literal unions for Category, AccountType, TransactionType, NetWorthPeriod)
-- [x] **1.10** Set up all React Query hooks in `lib/queries/` — dashboard, transactions (CRUD), accounts (CRUD), assets (with category filter), analytics, networth, prices (refresh + lookup), user (delete data)
+- [ ] **1.1** `npx create-next-app@latest VaultTrackerWeb --typescript --tailwind --app --src-dir` (scaffold inside the monorepo)
+- [ ] **1.2** `npx shadcn@latest init` + add components: button, card, input, dialog, sheet, toast, table, dropdown-menu, avatar, badge, separator, tabs, skeleton, select, popover, calendar
+- [ ] **1.3** `npm install @tanstack/react-query @tanstack/react-table recharts react-hook-form @hookform/resolvers zod firebase date-fns next-themes`
+- [ ] **1.4** Set up `lib/firebase.ts` — Firebase app init, auth exports
+- [ ] **1.5** Set up `lib/api-client.ts` — fetch wrapper with JWT + 401 retry
+- [ ] **1.6** Set up `contexts/auth-context.tsx` — `onAuthStateChanged`, token management
+- [ ] **1.7** Set up React Query provider in `app/layout.tsx`
+- [ ] **1.8** Set up dark mode — `next-themes` or ThemeContext + Tailwind `class` strategy
+- [ ] **1.9** Set up `types/api.ts` — all TypeScript types matching backend schemas (use literal unions for Category, AccountType, TransactionType, NetWorthPeriod)
+- [ ] **1.10** Set up all React Query hooks in `lib/queries/` — dashboard, transactions (CRUD), accounts (CRUD), assets (with category filter), analytics, networth, prices (refresh + lookup), user (delete data)
 
 ### Phase 2: Auth & Layout Shell
 
-- [x] **2.1** Build `/login` page — Google Sign-In button via Firebase Auth popup
-- [x] **2.2** Build `(authenticated)/layout.tsx` — auth guard + app shell
-- [x] **2.3** Build sidebar component — navigation links, theme toggle, user avatar
-- [x] **2.4** Build mobile bottom tabs component
-- [x] **2.5** Build `/profile` page — display name, email, sign out button, theme toggle, "Delete All Data" danger zone
-- [x] **2.6** Root `/` page — redirect to `/dashboard` or `/login`
+- [ ] **2.1** Build `/login` page — Google Sign-In button via Firebase Auth popup
+- [ ] **2.2** Build `(authenticated)/layout.tsx` — auth guard + app shell
+- [ ] **2.3** Build sidebar component — navigation links, theme toggle, user avatar
+- [ ] **2.4** Build mobile bottom tabs component
+- [ ] **2.5** Build `/profile` page — display name, email, sign out button, theme toggle, "Delete All Data" danger zone
+- [ ] **2.6** Root `/` page — redirect to `/dashboard` or `/login`
 
 ### Phase 3: Dashboard Page
 
-- [x] **3.1** Wire up `useDashboard`, `useNetWorthHistory`, and `useAssets(category?)` query hooks
-- [x] **3.2** Build stat cards — total net worth + 5 category totals
-- [x] **3.3** Build net worth line chart (Recharts `LineChart` + `AreaChart`, CatmullRom)
-- [x] **3.4** Build proportional category bar (colored segments)
-- [x] **3.5** Build grouped holdings grid — expandable sections per category
-- [x] **3.6** Add category filter chips (All + 5 categories)
-- [x] **3.7** Add "Refresh Prices" button (calls `POST /prices/refresh`)
-- [x] **3.8** Loading skeletons for all dashboard components
-- [x] **3.9** Error state handling
+- [ ] **3.1** Wire up `useDashboard`, `useNetWorthHistory`, and `useAssets(category?)` query hooks
+- [ ] **3.2** Build stat cards — total net worth + 5 category totals
+- [ ] **3.3** Build net worth line chart (Recharts `LineChart` + `AreaChart`, CatmullRom)
+- [ ] **3.4** Build proportional category bar (colored segments)
+- [ ] **3.5** Build grouped holdings grid — expandable sections per category
+- [ ] **3.6** Add category filter chips (All + 5 categories)
+- [ ] **3.7** Add "Refresh Prices" button (calls `POST /prices/refresh`)
+- [ ] **3.8** Loading skeletons for all dashboard components
+- [ ] **3.9** Error state handling
 
 ### Phase 4: Transactions Page
 
-- [x] **4.1** Wire up `useTransactions`, `useCreateTransaction`, `useUpdateTransaction`, `useDeleteTransaction` hooks
-- [x] **4.2** Build transaction table — TanStack Table with all columns
-- [x] **4.3** Add column sorting
-- [x] **4.4** Add search (asset name) + filters (category, type, account)
-- [x] **4.5** Add pagination (client-side, 20 per page)
-- [x] **4.6** Build add transaction modal — React Hook Form + Zod
+- [ ] **4.1** Wire up `useTransactions`, `useCreateTransaction`, `useUpdateTransaction`, `useDeleteTransaction` hooks
+- [ ] **4.2** Build transaction table — TanStack Table with all columns
+- [ ] **4.3** Add column sorting
+- [ ] **4.4** Add search (asset name) + filters (category, type, account)
+- [ ] **4.5** Add pagination (client-side, 20 per page)
+- [ ] **4.6** Build add transaction modal — React Hook Form + Zod
   - Category-dependent field visibility (symbol, quantity label, price)
   - Cash/realEstate: quantity = amount, price = 1.0
-- [x] **4.7** Build edit transaction modal (pre-filled, calls `PUT /transactions/{id}/smart` with same body shape as smart create)
-- [x] **4.8** Delete transaction with confirmation dialog
-- [x] **4.9** CSV export button
+- [ ] **4.7** Build edit transaction modal (pre-filled, calls `PUT /transactions/{id}`)
+- [ ] **4.8** Delete transaction with confirmation dialog
+- [ ] **4.9** CSV export button
 
 ### Phase 5: Accounts Page
 
-- [x] **5.1** Wire up `useAccounts`, `useCreateAccount`, `useUpdateAccount`, `useDeleteAccount` hooks
-- [x] **5.2** Build account card grid — name, type, created date
-- [x] **5.3** Build add account modal (name + type)
-- [x] **5.4** Build edit account modal
-- [x] **5.5** Delete account with confirmation (warn: cascading deletes)
-- [x] **5.6** Show linked assets/transaction count per account (requires `GET /assets` + `GET /transactions` filtered)
+- [ ] **5.1** Wire up `useAccounts`, `useCreateAccount`, `useUpdateAccount`, `useDeleteAccount` hooks
+- [ ] **5.2** Build account card grid — name, type, created date
+- [ ] **5.3** Build add account modal (name + type)
+- [ ] **5.4** Build edit account modal
+- [ ] **5.5** Delete account with confirmation (warn: cascading deletes)
+- [ ] **5.6** Show linked assets/transaction count per account (requires `GET /assets` + `GET /transactions` filtered)
 
 ### Phase 6: Analytics Page
 
-- [x] **6.1** Create `use-analytics` query hook
-- [x] **6.2** Asset allocation donut chart (Recharts `PieChart`)
-- [x] **6.3** Performance summary cards (gain/loss, cost basis, current value)
-- [x] **6.4** Net worth chart with period selector (daily/weekly/monthly/all)
-- [x] **6.5** Single price lookup — search by symbol, display current price via `GET /prices/{symbol}`
+- [ ] **6.1** Create `use-analytics` query hook
+- [ ] **6.2** Asset allocation donut chart (Recharts `PieChart`)
+- [ ] **6.3** Performance summary cards (gain/loss, cost basis, current value)
+- [ ] **6.4** Net worth chart with period selector (daily/weekly/monthly/all)
+- [ ] **6.5** Single price lookup — search by symbol, display current price via `GET /prices/{symbol}`
 
 ### Phase 7: Polish & Deploy
 
-- [x] **7.1** Empty states for all pages (no data yet)
-- [x] **7.2** Error boundary component
+- [ ] **7.1** Empty states for all pages (no data yet)
+- [ ] **7.2** Error boundary component
 - [ ] **7.3** Responsive testing — mobile, tablet, desktop
 - [ ] **7.4** Dark mode testing across all pages
 - [ ] **7.5** Deploy to Vercel — connect GitHub repo, set env vars
