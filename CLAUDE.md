@@ -76,7 +76,11 @@ Both API and iOS must agree on the debug token. In the API `.env`: `DEBUG_AUTH_E
 
 - **Design for scale.** Prefer patterns that stay sound as portfolios and traffic grow: respect existing layering (API services vs routers; Web data hooks vs UI; iOS managers vs views), avoid unbounded queries and accidental N+1 or O(n²) paths where lists and aggregations are involved, and use pagination, batching, caching, and indexing in line with how each subproject already handles reads and writes. When a shortcut trades clarity or performance for speed, call that out and fix it before it becomes load-bearing.
 
+- **Simplicity is best.** Make the minimal change needed to achieve the required result. Avoid unnecessary abstractions, extra configuration, speculative features, or "while I'm here" refactors. Smaller diffs are easier to review, less likely to break, and simpler to revert.
+
 - **Security.** Never commit secrets, API keys, or production credentials; keep `.env*`, private keys, and service tokens out of repos, screenshots, and chat. On the **API**, verify identity on every protected route (Firebase JWT or the documented local debug path only where intended), scope every read/write by `user_id`, validate and bound inputs at boundaries, and return errors that do not leak stack traces, tokens, or other users’ data. On **clients** (Web/iOS), use TLS to the API, follow existing auth flows, and avoid logging PII, tokens, or full payloads.
+
+- **Plan completion documentation.** Every newly created implementation plan must include a **final todo item** to update `Documentation/VaultTracker System Design.md` with any architecture, data-flow, API contract, or behavior changes introduced by that plan.
 
 ## Quick Commands
 

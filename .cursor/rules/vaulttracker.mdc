@@ -71,6 +71,11 @@ When you **create or execute a plan** (including `TodoWrite` / task lists in cha
 - **When a todo is finished** — Update the task list (e.g. `TodoWrite`) right away: mark that item **completed**, and do not leave items **in_progress** once the work is done.
 - **Accuracy** — The checklist the user sees should match what is actually done; refresh it after each completed unit of work, not only at the end of a session.
 
+### Full-plan documentation sync
+
+- **Plan creation requirement** — Every newly created plan must include a **final todo item** to update `Documentation/VaultTracker System Design.md`.
+- **Scope of that final todo** — Capture architecture, data-flow, API contract, and behavior changes introduced by the plan so system-level documentation stays current.
+
 This pairs with **Change communication** (what to summarize) and optional checkpoint modes in **Web implementation (pair programming)** below.
 
 ---

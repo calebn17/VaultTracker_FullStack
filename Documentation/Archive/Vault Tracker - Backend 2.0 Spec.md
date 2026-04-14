@@ -1,6 +1,14 @@
+---
+tags:
+  - vaultTracker
+  - python
+  - backend
+title: Vault Tracker - Backend 2.0 Spec
+---
+
 # VaultTracker Backend 2.0 — Design Spec
 
-> **Purpose:** AI-agent consumable spec for evolving the FastAPI backend from a simple CRUD API into a smart service layer. Read the [Backend Context](_brain/VaultTracker_Brain/Legacy/Vault%20Tracker%20-%20Backend%20Context.md) first for current state.
+> **Purpose:** AI-agent consumable spec for evolving the FastAPI backend from a simple CRUD API into a smart service layer. Read the [Backend Context](VaultTracker/VaultTrackerSecondBrain/Archive/Vault%20Tracker%20-%20Backend%20Context.md) first for current state.
 
 ---
 
@@ -580,50 +588,48 @@ def get_dashboard(user: User = Depends(get_current_user), db: Session = Depends(
 
 ## Implementation Todo List
 
-> **Checklist discipline:** When you implement or verify work in this repo, **update the checkboxes in this section** to match reality. Code-complete items use `[x]`. Leave `[ ]` for steps that need a **human** (Swagger pass, iOS build, deploy, timing checks) until they are done. Cursor agents: see `.cursor/rules/vaulttracker-collaboration.mdc`.
-
 ### Phase 1: Infrastructure
 
-- [x] **1.1** PostgreSQL migration — `database.py`, `requirements.txt`, `.env`
-- [x] **1.2** Firebase JWT verification — `dependencies.py`, `requirements.txt`, `config.py`
-- [x] **1.3** CORS tightening — `config.py`, `main.py`
-- [x] **1.4** Deploy to Render + Neon — verify `/health` endpoint *(human / deploy)*
+- [ ] **1.1** PostgreSQL migration — `database.py`, `requirements.txt`, `.env`
+- [ ] **1.2** Firebase JWT verification — `dependencies.py`, `requirements.txt`, `config.py`
+- [ ] **1.3** CORS tightening — `config.py`, `main.py`
+- [ ] **1.4** Deploy to Render + Neon — verify `/health` endpoint
 
 ### Phase 2: Smart Endpoints
 
-- [x] **2.1** Create `app/services/` directory
-- [x] **2.2** Build `transaction_service.py` — `smart_create()` with asset + account resolution
-- [x] **2.3** Extract `update_asset_from_transaction()` and `record_networth_snapshot()` into reusable functions (if not already) — `app/services/asset_sync.py`
-- [x] **2.4** Add `SmartTransactionCreate` schema
-- [x] **2.5** Add `POST /api/v1/transactions/smart` route
-- [x] **2.6** Add `EnrichedTransactionResponse` schema with nested asset + account
-- [x] **2.7** Update `GET /api/v1/transactions` to return enriched responses
-- [x] **2.8** Build `analytics_service.py` — allocation, performance
-- [x] **2.9** Add `AnalyticsResponse` schema
-- [x] **2.10** Add `GET /api/v1/analytics` route + mount in `main.py`
-- [x] **2.11** Implement `period` aggregation in `GET /api/v1/networth/history` — supports `daily` | `weekly` | `monthly` | `all`; unknown period returns full series
-- [x] **2.12** Exercise new endpoints — automated via `pytest tests/` (Swagger/curl still useful for ad hoc checks)
-- [x] **2.13** Verify iOS app still works (backward compatibility) *(human — iOS build)*
+- [ ] **2.1** Create `app/services/` directory
+- [ ] **2.2** Build `transaction_service.py` — `smart_create()` with asset + account resolution
+- [ ] **2.3** Extract `update_asset_from_transaction()` and `record_networth_snapshot()` into reusable functions (if not already)
+- [ ] **2.4** Add `SmartTransactionCreate` schema
+- [ ] **2.5** Add `POST /api/v1/transactions/smart` route
+- [ ] **2.6** Add `EnrichedTransactionResponse` schema with nested asset + account
+- [ ] **2.7** Update `GET /api/v1/transactions` to return enriched responses
+- [ ] **2.8** Build `analytics_service.py` — allocation, performance
+- [ ] **2.9** Add `AnalyticsResponse` schema
+- [ ] **2.10** Add `GET /api/v1/analytics` route + mount in `main.py`
+- [ ] **2.11** Implement `period` aggregation in `GET /api/v1/networth/history`
+- [ ] **2.12** Test all new endpoints via Swagger UI
+- [ ] **2.13** Verify iOS app still works (backward compatibility)
 
 ### Phase 3: Price Service
 
-- [x] **3.1** Add `httpx` to `requirements.txt`
-- [x] **3.2** Add `ALPHA_VANTAGE_API_KEY` to `config.py`
-- [x] **3.3** Build `price_service.py` — CoinGecko + Alpha Vantage
-- [x] **3.4** Add `POST /api/v1/prices/refresh` route
-- [x] **3.5** Add `GET /api/v1/prices/{symbol}` route
-- [x] **3.6** Mount prices router in `main.py`
-- [x] **3.7** Test with real crypto + stock symbols — `tests/test_prices.py` mocks HTTP; optional live check with `ALPHA_VANTAGE_API_KEY` + `/api/v1/prices/{symbol}`
+- [ ] **3.1** Add `httpx` to `requirements.txt`
+- [ ] **3.2** Add `ALPHA_VANTAGE_API_KEY` to `config.py`
+- [ ] **3.3** Build `price_service.py` — CoinGecko + Alpha Vantage
+- [ ] **3.4** Add `POST /api/v1/prices/refresh` route
+- [ ] **3.5** Add `GET /api/v1/prices/{symbol}` route
+- [ ] **3.6** Mount prices router in `main.py`
+- [ ] **3.7** Test with real crypto + stock symbols
 
 ### Phase 4: Caching
 
-- [x] **4.1** Add `cachetools` to `requirements.txt`
-- [x] **4.2** Build `cache_service.py`
-- [x] **4.3** Integrate cache into dashboard router
-- [x] **4.4** Integrate cache into analytics router
-- [x] **4.5** Add cache invalidation to transaction service
-- [x] **4.6** Add cache invalidation to price service
-- [x] **4.7** Cache behavior — `tests/test_analytics_dashboard_cache.py` asserts dashboard cache fill + invalidation after a smart transaction
+- [ ] **4.1** Add `cachetools` to `requirements.txt`
+- [ ] **4.2** Build `cache_service.py`
+- [ ] **4.3** Integrate cache into dashboard router
+- [ ] **4.4** Integrate cache into analytics router
+- [ ] **4.5** Add cache invalidation to transaction service
+- [ ] **4.6** Add cache invalidation to price service
+- [ ] **4.7** Test cache hit/miss behavior
 
 ---
 
