@@ -10,10 +10,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from starlette.requests import Request
 
 import app.models  # noqa: F401 — register all ORM tables with Base.metadata
 from app.config import settings
 from app.database import Base, engine
+from app.rate_limit import limiter, rate_limit_exceeded_handler
 from app.routers import (
     accounts_router,
     analytics_router,
@@ -40,6 +44,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# Middleware: last added runs first on incoming requests — CORS outermost so OPTIONS
+# preflight is handled before SlowAPI.
+app.add_middleware(SlowAPIMiddleware)
+
 # CORS: browsers (e.g. web client, Swagger UI) send an Origin header;
 # native iOS URLSession does not.
 _origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
@@ -64,10 +75,12 @@ app.include_router(prices_router, prefix="/api/v1")
 
 
 @app.get("/")
-async def root():
+@limiter.exempt
+async def root(request: Request):
     return {"message": "VaultTracker API", "version": "1.0.0"}
 
 
 @app.get("/health")
-async def health_check():
+@limiter.exempt
+async def health_check(request: Request):
     return {"status": "healthy"}

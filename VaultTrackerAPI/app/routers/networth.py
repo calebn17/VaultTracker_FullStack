@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.user import User
+from app.rate_limit import coerce_json_response, limiter, rate_limit_read
 from app.schemas.networth import NetWorthHistoryResponse, NetWorthSnapshotResponse
 from app.services.cache_service import cache
 
@@ -62,7 +64,10 @@ def _aggregate_snapshots(
 
 
 @router.get("/history", response_model=NetWorthHistoryResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_networth_history(
+    request: Request,
     period: str = Query(
         "daily", description="daily | weekly | monthly | all (unknown → all snapshots)"
     ),

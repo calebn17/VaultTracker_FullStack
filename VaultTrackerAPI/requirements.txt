@@ -9,4 +9,5 @@ psycopg2-binary>=2.9.10
 firebase-admin>=6.6.0
 httpx>=0.28.0
 cachetools>=5.5.0
+slowapi>=0.1.9
 pytest>=8.3.0

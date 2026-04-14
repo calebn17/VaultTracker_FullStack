@@ -30,6 +30,7 @@ db.SessionLocal = _test_session_local
 from app.dependencies import get_current_user  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.user import User  # noqa: E402
+from app.rate_limit import reset_rate_limit_storage  # noqa: E402
 from app.services.cache_service import cache  # noqa: E402
 
 
@@ -44,6 +45,7 @@ def _reset_database_and_cache() -> None:
     Base.metadata.drop_all(bind=_test_engine)
     Base.metadata.create_all(bind=_test_engine)
     _clear_caches()
+    reset_rate_limit_storage()
     yield
 
 

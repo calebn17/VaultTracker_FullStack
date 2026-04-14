@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.rate_limit import coerce_json_response, limiter, rate_limit_read
 from app.schemas.analytics import AnalyticsResponse
 from app.services.analytics_service import AnalyticsService
 from app.services.cache_service import cache
@@ -12,7 +14,10 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
 @router.get("", response_model=AnalyticsResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 def get_analytics(
+    request: Request,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

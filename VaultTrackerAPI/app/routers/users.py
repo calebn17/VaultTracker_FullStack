@@ -12,6 +12,7 @@ This endpoint is used by integration tests to reset state between runs.
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -21,14 +22,19 @@ from app.models.fire_profile import FIREProfile
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.rate_limit import coerce_json_response, limiter, rate_limit_write
 from app.services.cache_service import cache
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.delete("/me/data", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def clear_user_data(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
     Delete all financial data for the current user.

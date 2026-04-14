@@ -157,7 +157,8 @@ This is a **FastAPI + SQLAlchemy** backend serving the VaultTracker iOS app (def
 
 ```
 app/
-  main.py          # App factory, router mounts, lifespan (create_all)
+  main.py          # App factory, router mounts, lifespan (create_all), SlowAPI + CORS order
+  rate_limit.py    # SlowAPI limiter, key func (JWT sub / IP), 429 handler, coerce_json_response
   config.py        # Pydantic Settings, reads .env
   database.py      # SQLAlchemy engine + SessionLocal + Base
   dependencies.py  # get_current_user — the auth dependency
@@ -188,6 +189,10 @@ cd VaultTrackerAPI
 Every protected route injects `Depends(get_current_user)` ([app/dependencies.py](app/dependencies.py)). When `FIREBASE_CREDENTIALS_PATH` points to a service account JSON, Bearer tokens are verified with **Firebase Admin** and `uid` becomes `firebase_id`. If Firebase is not configured, only the **debug bypass** works (or you get 503 for real tokens). Users are auto-created on first request.
 
 **Debug bypass:** Set `DEBUG_AUTH_ENABLED=true` in `.env` and send `Authorization: Bearer vaulttracker-debug-user`. This maps to the fixed `firebase_id` `"debug-user"` so the same DB row is reused across restarts. This must stay disabled in any non-local environment and must match `AuthTokenProvider.debugToken` in the iOS client.
+
+### Rate limiting
+
+[app/rate_limit.py](app/rate_limit.py) registers a SlowAPI `Limiter` with callable tier strings from settings (`rate_limit_read`, `rate_limit_write`, `rate_limit_external`) so tests can monkeypatch limits. Routers use `@limiter.limit(...)`, `Request` on each handler, and `@coerce_json_response` (and `json_status_code=201` on POST creates) so SlowAPI can attach `X-RateLimit-*` headers to a `Response`. `GET /` and `GET /health` are exempt. Storage is cleared in `tests/conftest.py` via `reset_rate_limit_storage()`. Spec: [Documentation/2026-04-13-rate-limiting-design.md](Documentation/2026-04-13-rate-limiting-design.md).
 
 ### Transaction endpoints
 
@@ -239,6 +244,9 @@ Loaded from `.env` via pydantic-settings ([app/config.py](app/config.py)):
 | `ALLOWED_ORIGINS`           | localhost 3000/8000 (see `config.py`) | Comma-separated CORS origins                             |
 | `FIREBASE_CREDENTIALS_PATH` | (empty)                               | Service account JSON; required for real JWT verification |
 | `ALPHA_VANTAGE_API_KEY`     | (empty)                               | Stock quotes (`/prices`, refresh)                        |
+| `RATE_LIMIT_READ`           | `60/minute`                           | SlowAPI read tier (GET API routes)                     |
+| `RATE_LIMIT_WRITE`          | `30/minute`                           | SlowAPI write tier (mutations)                         |
+| `RATE_LIMIT_EXTERNAL`       | `10/minute`                           | Price refresh + public `GET /prices/{symbol}`          |
 
 
 Database tables are created automatically via `Base.metadata.create_all` in the lifespan handler — there are no migration scripts.

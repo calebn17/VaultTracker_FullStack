@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -21,6 +22,12 @@ from app.models.asset import Asset
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.rate_limit import (
+    coerce_json_response,
+    limiter,
+    rate_limit_read,
+    rate_limit_write,
+)
 from app.schemas.transaction import (
     AccountSummary,
     AssetSummary,
@@ -71,7 +78,10 @@ def _to_enriched(t: Transaction) -> EnrichedTransactionResponse:
 
 
 @router.get("", response_model=list[EnrichedTransactionResponse])
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_transactions(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -89,7 +99,10 @@ async def get_transactions(
 @router.post(
     "/smart", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED
 )
+@limiter.limit(rate_limit_write)
+@coerce_json_response(json_status_code=201)
 async def create_smart_transaction(
+    request: Request,
     body: SmartTransactionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -106,7 +119,10 @@ async def create_smart_transaction(
 @router.post(
     "", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED
 )
+@limiter.limit(rate_limit_write)
+@coerce_json_response(json_status_code=201)
 async def create_transaction(
+    request: Request,
     transaction: TransactionCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -175,7 +191,10 @@ async def create_transaction(
 
 
 @router.get("/{transaction_id}", response_model=TransactionResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_transaction(
+    request: Request,
     transaction_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -199,7 +218,10 @@ async def get_transaction(
 
 
 @router.put("/{transaction_id}/smart", response_model=TransactionResponse)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def update_smart_transaction(
+    request: Request,
     transaction_id: str,
     body: SmartTransactionCreate,
     current_user: User = Depends(get_current_user),
@@ -226,7 +248,10 @@ async def update_smart_transaction(
 
 
 @router.put("/{transaction_id}", response_model=TransactionResponse)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def update_transaction(
+    request: Request,
     transaction_id: str,
     transaction_update: TransactionUpdate,
     current_user: User = Depends(get_current_user),
@@ -284,7 +309,10 @@ async def update_transaction(
 
 
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def delete_transaction(
+    request: Request,
     transaction_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

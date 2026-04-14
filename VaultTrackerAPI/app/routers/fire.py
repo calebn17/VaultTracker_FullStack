@@ -5,11 +5,18 @@ FIRE calculator routes (/api/v1/fire).
 from fastapi import APIRouter, Depends
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.fire_profile import FIREProfile
 from app.models.user import User
+from app.rate_limit import (
+    coerce_json_response,
+    limiter,
+    rate_limit_read,
+    rate_limit_write,
+)
 from app.schemas.fire import (
     FIREProfileInput,
     FIREProfileResponse,
@@ -57,7 +64,10 @@ def _apply_fire_profile_input(row: FIREProfile, body: FIREProfileInput) -> None:
 
 
 @router.get("/profile", response_model=FIREProfileResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_fire_profile(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -66,7 +76,10 @@ async def get_fire_profile(
 
 
 @router.put("/profile", response_model=FIREProfileResponse)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def upsert_fire_profile(
+    request: Request,
     body: FIREProfileInput,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -114,7 +127,10 @@ async def upsert_fire_profile(
 
 
 @router.get("/projection", response_model=FIREProjectionResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_fire_projection(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

@@ -8,26 +8,40 @@ user; attempts to access another user's accounts return 404.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.account import Account
 from app.models.user import User
+from app.rate_limit import (
+    coerce_json_response,
+    limiter,
+    rate_limit_read,
+    rate_limit_write,
+)
 from app.schemas.account import AccountCreate, AccountResponse, AccountUpdate
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
 @router.get("", response_model=list[AccountResponse])
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_accounts(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """Get all accounts for the current user."""
     return db.query(Account).filter(Account.user_id == current_user.id).all()
 
 
 @router.post("", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit(rate_limit_write)
+@coerce_json_response(json_status_code=201)
 async def create_account(
+    request: Request,
     account: AccountCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -45,7 +59,10 @@ async def create_account(
 
 
 @router.get("/{account_id}", response_model=AccountResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_account(
+    request: Request,
     account_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -65,7 +82,10 @@ async def get_account(
 
 
 @router.put("/{account_id}", response_model=AccountResponse)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def update_account(
+    request: Request,
     account_id: str,
     account_update: AccountUpdate,
     current_user: User = Depends(get_current_user),
@@ -93,7 +113,10 @@ async def update_account(
 
 
 @router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
 async def delete_account(
+    request: Request,
     account_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
