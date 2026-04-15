@@ -75,28 +75,31 @@ Firebase Auth is the single identity layer. Both the iOS app and the web app aut
 
 ### 3.1 Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Python 3.11+ |
-| Framework | FastAPI 0.115+ |
-| ORM | SQLAlchemy 2.x (sync session) |
-| Database | PostgreSQL on Neon (migrated from SQLite) |
-| Validation | Pydantic v2 |
-| Config | pydantic-settings (reads `.env`) |
-| Auth | Firebase Admin SDK (JWT verification) |
-| HTTP client | httpx (async, for external price APIs) |
-| Caching | cachetools `TTLCache` (in-memory, 1000 entries) |
-| Server | Uvicorn |
-| Deployment | Render (free tier) |
+| Layer       | Technology                                      |
+| ----------- | ----------------------------------------------- |
+| Runtime     | Python 3.11+                                    |
+| Framework   | FastAPI 0.115+                                  |
+| ORM         | SQLAlchemy 2.x (sync session)                   |
+| Database    | PostgreSQL on Neon (migrated from SQLite)       |
+| Validation  | Pydantic v2                                     |
+| Config      | pydantic-settings (reads `.env`)                |
+| Auth        | Firebase Admin SDK (JWT verification)           |
+| HTTP client | httpx (async, for external price APIs)          |
+| Caching     | cachetools `TTLCache` (in-memory, 1000 entries) |
+| Rate limits | SlowAPI (in-memory; per-user key from JWT `sub` or IP) |
+| Server      | Uvicorn                                         |
+| Deployment  | Render (free tier)                              |
 
 ### 3.2 Directory Layout
 
 ```
 VaultTrackerAPI/
 ├── app/
-│   ├── main.py                    # FastAPI app, lifespan, router mounts, CORS
+│   ├── main.py                    # FastAPI app, lifespan, router mounts, CORS, SlowAPI
+│   ├── rate_limit.py              # SlowAPI limiter, key func, 429 handler, JSON coerce helper
 │   ├── config.py                  # Settings: database_url, allowed_origins,
-│   │                              #   firebase_credentials_path, alpha_vantage_api_key
+│   │                              #   firebase_credentials_path, alpha_vantage_api_key,
+│   │                              #   rate_limit_read/write/external
 │   ├── database.py                # SQLAlchemy engine, SessionLocal, Base, get_db()
 │   ├── dependencies.py            # get_current_user() — Firebase JWT verification + debug bypass
 │   ├── models/
@@ -141,6 +144,20 @@ VaultTrackerAPI/
 ├── .env
 └── start.sh
 ```
+
+### 3.2.1 Rate limiting (VaultTrackerAPI)
+
+The REST API uses **SlowAPI** with **in-memory** storage (`memory://`), suitable for a single worker on Render. Limits are **tiered** and configurable via environment variables (defaults in parentheses):
+
+| Tier | Env var | Default | Scope |
+| ---- | ------- | ------- | ----- |
+| Read | `RATE_LIMIT_READ` | `60/minute` | GET on accounts, assets, transactions, dashboard, net worth history, analytics, FIRE profile/projection |
+| Write | `RATE_LIMIT_WRITE` | `30/minute` | POST/PUT/DELETE on those resources + `DELETE /users/me/data`, `PUT /fire/profile` |
+| External | `RATE_LIMIT_EXTERNAL` | `10/minute` | `POST /prices/refresh`, `GET /prices/{symbol}` |
+
+`GET /` and `GET /health` are **exempt**. The rate-limit **key** is derived before auth runs: debug bypass token → `user:debug-user`; otherwise the JWT payload `sub` (no signature verification in the limiter); otherwise client IP (`X-Forwarded-For` aware). Full detail: [VaultTrackerAPI/Documentation/2026-04-13-rate-limiting-design.md](../VaultTrackerAPI/Documentation/2026-04-13-rate-limiting-design.md).
+
+Successful responses may include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`; HTTP 429 includes `Retry-After` and a JSON body with `detail`.
 
 ### 3.3 Data Model
 

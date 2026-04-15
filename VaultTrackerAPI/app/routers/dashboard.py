@@ -10,10 +10,12 @@ computed server-side to avoid redundant client calculations.
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.rate_limit import coerce_json_response, limiter, rate_limit_read
 from app.schemas.dashboard import DashboardResponse
 from app.services.cache_service import cache
 from app.services.dashboard_aggregate import aggregate_dashboard
@@ -22,7 +24,10 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
 @router.get("", response_model=DashboardResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
 async def get_dashboard(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

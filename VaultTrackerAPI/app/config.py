@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     firebase_credentials_path: str = ""
     # Used by PriceService for stock quotes (GLOBAL_QUOTE).
     alpha_vantage_api_key: str = ""
+    # SlowAPI tier strings (e.g. "60/minute"); callable limits read at request time.
+    rate_limit_read: str = "60/minute"
+    rate_limit_write: str = "30/minute"
+    rate_limit_external: str = "10/minute"
 
     class Config:
         env_file = ".env"

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.rate_limit import coerce_json_response, limiter, rate_limit_external
 from app.schemas.price import PriceLookupResponse
 from app.services.price_service import PriceService
 
@@ -11,7 +13,10 @@ router = APIRouter(prefix="/prices", tags=["Prices"])
 
 
 @router.post("/refresh")
+@limiter.limit(rate_limit_external)
+@coerce_json_response
 async def refresh_prices(
+    request: Request,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -20,7 +25,9 @@ async def refresh_prices(
 
 
 @router.get("/{symbol}", response_model=PriceLookupResponse)
-async def get_price(symbol: str):
+@limiter.limit(rate_limit_external)
+@coerce_json_response
+async def get_price(request: Request, symbol: str):
     service = PriceService()
     price = await service.get_crypto_price(symbol)
     src = "coingecko"
