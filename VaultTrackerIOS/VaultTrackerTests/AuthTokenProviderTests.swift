@@ -3,7 +3,6 @@
 //  VaultTrackerTests
 //
 
-import FirebaseAuth
 import Foundation
 import Testing
 @testable import VaultTracker
@@ -11,14 +10,15 @@ import Testing
 @Suite("AuthTokenProvider", .serialized)
 struct AuthTokenProviderTests {
 
-    /// No Firebase user: fails at the guard before any `log` calls or `getIDTokenForcingRefresh`.
-    @Test func noSignedInUserThrowsBeforeFirebasePathWithoutLogging() async throws {
+    /// Debug-session forced refresh failure should throw before any Firebase or logging path.
+    @Test func debugForceRefreshFailureThrowsWithoutLogging() async throws {
         let spy = VTLoggingSpy()
         let provider = AuthTokenProvider.test_make(log: spy)
-        try Auth.auth().signOut()
+        provider.isDebugSession = true
+        provider.forceTokenRefreshFailure = true
 
         await #expect(throws: AuthTokenError.self) {
-            try await provider.getToken()
+            try await provider.getToken(forceRefresh: true)
         }
         #expect(spy.entries.isEmpty)
     }
