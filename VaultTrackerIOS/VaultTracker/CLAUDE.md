@@ -24,6 +24,12 @@ VaultTracker/
 
 Each directory has its own `CLAUDE.md` with feature-specific context.
 
+## Firebase `GoogleService-info.plist`
+
+The Firebase iOS client configuration file is **not tracked in git**. Copy `GoogleService-info.plist.example` to `GoogleService-info.plist` in this directory and fill in values from the [Firebase console](https://console.firebase.google.com/) (Project settings → Your apps → iOS). The Xcode project references `GoogleService-info.plist` by name; keep the same filename as in the repo’s `.gitignore`.
+
+If this file was ever committed in the past, treat Firebase API keys as exposed in history: **restrict keys** in Google Cloud Console (API key restrictions / Firebase) and follow your team’s secret-rotation policy.
+
 ## SwiftLint
 
 `.swiftlint.yml` in this directory configures `swiftlint lint` (CI uses the same). `unused_import` lives under `analyzer_rules` and only runs with `swiftlint analyze` and an Xcode compiler log—not plain `lint`. `implicitly_unwrapped_optional` is opt-in with `severity: error` (nested YAML, not a bare `error` scalar).

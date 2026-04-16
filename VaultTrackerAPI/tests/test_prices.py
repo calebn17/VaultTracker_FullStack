@@ -56,3 +56,33 @@ def test_refresh_prices_updates_crypto_holding(
 
     db_session.refresh(ast)
     assert ast.current_value == 2.0 * 99.0
+
+
+def test_refresh_prices_generic_error_when_quote_raises(
+    client, test_user, db_session, monkeypatch
+):
+    async def boom(self, symbol: str, *, use_cache: bool = True):
+        raise RuntimeError("simulated upstream failure")
+
+    monkeypatch.setattr(
+        "app.services.price_service.PriceService.get_crypto_price",
+        boom,
+    )
+
+    acct = Account(user_id=test_user.id, name="Ex", account_type="cryptoExchange")
+    ast = Asset(
+        user_id=test_user.id,
+        name="Bitcoin",
+        symbol="BTC",
+        category="crypto",
+        quantity=2.0,
+        current_value=0.0,
+    )
+    db_session.add_all([acct, ast])
+    db_session.commit()
+
+    r = client.post("/api/v1/prices/refresh")
+    assert r.status_code == 200
+    err = r.json()["errors"][0]
+    assert err["symbol"] == "BTC"
+    assert err["error"] == "Unable to refresh price for this symbol."

@@ -15,6 +15,8 @@ from app.models.user import User
 from app.services.asset_sync import record_networth_snapshot
 from app.services.cache_service import cache
 
+_GENERIC_REFRESH_ERROR = "Unable to refresh price for this symbol."
+
 
 class PriceService:
     COINGECKO_BASE = "https://api.coingecko.com/api/v3"
@@ -130,13 +132,13 @@ class PriceService:
                     errors.append(
                         {
                             "symbol": asset.symbol or "",
-                            "error": (
-                                "No price returned (unknown symbol or missing API key)"
-                            ),
+                            "error": _GENERIC_REFRESH_ERROR,
                         }
                     )
-            except Exception as e:  # noqa: BLE001 — collect per-asset errors for API response
-                errors.append({"symbol": asset.symbol, "error": str(e)})
+            except Exception:  # noqa: BLE001 — collect per-asset errors for API response
+                errors.append(
+                    {"symbol": asset.symbol or "", "error": _GENERIC_REFRESH_ERROR}
+                )
 
         if updated:
             record_networth_snapshot(db, user.id)
