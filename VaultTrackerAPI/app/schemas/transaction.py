@@ -6,9 +6,9 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.schemas.account import ACCOUNT_TYPE
+from app.schemas.asset import ASSET_CATEGORY
 
 TRANSACTION_SIDE = Literal["buy", "sell"]
-ASSET_CATEGORY = Literal["crypto", "stocks", "cash", "realEstate", "retirement"]
 
 _SYMBOL_CATEGORIES = frozenset({"crypto", "stocks", "retirement"})
 

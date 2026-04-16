@@ -6,6 +6,12 @@ const isDev = process.env.NODE_ENV === "development";
 /**
  * Content-Security-Policy: tuned for Next.js (incl. dev HMR), Firebase Auth, API calls,
  * and Sentry. Verify in the browser console after login and main flows.
+ *
+ * Production script-src includes 'unsafe-inline' on purpose: the App Router still emits
+ * inline scripts for hydration / RSC payloads, and a nonce-based CSP would require
+ * middleware-generated nonces plus aligned next/script usage across the tree. Treat
+ * inline scripts as a known XSS hardening gap until that work ships; other directives
+ * (default-src, connect-src, frame-ancestors) still narrow the attack surface.
  */
 function contentSecurityPolicy(): string {
   const connectSrc = [
@@ -29,6 +35,7 @@ function contentSecurityPolicy(): string {
     connectSrc.push("ws://localhost:3000", "ws://127.0.0.1:3000");
   }
 
+  // Dev: eval + inline for HMR. Prod: inline only — see file-level CSP note (nonce TBD).
   const scriptSrc = isDev ? "'self' 'unsafe-eval' 'unsafe-inline'" : "'self' 'unsafe-inline'";
 
   return [
