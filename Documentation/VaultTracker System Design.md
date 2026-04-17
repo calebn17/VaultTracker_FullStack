@@ -69,6 +69,13 @@ VaultTracker is a personal net-worth tracker that lets users log financial trans
 
 Firebase Auth is the single identity layer. Both the iOS app and the web app authenticate with Google via Firebase. The backend verifies Firebase JWTs using the Firebase Admin SDK. All user data is partitioned by `firebase_id` (the stable Firebase UID).
 
+### Security
+
+- **Secrets and git** — `VaultTrackerAPI/.env` and the iOS Firebase client plist (`GoogleService-Info.plist`) must remain **untracked**. Use `VaultTrackerAPI/.env.example` and `VaultTrackerIOS/VaultTracker/GoogleService-Info.plist.example` as templates. CI copies the example to `GoogleService-Info.plist` before building. Rotate any credentials that may have appeared in git history.
+- **API input validation** — Pydantic schemas constrain `account_type`, asset `category`, and `transaction_type` to the documented string unions; string fields use `max_length`; quantities and `price_per_unit` are positive where the contract requires it; smart-transaction string fields are bounded. Invalid payloads return HTTP 422.
+- **API defaults and errors** — Application `debug` defaults to **false** in settings (override with `DEBUG=true` in a local `.env` only). Price refresh errors and Firebase initialization failures return **generic** client-facing messages without leaking stack traces or server configuration hints.
+- **Web headers** — The Next.js app sets **Content-Security-Policy** (tuned for Firebase Auth, the REST API base URL, Sentry ingest, and local dev), plus `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Referrer-Policy`, and `Permissions-Policy` via `VaultTrackerWeb/next.config.ts`. Adjust `connect-src` when adding new third-party origins. Production `script-src` still allows `'unsafe-inline'` (Next.js hydration/RSC); stricter **nonce-based** CSP is a future hardening step.
+
 ---
 
 ## 3. Backend

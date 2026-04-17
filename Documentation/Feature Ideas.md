@@ -1,4 +1,4 @@
-- Rate limiting
+- [x] Rate limiting
 - Security
 - Event Driven processing
 - multi-account support

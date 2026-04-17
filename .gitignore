@@ -42,3 +42,7 @@ VaultTrackerWeb/*.tsbuildinfo
 VaultTrackerAPI/.env
 .venv
 venv/
+
+# iOS Firebase client config (real file is untracked; copy from *.example)
+VaultTrackerIOS/VaultTracker/GoogleService-info.plist
+VaultTrackerIOS/VaultTracker/GoogleService-Info.plist

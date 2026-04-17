@@ -81,6 +81,8 @@ Find your Mac's LAN IP in System Settings → Wi-Fi → Details. Both devices mu
 
 Your local `.env` is never deployed. Render injects its own environment variables (including the Neon `DATABASE_URL`) at runtime via the Render dashboard. The two environments are fully independent.
 
+**Git hygiene:** `VaultTrackerAPI/.env` is ignored and must not be committed. If it was ever tracked, **rotate** any secrets that may exist in git history (for example `ALPHA_VANTAGE_API_KEY`) and keep real values only in an untracked local `.env`. Set `DEBUG=true` in `.env` when you need FastAPI debug behavior; the default in code is `DEBUG=false`.
+
 ## Commands
 
 ```bash
@@ -240,6 +242,7 @@ Loaded from `.env` via pydantic-settings ([app/config.py](app/config.py)):
 | Variable                    | Default                               | Notes                                                    |
 | --------------------------- | ------------------------------------- | -------------------------------------------------------- |
 | `DATABASE_URL`              | `sqlite:///./vaulttracker.db`         | Use `postgresql://...` for Neon / Render                 |
+| `DEBUG`                     | `false`                               | FastAPI `debug` flag; set `DEBUG=true` locally if needed |
 | `DEBUG_AUTH_ENABLED`        | `false`                               | Enables iOS debug token bypass                           |
 | `ALLOWED_ORIGINS`           | localhost 3000/8000 (see `config.py`) | Comma-separated CORS origins                             |
 | `FIREBASE_CREDENTIALS_PATH` | (empty)                               | Service account JSON; required for real JWT verification |

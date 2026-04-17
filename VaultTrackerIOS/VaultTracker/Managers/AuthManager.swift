@@ -46,17 +46,25 @@ final class AuthManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init(
-        authBackend: any FirebaseAuthBackend = LiveFirebaseAuthBackend(),
+        authBackend: (any FirebaseAuthBackend)? = nil,
         notificationCenter: NotificationCenter = .default,
         log: any VTLogging = VTLog.shared,
         authListenerTimeoutNanoseconds: UInt64? = 5_000_000_000
     ) {
-        self.authBackend = authBackend
+        self.authBackend = authBackend ?? Self.makeDefaultAuthBackend()
         self.notificationCenter = notificationCenter
         self.log = log
         self.authListenerTimeoutNanoseconds = authListenerTimeoutNanoseconds
         setupSubscribers()
         scheduleAuthListenerTimeout()
+    }
+
+    private static func makeDefaultAuthBackend() -> any FirebaseAuthBackend {
+        let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        if isRunningTests {
+            return TestFirebaseAuthBackend()
+        }
+        return LiveFirebaseAuthBackend()
     }
 
     deinit {

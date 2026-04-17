@@ -69,3 +69,26 @@ final class LiveFirebaseAuthBackend: FirebaseAuthBackend {
         try await Auth.auth().signIn(with: credential)
     }
 }
+
+/// No-op auth backend used only when running XCTest host app bootstrapping.
+final class TestFirebaseAuthBackend: FirebaseAuthBackend {
+    @discardableResult
+    func addStateDidChangeListener(
+        _ listener: @escaping ((any AuthUserInfo)?) -> Void
+    ) -> AuthListenerHandle {
+        listener(nil)
+        return AuthListenerHandle()
+    }
+
+    func removeStateDidChangeListener(_ handle: AuthListenerHandle) {}
+
+    func signOut() throws {}
+
+    enum TestBackendError: Error {
+        case signInUnavailable
+    }
+
+    func signIn(with credential: AuthCredential) async throws -> AuthDataResult {
+        throw TestBackendError.signInUnavailable
+    }
+}

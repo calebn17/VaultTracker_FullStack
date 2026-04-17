@@ -15,13 +15,19 @@ struct VaultTrackerApp: App {
     @StateObject var authManager = AuthManager()
     
     init() {
-        FirebaseApp.configure()
+        let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        let shouldConfigureFirebase = !isRunningTests
+        if shouldConfigureFirebase {
+            FirebaseApp.configure()
+        }
+        if shouldConfigureFirebase {
 #if DEBUG
-        // Avoid non-fatal noise and uploads during local development; OSLog still captures `VTLogLive` output.
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
+            // Avoid non-fatal noise and uploads during local development; OSLog still captures `VTLogLive` output.
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(false)
 #else
-        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+            Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
 #endif
+        }
         Self.configureLedgerChrome()
     }
     

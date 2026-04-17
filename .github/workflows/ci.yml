@@ -153,6 +153,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      # Real plist is gitignored; Xcode expects GoogleService-Info.plist (see project.pbxproj).
+      - name: Placeholder GoogleService-Info.plist for CI
+        run: |
+          cp VaultTrackerIOS/VaultTracker/GoogleService-Info.plist.example \
+            VaultTrackerIOS/VaultTracker/GoogleService-Info.plist
       - name: Run unit tests
         working-directory: VaultTrackerIOS
         run: |

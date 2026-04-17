@@ -1,17 +1,32 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from app.schemas.account import ACCOUNT_TYPE
+from app.schemas.asset import ASSET_CATEGORY
+
+TRANSACTION_SIDE = Literal["buy", "sell"]
+
+_SYMBOL_CATEGORIES = frozenset({"crypto", "stocks", "retirement"})
 
 
 class TransactionBase(BaseModel):
     asset_id: str
     account_id: str
-    transaction_type: str  # buy, sell
-    quantity: float
-    price_per_unit: float
+    transaction_type: TRANSACTION_SIDE
+    quantity: float = Field(gt=0)
+    price_per_unit: float = Field(gt=0)
     date: datetime | None = None
+
+    @field_validator("transaction_type", mode="before")
+    @classmethod
+    def transaction_type_lower(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 class TransactionCreate(TransactionBase):
@@ -19,10 +34,31 @@ class TransactionCreate(TransactionBase):
 
 
 class TransactionUpdate(BaseModel):
-    transaction_type: str | None = None
+    transaction_type: TRANSACTION_SIDE | None = None
     quantity: float | None = None
     price_per_unit: float | None = None
     date: datetime | None = None
+
+    @field_validator("transaction_type", mode="before")
+    @classmethod
+    def transaction_type_lower(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator("quantity")
+    @classmethod
+    def quantity_positive_when_set(cls, v: float | None) -> float | None:
+        if v is not None and v <= 0:
+            raise ValueError("quantity must be greater than 0")
+        return v
+
+    @field_validator("price_per_unit")
+    @classmethod
+    def price_positive_when_set(cls, v: float | None) -> float | None:
+        if v is not None and v <= 0:
+            raise ValueError("price_per_unit must be greater than 0")
+        return v
 
 
 class TransactionResponse(TransactionBase):
@@ -34,36 +70,22 @@ class TransactionResponse(TransactionBase):
         from_attributes = True
 
 
-_ALLOWED_CATEGORIES = frozenset(
-    {"crypto", "stocks", "cash", "realEstate", "retirement"}
-)
-_SYMBOL_CATEGORIES = frozenset({"crypto", "stocks", "retirement"})
-
-
 class SmartTransactionCreate(BaseModel):
-    transaction_type: str
-    category: str
-    asset_name: str
-    symbol: str | None = None
-    quantity: float
-    price_per_unit: float
-    account_name: str
-    account_type: str
+    transaction_type: TRANSACTION_SIDE
+    category: ASSET_CATEGORY
+    asset_name: str = Field(max_length=200)
+    symbol: str | None = Field(default=None, max_length=20)
+    quantity: float = Field(gt=0)
+    price_per_unit: float = Field(gt=0)
+    account_name: str = Field(max_length=200)
+    account_type: ACCOUNT_TYPE
     date: datetime | None = None
 
-    @field_validator("transaction_type")
+    @field_validator("transaction_type", mode="before")
     @classmethod
-    def transaction_type_lower(cls, v: str) -> str:
-        t = v.lower()
-        if t not in ("buy", "sell"):
-            raise ValueError('transaction_type must be "buy" or "sell"')
-        return t
-
-    @field_validator("category")
-    @classmethod
-    def category_ok(cls, v: str) -> str:
-        if v not in _ALLOWED_CATEGORIES:
-            raise ValueError(f"category must be one of: {sorted(_ALLOWED_CATEGORIES)}")
+    def transaction_type_lower(cls, v: object) -> object:
+        if isinstance(v, str):
+            return v.lower()
         return v
 
     @model_validator(mode="after")

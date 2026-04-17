@@ -94,11 +94,7 @@ async def get_current_user(
         except RuntimeError as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=(
-                    "Firebase is not configured on this server. "
-                    "Set FIREBASE_CREDENTIALS_PATH to your service account JSON, "
-                    "or enable DEBUG_AUTH_ENABLED and use the iOS debug token locally."
-                ),
+                detail="Authentication service unavailable",
             ) from e
         try:
             decoded = firebase_auth.verify_id_token(token)

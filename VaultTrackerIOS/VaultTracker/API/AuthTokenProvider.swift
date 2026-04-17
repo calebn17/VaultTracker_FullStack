@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseCore
 
 /// Thread-safe actor that retrieves the current user's Firebase JWT for API authentication.
 ///
@@ -52,6 +53,9 @@ actor AuthTokenProvider {
             return AuthTokenProvider.debugToken
         }
 #endif
+        if FirebaseApp.app() == nil {
+            throw AuthTokenError.notAuthenticated
+        }
         guard let user = Auth.auth().currentUser else {
             throw AuthTokenError.notAuthenticated
         }
