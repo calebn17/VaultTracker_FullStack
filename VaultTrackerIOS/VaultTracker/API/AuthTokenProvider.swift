@@ -53,12 +53,9 @@ actor AuthTokenProvider {
             return AuthTokenProvider.debugToken
         }
 #endif
-        // #region agent log
         if FirebaseApp.app() == nil {
-            fputs("AGENTDBG H7 runId=post-fix auth_token_provider_firebase_app_missing=true\n", stderr)
             throw AuthTokenError.notAuthenticated
         }
-        // #endregion
         guard let user = Auth.auth().currentUser else {
             throw AuthTokenError.notAuthenticated
         }

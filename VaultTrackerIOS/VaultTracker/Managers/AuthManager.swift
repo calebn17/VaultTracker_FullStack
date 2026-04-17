@@ -62,7 +62,6 @@ final class AuthManager: ObservableObject {
     private static func makeDefaultAuthBackend() -> any FirebaseAuthBackend {
         let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         if isRunningTests {
-            fputs("AGENTDBG H6 runId=post-fix using_test_auth_backend=true\n", stderr)
             return TestFirebaseAuthBackend()
         }
         return LiveFirebaseAuthBackend()
