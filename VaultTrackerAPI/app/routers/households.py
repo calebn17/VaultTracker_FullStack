@@ -226,6 +226,40 @@ async def join_household(
     return _household_to_response(db, household)
 
 
+@router.delete("/me/membership", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
+async def leave_household(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Leave the current household.
+
+    Deletes this user's membership. If no members remain, deletes the
+    household row (cascading invite codes and memberships).
+    """
+    membership = (
+        db.query(HouseholdMembership)
+        .filter(HouseholdMembership.user_id == current_user.id)
+        .first()
+    )
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not a member of a household",
+        )
+    household_id = membership.household_id
+    db.delete(membership)
+    db.flush()
+    if _member_count(db, household_id) == 0:
+        household = db.query(Household).filter(Household.id == household_id).first()
+        if household is not None:
+            db.delete(household)
+    db.commit()
+
+
 @router.get("/me", response_model=HouseholdResponse)
 @limiter.limit(rate_limit_read)
 @coerce_json_response

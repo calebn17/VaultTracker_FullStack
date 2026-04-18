@@ -75,8 +75,9 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `POST /api/v1/households`             | Create a household and add the caller as the first member. **409** if already in one.                                                      |
 | `POST /api/v1/households/invite-codes` | Generate a single-use invite code. **409** if household already has 2 members. Expiry controlled by `TTL_SECONDS` in `household_invite_code.py`. |
-| `POST /api/v1/households/join`        | Body `{ "code" }`. Join with a valid unused code. **400** invalid/expired; **409** already in a household or household is full.             |
-| `GET /api/v1/households/me`           | Current household and members. **404** if not in any household.                                                                            |
+| `POST /api/v1/households/join`              | Body `{ "code" }`. Join with a valid unused code. **400** invalid/expired; **409** already in a household or household is full.               |
+| `DELETE /api/v1/households/me/membership`   | Leave current household. **404** if not in one. Returns **204**. Deletes the household if no members remain (invite codes cascade-delete).   |
+| `GET /api/v1/households/me`                 | Current household and members. **404** if not in any household.                                                                              |
 
 **Files:**
 - `app/routers/households.py` — route handlers

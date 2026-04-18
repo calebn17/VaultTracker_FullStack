@@ -1,5 +1,6 @@
 """Integration tests for /api/v1/households (TestClient)."""
 
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
@@ -7,20 +8,38 @@ from fastapi.testclient import TestClient
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.main import app
+from app.models.household import Household
 from app.models.household_invite_code import HouseholdInviteCode
 from app.models.household_membership import HouseholdMembership
 from app.models.user import User
 
 
-def _bind_client_user(app, db_session, user: User) -> None:
+@contextmanager
+def _as_user(app, db_session, acting_user: User, restore_user: User):
+    """
+    Temporarily override auth as `acting_user`, then restore `restore_user`.
+
+    Must not call ``dependency_overrides.clear()`` — that drops the client fixture
+    overrides and breaks subsequent requests (missing Authorization for real
+    ``get_current_user``).
+    """
+
     def override_get_db():
         yield db_session
 
-    def override_get_current_user():
-        return user
+    def override_acting():
+        return acting_user
+
+    def override_restore():
+        return restore_user
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_current_user] = override_acting
+    try:
+        yield
+    finally:
+        app.dependency_overrides[get_db] = override_get_db
+        app.dependency_overrides[get_current_user] = override_restore
 
 
 def test_get_household_me_not_in_household_returns_404(client, test_user, db_session):
@@ -91,13 +110,10 @@ def test_alternate_user_sees_no_household_until_join_flow(
     db_session.commit()
     db_session.refresh(other)
 
-    _bind_client_user(app, db_session, other)
-    try:
+    with _as_user(app, db_session, other, test_user):
         with TestClient(app) as alt_client:
             r = alt_client.get("/api/v1/households/me")
             assert r.status_code == 404
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_post_invite_codes_requires_household(client, test_user, db_session):
@@ -119,8 +135,7 @@ def test_invite_code_flow_second_user_joins(client, test_user, db_session):
     db_session.commit()
     db_session.refresh(user_b)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt:
             jr = alt.post("/api/v1/households/join", json={"code": payload["code"]})
             assert jr.status_code == 200
@@ -129,8 +144,6 @@ def test_invite_code_flow_second_user_joins(client, test_user, db_session):
             ids = [m["userId"] for m in data["members"]]
             assert test_user.id in ids
             assert user_b.id in ids
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_join_normalizes_code_case_and_whitespace(client, test_user, db_session):
@@ -144,13 +157,10 @@ def test_join_normalizes_code_case_and_whitespace(client, test_user, db_session)
     db_session.commit()
     db_session.refresh(user_b)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt:
             jr = alt.post("/api/v1/households/join", json={"code": spaced.lower()})
             assert jr.status_code == 200
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_join_invalid_code_returns_400(client, test_user, db_session):
@@ -159,14 +169,11 @@ def test_join_invalid_code_returns_400(client, test_user, db_session):
     db_session.commit()
     db_session.refresh(user_b)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt:
             r = alt.post("/api/v1/households/join", json={"code": "ZZZZZZZZ"})
             assert r.status_code == 400
             assert r.json()["detail"] == "Invalid or expired invite code"
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_post_invite_codes_when_household_full_returns_409(
@@ -204,13 +211,10 @@ def test_join_rejects_expired_code(client, test_user, db_session):
     db_session.commit()
     db_session.refresh(user_b)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt:
             r = alt.post("/api/v1/households/join", json={"code": code})
             assert r.status_code == 400
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_join_rejects_reused_code(client, test_user, db_session):
@@ -225,21 +229,15 @@ def test_join_rejects_reused_code(client, test_user, db_session):
     for u in (user_b, user_c):
         db_session.refresh(u)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt_b:
             first = alt_b.post("/api/v1/households/join", json={"code": code})
             assert first.status_code == 200
-    finally:
-        app.dependency_overrides.clear()
 
-    _bind_client_user(app, db_session, user_c)
-    try:
+    with _as_user(app, db_session, user_c, test_user):
         with TestClient(app) as alt_c:
             r = alt_c.post("/api/v1/households/join", json={"code": code})
             assert r.status_code == 400
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_join_when_already_in_household_returns_409(client, test_user, db_session):
@@ -252,16 +250,13 @@ def test_join_when_already_in_household_returns_409(client, test_user, db_sessio
     db_session.commit()
     db_session.refresh(user_b)
 
-    _bind_client_user(app, db_session, user_b)
-    try:
+    with _as_user(app, db_session, user_b, test_user):
         with TestClient(app) as alt:
             first = alt.post("/api/v1/households/join", json={"code": code})
             assert first.status_code == 200
             r = alt.post("/api/v1/households/join", json={"code": code})
             assert r.status_code == 409
             assert r.json()["detail"] == "Already a member of a household"
-    finally:
-        app.dependency_overrides.clear()
 
 
 def test_join_when_household_already_two_members_returns_409(
@@ -283,11 +278,95 @@ def test_join_when_household_already_two_members_returns_409(
     db_session.add(HouseholdMembership(household_id=hid, user_id=user_b.id))
     db_session.commit()
 
-    _bind_client_user(app, db_session, user_c)
-    try:
+    with _as_user(app, db_session, user_c, test_user):
         with TestClient(app) as alt:
             r = alt.post("/api/v1/households/join", json={"code": code})
             assert r.status_code == 409
             assert r.json()["detail"] == "Household is full"
-    finally:
-        app.dependency_overrides.clear()
+
+
+def test_delete_membership_without_household_returns_404(client, test_user, db_session):
+    r = client.delete("/api/v1/households/me/membership")
+    assert r.status_code == 404
+    assert r.json()["detail"] == "Not a member of a household"
+
+
+def test_leave_sole_member_deletes_household_and_invite_codes(
+    client, test_user, db_session
+):
+    create = client.post("/api/v1/households")
+    assert create.status_code == 201
+    hid = create.json()["id"]
+    inv = client.post("/api/v1/households/invite-codes")
+    assert inv.status_code == 200
+
+    leaving = client.delete("/api/v1/households/me/membership")
+    assert leaving.status_code == 204
+    assert leaving.content == b""
+
+    assert client.get("/api/v1/households/me").status_code == 404
+    assert db_session.query(Household).filter(Household.id == hid).first() is None
+    assert (
+        db_session.query(HouseholdInviteCode)
+        .filter(HouseholdInviteCode.household_id == hid)
+        .count()
+        == 0
+    )
+
+
+def test_leave_one_of_two_members_other_stays_in_household(
+    client, test_user, db_session
+):
+    assert client.post("/api/v1/households").status_code == 201
+    inv = client.post("/api/v1/households/invite-codes")
+    code = inv.json()["code"]
+
+    user_b = User(firebase_id="leave-two-user-b")
+    db_session.add(user_b)
+    db_session.commit()
+    db_session.refresh(user_b)
+
+    with _as_user(app, db_session, user_b, test_user):
+        with TestClient(app) as alt:
+            assert (
+                alt.post("/api/v1/households/join", json={"code": code}).status_code
+                == 200
+            )
+
+    assert client.delete("/api/v1/households/me/membership").status_code == 204
+
+    with _as_user(app, db_session, user_b, test_user):
+        with TestClient(app) as alt:
+            r = alt.get("/api/v1/households/me")
+            assert r.status_code == 200
+            data = r.json()
+            assert len(data["members"]) == 1
+            assert data["members"][0]["userId"] == user_b.id
+
+
+def test_second_member_leave_deletes_household(client, test_user, db_session):
+    assert client.post("/api/v1/households").status_code == 201
+    hid = client.get("/api/v1/households/me").json()["id"]
+    inv = client.post("/api/v1/households/invite-codes")
+    code = inv.json()["code"]
+
+    user_b = User(firebase_id="leave-second-user-b")
+    db_session.add(user_b)
+    db_session.commit()
+    db_session.refresh(user_b)
+
+    with _as_user(app, db_session, user_b, test_user):
+        with TestClient(app) as alt:
+            assert (
+                alt.post("/api/v1/households/join", json={"code": code}).status_code
+                == 200
+            )
+
+    assert client.delete("/api/v1/households/me/membership").status_code == 204
+
+    with _as_user(app, db_session, user_b, test_user):
+        with TestClient(app) as alt:
+            assert alt.delete("/api/v1/households/me/membership").status_code == 204
+            assert alt.get("/api/v1/households/me").status_code == 404
+
+    assert db_session.query(Household).filter(Household.id == hid).first() is None
