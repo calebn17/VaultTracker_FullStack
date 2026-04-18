@@ -26,3 +26,8 @@ class Household(Base):
         back_populates="household",
         cascade="all, delete-orphan",
     )
+    invite_codes = relationship(
+        "HouseholdInviteCode",
+        back_populates="household",
+        cascade="all, delete-orphan",
+    )

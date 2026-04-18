@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class HouseholdMemberResponse(BaseModel):
@@ -26,3 +26,16 @@ class HouseholdResponse(BaseModel):
     id: str
     createdAt: datetime
     members: list[HouseholdMemberResponse]
+
+
+class HouseholdInviteCodeResponse(BaseModel):
+    """Response for POST /households/invite-codes."""
+
+    code: str
+    expiresAt: datetime
+
+
+class HouseholdJoinRequest(BaseModel):
+    """Body for POST /households/join."""
+
+    code: str = Field(min_length=1)

@@ -71,15 +71,18 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 
 ## Households
 
-| Path                        | Role                                                                                   |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| `POST /api/v1/households`   | Create a household and add the caller as the first member. **409** if already in one. |
-| `GET /api/v1/households/me` | Current household and members. **404** if not in any household.                        |
+| Path                                  | Role                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/v1/households`             | Create a household and add the caller as the first member. **409** if already in one.                                                      |
+| `POST /api/v1/households/invite-codes` | Generate a single-use invite code. **409** if household already has 2 members. Expiry controlled by `TTL_SECONDS` in `household_invite_code.py`. |
+| `POST /api/v1/households/join`        | Body `{ "code" }`. Join with a valid unused code. **400** invalid/expired; **409** already in a household or household is full.             |
+| `GET /api/v1/households/me`           | Current household and members. **404** if not in any household.                                                                            |
 
 **Files:**
 - `app/routers/households.py` — route handlers
 - `app/models/household.py` — `Household` ORM model (`id`, `name`, `created_at`)
 - `app/models/household_membership.py` — `HouseholdMembership` join model (`household_id`, `user_id`, `role`, `joined_at`)
+- `app/models/household_invite_code.py` — `HouseholdInviteCode` model (`code`, `household_id`, `used`, `expires_at`; `TTL_SECONDS` constant)
 - `app/schemas/household.py` — `HouseholdCreate`, `HouseholdResponse`, `HouseholdMemberResponse`
 
 **Dependencies in `app/dependencies.py`:**
@@ -88,6 +91,7 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 
 **Design notes:**
 - One user may belong to at most one household at a time; attempting to create while already a member returns **409**.
+- Households are capped at 2 members in v1; invite-code generation is blocked once full.
 - The creating user is automatically added as a member (role not yet enforced beyond membership).
 - Household data is independent of portfolio data — no cascade onto accounts/assets.
 
