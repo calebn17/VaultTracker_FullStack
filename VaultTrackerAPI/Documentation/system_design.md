@@ -8,10 +8,10 @@ app/
   rate_limit.py    # SlowAPI limiter, key func (JWT sub / IP), 429 handler, coerce_json_response
   config.py        # Pydantic Settings, reads .env
   database.py      # SQLAlchemy engine + SessionLocal + Base
-  dependencies.py  # get_current_user — the auth dependency
-  models/          # SQLAlchemy ORM models
+  dependencies.py  # get_current_user, get_current_household, require_current_household
+  models/          # SQLAlchemy ORM models (household, household_membership added)
   schemas/         # Pydantic request/response models
-  routers/         # accounts, assets, transactions, networth, dashboard, fire, users, analytics, prices
+  routers/         # accounts, assets, transactions, networth, dashboard, fire, households, users, analytics, prices
   services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service,
                    # dashboard_aggregate, fire_service, fire_projection
 ```
@@ -68,6 +68,38 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 **Files:** `app/routers/fire.py`, `app/models/fire_profile.py`, `app/schemas/fire.py`, `app/services/fire_service.py` (constants + math), `app/services/fire_projection.py` (response assembly).
 
 `DELETE /api/v1/users/me/data` bulk-deletes `fire_profiles` for the user (cascade alone does not run on bulk delete).
+
+## Households
+
+| Path                        | Role                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `POST /api/v1/households`   | Create a household and add the caller as the first member. **409** if already in one. |
+| `GET /api/v1/households/me` | Current household and members. **404** if not in any household.                        |
+
+**Files:**
+- `app/routers/households.py` — route handlers
+- `app/models/household.py` — `Household` ORM model (`id`, `name`, `created_at`)
+- `app/models/household_membership.py` — `HouseholdMembership` join model (`household_id`, `user_id`, `role`, `joined_at`)
+- `app/schemas/household.py` — `HouseholdCreate`, `HouseholdResponse`, `HouseholdMemberResponse`
+
+**Dependencies in `app/dependencies.py`:**
+- `get_current_household` — returns the caller's `Household` or `None`
+- `require_current_household` — like above but raises **404** if not a member; use on routes that require household membership
+
+**Design notes:**
+- One user may belong to at most one household at a time; attempting to create while already a member returns **409**.
+- The creating user is automatically added as a member (role not yet enforced beyond membership).
+- Household data is independent of portfolio data — no cascade onto accounts/assets.
+
+## Dashboard Category Keys
+
+The dashboard router ([app/routers/dashboard.py](../app/routers/dashboard.py)) groups assets into five camelCase buckets: `crypto`, `stocks`, `cash`, `realEstate`, `retirement`. These keys must stay in sync with `DashboardMapper` in the iOS client — renaming them is a breaking change.
+
+## iOS–API Contract Points
+
+- `account_type` values (`cryptoExchange`, `brokerage`, `bank`, `retirement`, `other`) map to iOS `AccountType` via `AccountMapper.mapAccountType`.
+- `asset.category` must be one of the five dashboard buckets above.
+- `transaction_type` is `"buy"` or `"sell"` (lowercase strings).
 
 ## Settings Reference
 

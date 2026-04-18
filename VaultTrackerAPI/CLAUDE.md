@@ -2,7 +2,7 @@
 
 FastAPI + SQLAlchemy backend. All routes under `/api/v1`. Default DB is SQLite; set `DATABASE_URL` for PostgreSQL.
 
-> **Architecture, auth, rate limiting, transaction chain, FIRE calculator, settings:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Architecture, auth, rate limiting, transaction chain, FIRE calculator, households, settings:** [`Documentation/system_design.md`](Documentation/system_design.md)
 
 ## Collaboration Context
 
@@ -37,11 +37,11 @@ DATABASE_URL=sqlite:///./vaulttracker.db
 
 ### iOS Simulator vs Real Device
 
-| Launch method       | Backend target                                             |
-| ------------------- | ---------------------------------------------------------- |
-| Simulator (DEBUG)   | `localhost:8000`                                           |
+| Launch method       | Backend target                                              |
+| ------------------- | ----------------------------------------------------------- |
+| Simulator (DEBUG)   | `localhost:8000`                                            |
 | Real device (DEBUG) | Set `API_HOST = 192.168.x.x:8000` in Xcode scheme env vars |
-| Archive (RELEASE)   | `https://vaulttracker-api.onrender.com`                    |
+| Archive (RELEASE)   | `https://vaulttracker-api.onrender.com`                     |
 
 ### Git Hygiene
 
@@ -73,6 +73,9 @@ VT_BREAK_TESTS=1 ./venv/bin/python -m pytest tests/ -q
 
 # FIRE tests
 ./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py tests/test_fire_schemas.py tests/test_fire_profile_orm.py -q
+
+# Household tests
+./venv/bin/python -m pytest tests/test_households.py -q
 ```
 
 `tests/conftest.py` uses in-memory SQLite and auth overrides — tests never touch `vaulttracker.db` or Firebase.
