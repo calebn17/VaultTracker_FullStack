@@ -17,6 +17,7 @@ Embeds a full `Account` value inline (denormalised for easy display). `symbol` m
 ### `Account` / `AccountType` (`Account.swift`)
 
 Two serialisation contexts:
+
 - **Sent to API** (via `AddAssetFormViewModel.smartAPIAccountType()`): camelCase strings — `"bank"`, `"brokerage"`, `"cryptoExchange"`. Local-only types fall back to `"other"`.
 - **Received from API** (`AccountMapper.mapAccountType(_:)`): accepts both `"crypto_exchange"` and `"cryptoExchange"` (legacy rows). Server `"retirement"` maps to `.other`.
 

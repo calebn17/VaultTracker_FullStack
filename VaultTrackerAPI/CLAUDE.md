@@ -7,6 +7,7 @@ FastAPI + SQLAlchemy backend. All routes under `/api/v1`. Default DB is SQLite; 
 ## Collaboration Context
 
 Primary maintainer is an **iOS developer** newer to FastAPI/Python. When reviewing changes, include:
+
 1. **What** — which files changed and the new behavior
 2. **Why** — the problem or tradeoff driving it
 3. **iOS bridge** — analogies where helpful (FastAPI routes ≈ HTTP handlers, `Depends()` ≈ DI, Pydantic ≈ `Codable`, SQLAlchemy session ≈ unit of work)
@@ -19,25 +20,28 @@ Backend roadmap: [`Documentation/VaultTracker_Backend_2.0_Spec.md`](Documentatio
 ### Database Options
 
 **PostgreSQL via Docker (matches production):**
+
 ```bash
 docker compose -f docker-compose.postgres.yml up -d   # Start
 docker compose -f docker-compose.postgres.yml down    # Stop (keeps data)
 docker compose -f docker-compose.postgres.yml down -v # Full reset
 ```
+
 Default `.env`: `DATABASE_URL=postgresql://vaulttracker:vaulttracker_dev_password@localhost:5432/vaulttracker`
 
 **SQLite (no Docker):**
+
 ```
 DATABASE_URL=sqlite:///./vaulttracker.db
 ```
 
 ### iOS Simulator vs Real Device
 
-| Launch method | Backend target |
-|---------------|---------------|
-| Simulator (DEBUG) | `localhost:8000` |
+| Launch method       | Backend target                                             |
+| ------------------- | ---------------------------------------------------------- |
+| Simulator (DEBUG)   | `localhost:8000`                                           |
 | Real device (DEBUG) | Set `API_HOST = 192.168.x.x:8000` in Xcode scheme env vars |
-| Archive (RELEASE) | `https://vaulttracker-api.onrender.com` |
+| Archive (RELEASE)   | `https://vaulttracker-api.onrender.com`                    |
 
 ### Git Hygiene
 

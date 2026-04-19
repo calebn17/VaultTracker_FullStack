@@ -3,10 +3,12 @@
 ## Transaction Endpoints (Smart + Legacy)
 
 **Create**
+
 - `POST /transactions` — caller supplies `asset_id` + `account_id` (UUIDs must already exist). Used by the iOS app.
 - `POST /transactions/smart` — caller supplies names/symbols; `TransactionService.smart_create` resolves or creates the account + asset server-side.
 
 **Update**
+
 - `PUT /transactions/{id}` — partial update by UUID; reverses then reapplies on the **same** asset row.
 - `PUT /transactions/{id}/smart` — full smart body; reverses on the **old** asset, then resolves account + asset from the payload like `smart_create` (`TransactionService.smart_update`).
 

@@ -2,36 +2,37 @@
 
 ## Responsibility Split
 
-| Layer | Knows about |
-|-------|------------|
-| `APIService` | `URLRequest`, `URLSession`, HTTP status codes, Codable API types |
-| `DataService` | Domain models (`Transaction`, `Asset`, `Account`), Mapper calls |
-| ViewModels | `DataServiceProtocol` only — never `APIService` directly |
+| Layer         | Knows about                                                      |
+| ------------- | ---------------------------------------------------------------- |
+| `APIService`  | `URLRequest`, `URLSession`, HTTP status codes, Codable API types |
+| `DataService` | Domain models (`Transaction`, `Asset`, `Account`), Mapper calls  |
+| ViewModels    | `DataServiceProtocol` only — never `APIService` directly         |
 
 ## DataService Protocol Surface
 
-| Method | Delegates to |
-|--------|-------------|
-| `fetchDashboard()` | `api.fetchDashboard()` |
-| `fetchAnalytics()` | `api.fetchAnalytics()` |
-| `refreshPrices()` | `api.refreshPrices()` |
-| `fetchAllTransactions()` | `api.fetchTransactions()` → `TransactionMapper.toDomain(_:)` |
-| `createSmartTransaction(_:)` | `api.createSmartTransaction(_:)` (discards response) |
-| `deleteTransaction(id:)` | `api.deleteTransaction(id:)` |
-| `fetchAllAssets()` | `api.fetchAssets()` → `AssetMapper.toDomain(_:)` |
-| `createAsset(_:)` | `api.createAsset(_:)` → `AssetMapper.toDomain(_:)` |
-| `fetchAllAccounts()` | `api.fetchAccounts()` → `AccountMapper.toDomain(_:)` |
-| `createAccount(_:)` | `api.createAccount(_:)` → `AccountMapper.toDomain(_:)` |
-| `updateAccount(id:_:)` | `api.updateAccount(id:_:)` → `AccountMapper.toDomain(_:)` |
-| `deleteAccount(id:)` | `api.deleteAccount(id:)` |
-| `fetchNetWorthHistory(period:)` | `api.fetchNetWorthHistory(period:)` → `[NetWorthSnapshot]` |
-| `clearAllData()` | `api.clearAllData()` |
+| Method                          | Delegates to                                                 |
+| ------------------------------- | ------------------------------------------------------------ |
+| `fetchDashboard()`              | `api.fetchDashboard()`                                       |
+| `fetchAnalytics()`              | `api.fetchAnalytics()`                                       |
+| `refreshPrices()`               | `api.refreshPrices()`                                        |
+| `fetchAllTransactions()`        | `api.fetchTransactions()` → `TransactionMapper.toDomain(_:)` |
+| `createSmartTransaction(_:)`    | `api.createSmartTransaction(_:)` (discards response)         |
+| `deleteTransaction(id:)`        | `api.deleteTransaction(id:)`                                 |
+| `fetchAllAssets()`              | `api.fetchAssets()` → `AssetMapper.toDomain(_:)`             |
+| `createAsset(_:)`               | `api.createAsset(_:)` → `AssetMapper.toDomain(_:)`           |
+| `fetchAllAccounts()`            | `api.fetchAccounts()` → `AccountMapper.toDomain(_:)`         |
+| `createAccount(_:)`             | `api.createAccount(_:)` → `AccountMapper.toDomain(_:)`       |
+| `updateAccount(id:_:)`          | `api.updateAccount(id:_:)` → `AccountMapper.toDomain(_:)`    |
+| `deleteAccount(id:)`            | `api.deleteAccount(id:)`                                     |
+| `fetchNetWorthHistory(period:)` | `api.fetchNetWorthHistory(period:)` → `[NetWorthSnapshot]`   |
+| `clearAllData()`                | `api.clearAllData()`                                         |
 
 `fetchAllTransactions` returns `[APIEnrichedTransactionResponse]` with inline asset and account data — no parallel fetch needed.
 
 ## AuthManager Internals
 
 `@MainActor ObservableObject` injected as `@EnvironmentObject` at root. Depends on:
+
 - **`FirebaseAuthBackend`** (default `LiveFirebaseAuthBackend` → `Auth.auth()`)
 - **`NotificationCenter`** (default `.default`)
 

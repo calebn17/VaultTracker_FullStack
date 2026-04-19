@@ -25,7 +25,9 @@ struct APIAnalyticsResponse: Codable { allocation: [String: APIAllocationEntry],
 ## Display Specs
 
 **Performance section** (shown only when `performance != nil`)
+
 - Gain/loss (currency), gain/loss % (2 decimal places), cost basis (currency), current value (currency)
 
 **Allocation section** — one row per category key (sorted alphabetically)
+
 - Category name, current value (currency), percentage (2 decimal places, secondary style)

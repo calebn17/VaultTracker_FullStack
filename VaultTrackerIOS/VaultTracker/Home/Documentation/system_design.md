@@ -3,6 +3,7 @@
 ## State (`HomeViewState`)
 
 A plain struct holding all display values from the dashboard API:
+
 - Per-category total values (`cryptoTotalValue`, etc.) and grouped holdings arrays
 - `totalNetworthValue`
 - `selectedFilter` — active category chip (`nil` = show all)
@@ -10,6 +11,7 @@ A plain struct holding all display values from the dashboard API:
 - `isLoading`, `errorMessage`
 
 Additional `@Published` on ViewModel:
+
 - `selectedPeriod: APINetWorthPeriod` — chart granularity (daily/weekly/monthly)
 - `isRefreshingPrices: Bool` — disables refresh button during in-flight price refresh
 

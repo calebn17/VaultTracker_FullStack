@@ -43,12 +43,12 @@ swiftlint --fix   # autocorrect before committing
 
 ## Key Files for New Features
 
-| Task | Start here |
-|------|-----------|
-| New API endpoint | `API/APIConfiguration.swift`, `API/APIServiceProtocol.swift`, `API/APIService.swift` |
-| New screen / tab | Create `FeatureName/FeatureView.swift` + `FeatureNameViewModel.swift`, add tab in `MainView/VaultTrackerApp.swift` |
-| New data operation | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock |
-| New domain type | `Models/` |
-| New API model | `API/Models/` |
-| New UI test | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase` |
-| Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift`, `MainView/VaultTrackerApp.swift` |
+| Task                    | Start here                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| New API endpoint        | `API/APIConfiguration.swift`, `API/APIServiceProtocol.swift`, `API/APIService.swift`                               |
+| New screen / tab        | Create `FeatureName/FeatureView.swift` + `FeatureNameViewModel.swift`, add tab in `MainView/VaultTrackerApp.swift` |
+| New data operation      | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock                                      |
+| New domain type         | `Models/`                                                                                                          |
+| New API model           | `API/Models/`                                                                                                      |
+| New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`                                     |
+| Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift`, `MainView/VaultTrackerApp.swift`                                        |

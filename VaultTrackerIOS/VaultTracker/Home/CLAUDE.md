@@ -6,9 +6,9 @@ Main dashboard screen. Net worth, asset breakdown, per-asset holdings, net worth
 
 ## Files
 
-| File | Role |
-|------|------|
-| `HomeView.swift` | SwiftUI dashboard UI |
-| `HomeViewModel.swift` | State management, API orchestration |
-| `HomeViewWrapper.swift` | Thin wrapper owning `@StateObject` (keeps previews clean) |
+| File                      | Role                                                                   |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `HomeView.swift`          | SwiftUI dashboard UI                                                   |
+| `HomeViewModel.swift`     | State management, API orchestration                                    |
+| `HomeViewWrapper.swift`   | Thin wrapper owning `@StateObject` (keeps previews clean)              |
 | `NetWorthChartView.swift` | Line chart — pure display, receives `[NetWorthSnapshot]`, no ViewModel |

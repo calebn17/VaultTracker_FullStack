@@ -38,14 +38,14 @@ npm run test:e2e      # Playwright (starts dev server automatically)
 
 ## Route Structure
 
-| Route | Purpose |
-|-------|---------|
-| `/dashboard` | Net worth chart, category bar, holdings grid, price refresh |
-| `/analytics` | Bento grid: portfolio hero, category cards, net worth chart, performance summary |
-| `/fire` | FIRE calculator |
-| `/transactions` | Sortable table, add/edit/delete, CSV export |
-| `/accounts` | Account CRUD |
-| `/profile` | User info, sign out, theme toggle, delete all data |
+| Route           | Purpose                                                                          |
+| --------------- | -------------------------------------------------------------------------------- |
+| `/dashboard`    | Net worth chart, category bar, holdings grid, price refresh                      |
+| `/analytics`    | Bento grid: portfolio hero, category cards, net worth chart, performance summary |
+| `/fire`         | FIRE calculator                                                                  |
+| `/transactions` | Sortable table, add/edit/delete, CSV export                                      |
+| `/accounts`     | Account CRUD                                                                     |
+| `/profile`      | User info, sign out, theme toggle, delete all data                               |
 
 Unauthenticated: `/login` and `/` (redirects based on auth state).
 

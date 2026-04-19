@@ -6,8 +6,8 @@ Settings/account screen.
 
 ## Files
 
-| File | Role |
-|------|------|
+| File                | Role                                             |
+| ------------------- | ------------------------------------------------ |
 | `ProfileView.swift` | SwiftUI view — welcome message + sign-out button |
 
 ## Current Functionality

@@ -32,17 +32,17 @@ API/
 
 ## Live Endpoints
 
-| Constant | Method | Path |
-|----------|--------|------|
-| `dashboard` | GET | `/api/v1/dashboard` |
-| `analytics` | GET | `/api/v1/analytics` |
-| `priceRefresh` | POST | `/api/v1/prices/refresh` |
-| `smartTransaction` | POST | `/api/v1/transactions/smart` |
-| `transactions` | GET/POST | `/api/v1/transactions` |
-| `accounts` | GET/POST | `/api/v1/accounts` |
-| `assets` | GET/POST | `/api/v1/assets` |
-| `networthHistory` | GET | `/api/v1/networth/history` |
-| `clearUserData` | DELETE | `/api/v1/users/me/data` |
+| Constant           | Method   | Path                         |
+| ------------------ | -------- | ---------------------------- |
+| `dashboard`        | GET      | `/api/v1/dashboard`          |
+| `analytics`        | GET      | `/api/v1/analytics`          |
+| `priceRefresh`     | POST     | `/api/v1/prices/refresh`     |
+| `smartTransaction` | POST     | `/api/v1/transactions/smart` |
+| `transactions`     | GET/POST | `/api/v1/transactions`       |
+| `accounts`         | GET/POST | `/api/v1/accounts`           |
+| `assets`           | GET/POST | `/api/v1/assets`             |
+| `networthHistory`  | GET      | `/api/v1/networth/history`   |
+| `clearUserData`    | DELETE   | `/api/v1/users/me/data`      |
 
 ## Adding a New Endpoint
 

@@ -20,36 +20,36 @@
 
 All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout. When `user` is null after auth resolution, layout renders `LoginGateRedirect`. Root layout errors use `app/global-error.tsx`.
 
-| Route | Purpose |
-|-------|---------|
-| `/dashboard` | Net worth chart, category bar, holdings grid, price refresh |
-| `/analytics` | Portfolio hero, category cards, net worth chart, performance summary, price lookup |
-| `/fire` | FIRE calculator (inputs + projection) |
-| `/transactions` | Sortable table, add/edit/delete, CSV export |
-| `/accounts` | Account CRUD |
-| `/profile` | User info, sign out, theme toggle, delete all data |
+| Route           | Purpose                                                                            |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `/dashboard`    | Net worth chart, category bar, holdings grid, price refresh                        |
+| `/analytics`    | Portfolio hero, category cards, net worth chart, performance summary, price lookup |
+| `/fire`         | FIRE calculator (inputs + projection)                                              |
+| `/transactions` | Sortable table, add/edit/delete, CSV export                                        |
+| `/accounts`     | Account CRUD                                                                       |
+| `/profile`      | User info, sign out, theme toggle, delete all data                                 |
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `src/lib/logger.ts` | Logging facade — `info` dev-only; `warn`/`error` → Sentry in production |
-| `src/lib/api-client.ts` | `ApiClient` — `fetch` + JWT, 401 retry; `getToken` failures invoke `onUnauthorized` |
-| `src/lib/firebase.ts` | Firebase app initialization (client-only) |
-| `src/lib/auth-debug.ts` | Build-time debug auth constants |
-| `src/types/api.ts` | TypeScript mirrors of all backend Pydantic schemas (including FIRE) |
-| `src/lib/fire/fire-input-schema.ts` | Zod `fireInputSchema` for FIRE profile PUT/form |
-| `src/contexts/auth-context.tsx` | `AuthProvider` + `useAuth()` hook |
-| `src/contexts/api-client-context.tsx` | `ApiClientProvider` + `useApiClient()` hook; clears React Query cache on sign-out/401 |
-| `src/components/route-error-fallback.tsx` | Shared error boundary UI — 401 shows "Return to login" + "Try again"; others show "Try again" |
-| `src/lib/queries/` | One file per resource: `use-dashboard`, `use-fire`, `use-accounts`, `use-transactions`, etc. |
+| File                                               | Purpose                                                                                                                                                                                |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/logger.ts`                                | Logging facade — `info` dev-only; `warn`/`error` → Sentry in production                                                                                                                |
+| `src/lib/api-client.ts`                            | `ApiClient` — `fetch` + JWT, 401 retry; `getToken` failures invoke `onUnauthorized`                                                                                                    |
+| `src/lib/firebase.ts`                              | Firebase app initialization (client-only)                                                                                                                                              |
+| `src/lib/auth-debug.ts`                            | Build-time debug auth constants                                                                                                                                                        |
+| `src/types/api.ts`                                 | TypeScript mirrors of all backend Pydantic schemas (including FIRE)                                                                                                                    |
+| `src/lib/fire/fire-input-schema.ts`                | Zod `fireInputSchema` for FIRE profile PUT/form                                                                                                                                        |
+| `src/contexts/auth-context.tsx`                    | `AuthProvider` + `useAuth()` hook                                                                                                                                                      |
+| `src/contexts/api-client-context.tsx`              | `ApiClientProvider` + `useApiClient()` hook; clears React Query cache on sign-out/401                                                                                                  |
+| `src/components/route-error-fallback.tsx`          | Shared error boundary UI — 401 shows "Return to login" + "Try again"; others show "Try again"                                                                                          |
+| `src/lib/queries/`                                 | One file per resource: `use-dashboard`, `use-fire`, `use-accounts`, `use-transactions`, etc.                                                                                           |
 | `src/components/dashboard/asset-detail-dialog.tsx` | Read-only modal: per-holding metrics + recent transactions. Cash hides Qty/Avg Cost/P&L. Real estate hides Qty/Avg Cost/P&L but shows Cost Basis. Shows at most 5 recent transactions. |
 
 ## API Client Pattern
 
 ```typescript
 // Base URL resolution (api-client-context.tsx)
-process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://localhost:8000"
+process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://localhost:8000";
 ```
 
 ## React Query Hook Pattern

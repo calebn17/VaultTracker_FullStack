@@ -6,15 +6,15 @@ Entry screen shown when `AuthManager.authenticationState == .unauthenticated`.
 
 ## Files
 
-| File | Role |
-|------|------|
+| File              | Role             |
+| ----------------- | ---------------- |
 | `LoginView.swift` | SwiftUI login UI |
 
 ## Auth Methods
 
-| Button | Status |
-|--------|--------|
-| Google Sign-In | Implemented — calls `AuthManager.signInWithGoogle()` |
-| Debug Login | DEBUG builds only — calls `AuthManager.signInDebug()`, bypasses Firebase |
+| Button         | Status                                                                   |
+| -------------- | ------------------------------------------------------------------------ |
+| Google Sign-In | Implemented — calls `AuthManager.signInWithGoogle()`                     |
+| Debug Login    | DEBUG builds only — calls `AuthManager.signInDebug()`, bypasses Firebase |
 
 Apple Sign-In is not shown until implemented end-to-end.

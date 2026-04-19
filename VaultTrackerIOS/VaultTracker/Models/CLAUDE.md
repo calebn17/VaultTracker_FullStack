@@ -6,12 +6,12 @@ Domain value types — the app's internal data representation. Distinct from API
 
 ## Types
 
-| Type | File | Notes |
-|------|------|-------|
-| `Asset` / `AssetCategory` | `AssetModel.swift` | Category raw values are display strings, not API keys |
-| `Transaction` / `TransactionType` | `Transaction.swift` | Denormalised — embeds full `Account` inline |
-| `Account` / `AccountType` | `Account.swift` | Two serialisation contexts (send vs receive) |
-| `NetWorthSnapshot` | `NetWorthSnapshot.swift` | `(date, value)` pair for chart only |
+| Type                              | File                     | Notes                                                 |
+| --------------------------------- | ------------------------ | ----------------------------------------------------- |
+| `Asset` / `AssetCategory`         | `AssetModel.swift`       | Category raw values are display strings, not API keys |
+| `Transaction` / `TransactionType` | `Transaction.swift`      | Denormalised — embeds full `Account` inline           |
+| `Account` / `AccountType`         | `Account.swift`          | Two serialisation contexts (send vs receive)          |
+| `NetWorthSnapshot`                | `NetWorthSnapshot.swift` | `(date, value)` pair for chart only                   |
 
 ## Rules
 

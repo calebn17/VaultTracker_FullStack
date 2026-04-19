@@ -7,11 +7,13 @@ Reusable SwiftUI primitives shared across features.
 ## Components
 
 ### `CustomButton`
+
 ```swift
 CustomButton(label: "Save", labelColor: .white, backgroundColor: .blue) { action }
 ```
 
 ### `CustomTextField`
+
 ```swift
 CustomTextField(title: "Asset Name", placeholder: "e.g. Bitcoin", text: $name)
 ```

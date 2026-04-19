@@ -6,8 +6,8 @@ App entry point and root navigation container.
 
 ## Files
 
-| File | Role |
-|------|------|
+| File                    | Role                                                         |
+| ----------------------- | ------------------------------------------------------------ |
 | `VaultTrackerApp.swift` | `@main` struct, Firebase init, root scene, auth state switch |
 
 ## Adding a New Tab

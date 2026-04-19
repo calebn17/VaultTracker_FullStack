@@ -11,24 +11,25 @@ The modal does **not** call the API directly — it only validates and builds th
 
 ## API String Mappings
 
-| `AssetCategory` | API string |
-|-----------------|-----------|
-| `.crypto` | `"crypto"` |
-| `.stocks` | `"stocks"` |
-| `.cash` | `"cash"` |
-| `.realEstate` | `"realEstate"` |
-| `.retirement` | `"retirement"` |
+| `AssetCategory` | API string     |
+| --------------- | -------------- |
+| `.crypto`       | `"crypto"`     |
+| `.stocks`       | `"stocks"`     |
+| `.cash`         | `"cash"`       |
+| `.realEstate`   | `"realEstate"` |
+| `.retirement`   | `"retirement"` |
 
-| `AccountType` | API string |
-|---------------|-----------|
-| `.bank` | `"bank"` |
-| `.brokerage` | `"brokerage"` |
+| `AccountType`     | API string         |
+| ----------------- | ------------------ |
+| `.bank`           | `"bank"`           |
+| `.brokerage`      | `"brokerage"`      |
 | `.cryptoExchange` | `"cryptoExchange"` |
-| everything else | `"other"` |
+| everything else   | `"other"`          |
 
 ## Cash & Real Estate Encoding
 
 User enters a total dollar amount. VM encodes:
+
 - `quantity = dollarAmount`
 - `pricePerUnit = 1.0`
 - `symbol = nil`

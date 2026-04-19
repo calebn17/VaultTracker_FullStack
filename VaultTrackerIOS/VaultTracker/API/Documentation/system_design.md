@@ -16,6 +16,7 @@ In DEBUG builds, `AuthTokenProvider` exposes `isDebugSession` and `forceTokenRef
 ## Date Decoding
 
 The decoder uses a custom strategy that tries three ISO 8601 formats in order:
+
 1. With timezone + fractional seconds
 2. With timezone only
 3. Naive UTC

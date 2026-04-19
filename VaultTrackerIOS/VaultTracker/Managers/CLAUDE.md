@@ -6,13 +6,13 @@ Application-layer services that ViewModels depend on. No SwiftUI code lives here
 
 ## Files
 
-| File | Role |
-|------|------|
-| `AuthManager.swift` | Firebase auth state machine, `@EnvironmentObject`; 5s watchdog if auth listener never fires |
-| `FirebaseAuthBackend.swift` | `FirebaseAuthBackend` protocol, `AuthUserInfo`, `LiveFirebaseAuthBackend` — test seams |
-| `DataService.swift` | Concrete `DataServiceProtocol`; delegates all I/O to `APIService` |
-| `DataServiceProtocol.swift` | Interface ViewModels code against; enables mock testing |
-| `NetworkService.swift` | Legacy URLSession wrapper — **do not use for new work** |
+| File                        | Role                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| `AuthManager.swift`         | Firebase auth state machine, `@EnvironmentObject`; 5s watchdog if auth listener never fires |
+| `FirebaseAuthBackend.swift` | `FirebaseAuthBackend` protocol, `AuthUserInfo`, `LiveFirebaseAuthBackend` — test seams      |
+| `DataService.swift`         | Concrete `DataServiceProtocol`; delegates all I/O to `APIService`                           |
+| `DataServiceProtocol.swift` | Interface ViewModels code against; enables mock testing                                     |
+| `NetworkService.swift`      | Legacy URLSession wrapper — **do not use for new work**                                     |
 
 ## Adding a New Protocol Method
 

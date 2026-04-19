@@ -28,21 +28,21 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 
 [app/rate_limit.py](../app/rate_limit.py) registers a SlowAPI `Limiter` with callable tier strings from settings so tests can monkeypatch limits. Routers use `@limiter.limit(...)` with `Request` on each handler and `@coerce_json_response`. `GET /` and `GET /health` are exempt. Storage is cleared in `tests/conftest.py` via `reset_rate_limit_storage()`.
 
-| Setting | Default | Applies to |
-|---------|---------|-----------|
-| `RATE_LIMIT_READ` | `60/minute` | GET API routes |
-| `RATE_LIMIT_WRITE` | `30/minute` | Mutations |
+| Setting               | Default     | Applies to                             |
+| --------------------- | ----------- | -------------------------------------- |
+| `RATE_LIMIT_READ`     | `60/minute` | GET API routes                         |
+| `RATE_LIMIT_WRITE`    | `30/minute` | Mutations                              |
 | `RATE_LIMIT_EXTERNAL` | `10/minute` | Price refresh + `GET /prices/{symbol}` |
 
 ## Transaction Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/transactions` | Legacy — caller supplies `asset_id` + `account_id` UUIDs |
-| `POST` | `/transactions/smart` | Smart — names/symbols; resolves or creates account + asset server-side |
-| `PUT` | `/transactions/{id}` | Legacy partial update; reverses then reapplies on same asset row |
-| `PUT` | `/transactions/{id}/smart` | Smart update; reverses on old asset, re-resolves from payload |
-| `DELETE` | `/transactions/{id}` | Reverses asset effect and deletes row |
+| Method   | Path                       | Description                                                            |
+| -------- | -------------------------- | ---------------------------------------------------------------------- |
+| `POST`   | `/transactions`            | Legacy — caller supplies `asset_id` + `account_id` UUIDs               |
+| `POST`   | `/transactions/smart`      | Smart — names/symbols; resolves or creates account + asset server-side |
+| `PUT`    | `/transactions/{id}`       | Legacy partial update; reverses then reapplies on same asset row       |
+| `PUT`    | `/transactions/{id}/smart` | Smart update; reverses on old asset, re-resolves from payload          |
+| `DELETE` | `/transactions/{id}`       | Reverses asset effect and deletes row                                  |
 
 ## Transaction → Asset → Snapshot Chain
 
@@ -60,10 +60,10 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 
 ## FIRE Calculator
 
-| Path | Role |
-|------|------|
-| `GET/PUT /api/v1/fire/profile` | Persisted inputs (one row per user, `user_id` unique) |
-| `GET /api/v1/fire/projection` | Live projection from saved profile + `aggregate_dashboard` totals |
+| Path                           | Role                                                              |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `GET/PUT /api/v1/fire/profile` | Persisted inputs (one row per user, `user_id` unique)             |
+| `GET /api/v1/fire/projection`  | Live projection from saved profile + `aggregate_dashboard` totals |
 
 **Files:** `app/routers/fire.py`, `app/models/fire_profile.py`, `app/schemas/fire.py`, `app/services/fire_service.py` (constants + math), `app/services/fire_projection.py` (response assembly).
 
@@ -71,14 +71,14 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 
 ## Settings Reference
 
-| Variable | Default | Notes |
-|----------|---------|-------|
-| `DATABASE_URL` | `sqlite:///./vaulttracker.db` | Use `postgresql://...` for Neon/Render |
-| `DEBUG` | `false` | FastAPI debug flag |
-| `DEBUG_AUTH_ENABLED` | `false` | Enables debug token bypass |
-| `ALLOWED_ORIGINS` | localhost 3000/8000 | Comma-separated CORS origins |
-| `FIREBASE_CREDENTIALS_PATH` | (empty) | Service account JSON; required for real JWT |
-| `ALPHA_VANTAGE_API_KEY` | (empty) | Stock quotes (`/prices`, refresh) |
-| `RATE_LIMIT_READ` | `60/minute` | SlowAPI read tier |
-| `RATE_LIMIT_WRITE` | `30/minute` | SlowAPI write tier |
-| `RATE_LIMIT_EXTERNAL` | `10/minute` | Price refresh + public price lookup |
+| Variable                    | Default                       | Notes                                       |
+| --------------------------- | ----------------------------- | ------------------------------------------- |
+| `DATABASE_URL`              | `sqlite:///./vaulttracker.db` | Use `postgresql://...` for Neon/Render      |
+| `DEBUG`                     | `false`                       | FastAPI debug flag                          |
+| `DEBUG_AUTH_ENABLED`        | `false`                       | Enables debug token bypass                  |
+| `ALLOWED_ORIGINS`           | localhost 3000/8000           | Comma-separated CORS origins                |
+| `FIREBASE_CREDENTIALS_PATH` | (empty)                       | Service account JSON; required for real JWT |
+| `ALPHA_VANTAGE_API_KEY`     | (empty)                       | Stock quotes (`/prices`, refresh)           |
+| `RATE_LIMIT_READ`           | `60/minute`                   | SlowAPI read tier                           |
+| `RATE_LIMIT_WRITE`          | `30/minute`                   | SlowAPI write tier                          |
+| `RATE_LIMIT_EXTERNAL`       | `10/minute`                   | Price refresh + public price lookup         |

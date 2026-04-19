@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VaultTracker is a personal portfolio tracker with three sub-projects sharing the same Firebase Auth project and backend:
 
-| Directory | Stack | Purpose |
-|---|---|---|
-| `VaultTrackerAPI/` | FastAPI + SQLAlchemy (Python) | REST backend, deployed on Render |
-| `VaultTrackerIOS/` | SwiftUI + Firebase SDK (Swift) | iOS client |
-| `VaultTrackerWeb/` | Next.js 15 + Tailwind (TypeScript) | Web client |
+| Directory          | Stack                              | Purpose                          |
+| ------------------ | ---------------------------------- | -------------------------------- |
+| `VaultTrackerAPI/` | FastAPI + SQLAlchemy (Python)      | REST backend, deployed on Render |
+| `VaultTrackerIOS/` | SwiftUI + Firebase SDK (Swift)     | iOS client                       |
+| `VaultTrackerWeb/` | Next.js 15 + Tailwind (TypeScript) | Web client                       |
 
 Each sub-project has its own `CLAUDE.md` with detailed context. Start there when working within a single sub-project.
 
@@ -19,6 +19,7 @@ Each sub-project has its own `CLAUDE.md` with detailed context. Start there when
 ## Quick Commands
 
 ### API (from `VaultTrackerAPI/`)
+
 ```bash
 source venv/bin/activate
 uvicorn app.main:app --reload          # Dev server at localhost:8000
@@ -28,12 +29,15 @@ uvicorn app.main:app --reload          # Dev server at localhost:8000
 ```
 
 ### iOS
+
 Build and run via Xcode (`VaultTrackerIOS/VaultTracker.xcodeproj`). Tests run with `Cmd+U`.
+
 ```bash
 cd VaultTrackerIOS/VaultTracker && swiftlint lint  # Lint
 ```
 
 ### Web (from `VaultTrackerWeb/`)
+
 ```bash
 npm run dev    # Dev server at localhost:3000
 npm run build  # Production build

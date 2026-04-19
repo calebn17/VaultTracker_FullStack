@@ -6,9 +6,9 @@ Sheet for recording a new transaction (buy or sell) for any asset category.
 
 ## Files
 
-| File | Role |
-|------|------|
-| `AddAssetModalView.swift` | SwiftUI form UI |
+| File                          | Role                                          |
+| ----------------------------- | --------------------------------------------- |
+| `AddAssetModalView.swift`     | SwiftUI form UI                               |
 | `AddAssetFormViewModel.swift` | Form state, validation, smart request builder |
 
 ## Key Behaviors

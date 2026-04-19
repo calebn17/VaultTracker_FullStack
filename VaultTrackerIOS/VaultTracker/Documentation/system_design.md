@@ -24,10 +24,10 @@ Firebase manages session state. `AuthManager` publishes `authenticationState` to
 
 ## Environment / Backend
 
-| Build | Environment | Backend |
-|-------|-------------|---------|
-| DEBUG | development | `API_HOST` env var (default `localhost:8000`) |
-| RELEASE | production | `https://vaulttracker-api.onrender.com` |
+| Build   | Environment | Backend                                       |
+| ------- | ----------- | --------------------------------------------- |
+| DEBUG   | development | `API_HOST` env var (default `localhost:8000`) |
+| RELEASE | production  | `https://vaulttracker-api.onrender.com`       |
 
 Switch is compile-time `#if DEBUG` — no source change needed before archiving.
 
@@ -35,22 +35,22 @@ Switch is compile-time `#if DEBUG` — no source change needed before archiving.
 
 ## Tab Structure
 
-| Tab | View | SF Symbol |
-|-----|------|-----------|
-| Home | `HomeView` | `house` |
-| Analytics | `AnalyticsView` | `chart.pie.fill` |
-| Profile | `ProfileView` | `person.crop.circle` |
+| Tab       | View            | SF Symbol            |
+| --------- | --------------- | -------------------- |
+| Home      | `HomeView`      | `house`              |
+| Analytics | `AnalyticsView` | `chart.pie.fill`     |
+| Profile   | `ProfileView`   | `person.crop.circle` |
 
 ## Key Endpoints
 
-| Operation | Method + Path |
-|-----------|--------------|
-| Dashboard | `GET /api/v1/dashboard` |
-| Analytics | `GET /api/v1/analytics` |
-| Smart transaction | `POST /api/v1/transactions/smart` |
-| Price refresh | `POST /api/v1/prices/refresh` |
-| Transactions (enriched) | `GET /api/v1/transactions` |
-| Net worth history | `GET /api/v1/networth/history?period=daily\|weekly\|monthly` |
+| Operation               | Method + Path                                                |
+| ----------------------- | ------------------------------------------------------------ |
+| Dashboard               | `GET /api/v1/dashboard`                                      |
+| Analytics               | `GET /api/v1/analytics`                                      |
+| Smart transaction       | `POST /api/v1/transactions/smart`                            |
+| Price refresh           | `POST /api/v1/prices/refresh`                                |
+| Transactions (enriched) | `GET /api/v1/transactions`                                   |
+| Net worth history       | `GET /api/v1/networth/history?period=daily\|weekly\|monthly` |
 
 ## Firebase `GoogleService-Info.plist`
 
@@ -72,13 +72,13 @@ If this file was ever committed: **restrict keys** in Google Cloud Console and f
 
 Page object pattern — each screen has a `struct` in `PageObjects/`:
 
-| Page Object | Screen |
-|-------------|--------|
-| `LoginPage` | Login |
-| `HomePage` | Home tab |
-| `AddAssetPage` | Add transaction sheet |
-| `AnalyticsPage` | Analytics tab |
-| `ProfilePage` | Profile tab |
+| Page Object     | Screen                |
+| --------------- | --------------------- |
+| `LoginPage`     | Login                 |
+| `HomePage`      | Home tab              |
+| `AddAssetPage`  | Add transaction sheet |
+| `AnalyticsPage` | Analytics tab         |
+| `ProfilePage`   | Profile tab           |
 
 - BDD naming: `test_given<state>_when<action>_then<outcome>`
 - Elements resolved via `accessibilityIdentifier` — do not change identifiers without updating page objects
@@ -87,12 +87,12 @@ Page object pattern — each screen has a `struct` in `PageObjects/`:
 
 ## Refactor Plan Status
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Point to production | ✅ Done |
-| 2 | Smart transaction endpoint | ✅ Done |
-| 3 | Enriched transaction responses | ✅ Done |
-| 4 | Analytics tab | ✅ Done |
-| 5 | Price refresh | ✅ Done |
-| 6 | Period-aggregated net worth chart | ✅ Done |
-| 7 | Cleanup | ✅ Done |
+| Phase | Description                       | Status  |
+| ----- | --------------------------------- | ------- |
+| 1     | Point to production               | ✅ Done |
+| 2     | Smart transaction endpoint        | ✅ Done |
+| 3     | Enriched transaction responses    | ✅ Done |
+| 4     | Analytics tab                     | ✅ Done |
+| 5     | Price refresh                     | ✅ Done |
+| 6     | Period-aggregated net worth chart | ✅ Done |
+| 7     | Cleanup                           | ✅ Done |
