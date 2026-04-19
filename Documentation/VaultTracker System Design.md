@@ -24,7 +24,7 @@ VaultTracker is a personal net-worth tracker that lets users log financial trans
 4. **View analytics** — allocation percentages, gain/loss, cost basis
 5. **Refresh prices** — pull live crypto/stock prices from CoinGecko and Alpha Vantage
 6. **View net worth history** — time-series chart with daily/weekly/monthly granularity
-7. **Household (web app v1)** — Optional second member via short-lived invite code; merged household net worth and combined history on Dashboard and Analytics (**Household** vs **Just me**); shared household FIRE inputs on `/fire`. Accounts, assets, and transactions stay **per user**. The **iOS app does not consume household APIs yet** (backend contract is stable for a future release).
+7. **Household (web app v1)** — Optional second member via short-lived invite code; merged household net worth, **household allocation and performance analytics**, and combined history on Dashboard and Analytics (**Household** vs **Just me**); shared household FIRE inputs on `/fire`. Category bento cards use **merged holdings** from `GET /dashboard/household` (concatenated per-member `groupedHoldings`). Accounts, assets, and transactions stay **per user**. The **iOS app does not consume household APIs yet** (backend contract is stable for a future release).
 
 ---
 
@@ -498,9 +498,10 @@ Response:
 
 **Analytics — `/api/v1/analytics`**
 
-| Method | Path         | Notes                                                                        |
-| ------ | ------------ | ---------------------------------------------------------------------------- |
-| GET    | `/analytics` | Allocation %, gain/loss, cost basis, current value; cache-backed (5 min TTL) |
+| Method | Path                  | Notes                                                                                                                |
+| ------ | --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/analytics`          | Allocation %, gain/loss, cost basis, current value; per user; cache key `analytics:{user_id}`; 5 min TTL               |
+| GET    | `/analytics/household` | Same JSON shape as `/analytics`, aggregated across all member `user_id`s; member-only (**404** if not in a household); cache key `analytics:household:{household_id}`; 5 min TTL |
 
 Response:
 
@@ -541,12 +542,13 @@ In-memory `TTLCache` (singleton `CacheService`). Cache keys are namespaced by `u
 | Dashboard                     | 5 min                            | Any transaction write or price refresh                                                                            |
 | Dashboard (household)         | 5 min                            | Same writes, plus `cache.invalidate_household(household_id)` when any member’s portfolio changes or on join/leave |
 | Analytics                     | 5 min                            | Any transaction write or price refresh                                                                            |
+| Analytics (household)         | 5 min                            | Same as dashboard (household): `invalidate_household` clears `analytics:household:{id}` alongside merged dashboard and household net-worth history keys |
 | Net worth history             | 5 min                            | Any transaction write                                                                                             |
 | Net worth history (household) | 5 min                            | Writes that upsert household snapshots (member transaction paths)                                                 |
 | FIRE projection               | —                                | Not cached server-side; computed on each request from saved profile                                               |
 | Price lookup                  | 15 min (crypto), 60 min (stocks) | Rate-limit-driven                                                                                                 |
 
-Cache is invalidated via `cache.invalidate_user(user_id)` after any data mutation in `TransactionService` and `PriceService`. Household-aware code also calls `cache.invalidate_household` so merged dashboard and household net-worth keys do not serve stale cross-member totals.
+Cache is invalidated via `cache.invalidate_user(user_id)` after any data mutation in `TransactionService` and `PriceService`. Household-aware code also calls `cache.invalidate_household` so merged dashboard, **household analytics**, and household net-worth keys do not serve stale cross-member totals.
 
 ### 3.8 External Price APIs
 
@@ -725,7 +727,7 @@ Delegates all I/O to `APIService`. Converts API response types (`APIXxxResponse`
 
 ### 4.10 Household APIs (not yet in iOS)
 
-The backend exposes household membership, merged dashboard, combined net worth history, and shared household FIRE profile (`/api/v1/households/*`, `/dashboard/household`, `/networth/history/household`). The iOS app **does not** call these endpoints yet; `APIConfiguration` and mappers do not include household paths. Web parity is described in **§5.12**.
+The backend exposes household membership, merged dashboard, **household analytics** (`/analytics/household`), combined net worth history, and shared household FIRE profile (`/api/v1/households/*`, `/dashboard/household`, `/networth/history/household`). The iOS app **does not** call these endpoints yet; `APIConfiguration` and mappers do not include household paths. Web parity is described in **§5.12**.
 
 ---
 
@@ -805,7 +807,7 @@ vaulttracker-web/
 | `/`             | Redirect (auth state switch)                                                               | —                                                                                                                                                                                               |
 | `/login`        | Google Sign-In                                                                             | Firebase Auth                                                                                                                                                                                   |
 | `/dashboard`    | Net worth, chart, categories, holdings; **Household / Just me** when in a household        | Personal: `GET /dashboard` + `GET /networth/history`. Household: `GET /dashboard/household` + `GET /networth/history/household` (see §5.12)                                                     |
-| `/analytics`    | Allocation bento (personal holdings), hero, net worth trend, performance, price lookup     | `GET /analytics` + `GET /dashboard` (personal bento); hero + net worth trend use household endpoints when **Household** is selected                                                             |
+| `/analytics`    | Allocation bento, hero, net worth trend, performance, price lookup                         | **Just me:** `GET /analytics` + `GET /dashboard`. **Household:** `GET /analytics/household` + merged holdings from `GET /dashboard/household` (`mergeHouseholdMemberHoldings`); hero + chart use household net-worth endpoints when **Household** is selected (see §5.12) |
 | `/transactions` | Sortable table + add/edit/delete                                                           | `GET /transactions` (enriched) + `POST /transactions/smart` + `PUT /transactions/{id}/smart`                                                                                                    |
 | `/accounts`     | Account CRUD                                                                               | `GET /accounts` + CRUD endpoints                                                                                                                                                                |
 | `/fire`         | FIRE calculator                                                                            | Personal: `GET/PUT /fire/profile` + `GET /fire/projection`. In a household: `GET/PUT /households/me/fire-profile` (shared inputs); projection UI hidden until a household projection API exists |
@@ -830,18 +832,19 @@ Each domain has its own hook file in `src/lib/queries/`. Mutations invalidate re
 
 | Hook                                                                                      | Endpoint                                                                      | Notes                                                                                                                          |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `useDashboard()`                                                                          | `GET /dashboard`                                                              | Invalidated by transaction + asset mutations                                                                                   |
-| `useDashboardHousehold()`                                                                 | `GET /dashboard/household`                                                    | Query key `["dashboard","household"]`; enabled when user is in household **and** UI scope is Household                         |
+| `useDashboard({ enabled? })`                                                            | `GET /dashboard`                                                              | Skipped when household scope is active (`enabled: false`) to avoid redundant fetches                                         |
+| `useDashboardHousehold({ enabled? })`                                                   | `GET /dashboard/household`                                                    | Key `["dashboard","household"]`; **404 → `null`**; enabled when in a household **and** UI scope is **Household**               |
 | `useHousehold()`                                                                          | `GET /households/me`                                                          | Query key `["household"]`; **404 → `null`** (not in a household)                                                               |
-| `useCreateHousehold` / `useJoinHousehold` / `useLeaveHousehold` / `useGenerateInviteCode` | `POST /households`, `POST /join`, `DELETE …/membership`, `POST /invite-codes` | Create/join/leave invalidate `household`, `dashboard`, `networth`, `fire`, `analytics` (invite codes also refresh `household`) |
-| `useAnalytics()`                                                                          | `GET /analytics`                                                              | Invalidated by price refresh + transaction mutations                                                                           |
-| `useNetWorthHistory(period?)`                                                             | `GET /networth/history?period=...`                                            | Accepts `daily\|weekly\|monthly\|all`; key `["networth", period]`                                                              |
-| `useNetWorthHistoryHousehold(period?, { enabled })`                                       | `GET /networth/history/household?period=...`                                  | Key `["networth","household", period]`                                                                                         |
+| `useCreateHousehold` / `useJoinHousehold` / `useLeaveHousehold` / `useGenerateInviteCode` | `POST /households`, `POST /join`, `DELETE …/membership`, `POST /invite-codes` | **Leave:** `setQueryData(["household"], null)` then invalidate `household`, `dashboard`, `networth`, `fire`, `analytics` (prefixes cover `["analytics","household"]`, `["dashboard","household"]`, etc.). Invite codes only refresh `household` |
+| `useAnalytics({ enabled? })`                                                              | `GET /analytics`                                                              | Skipped in household scope; invalidated by price refresh + transaction mutations                                               |
+| `useAnalyticsHousehold({ enabled? })`                                                     | `GET /analytics/household`                                                    | Key `["analytics","household"]`; **404 → `null`**; enabled in household **Household** view                                    |
+| `useNetWorthHistory(period?, { enabled? })`                                               | `GET /networth/history?period=...`                                            | Accepts `daily\|weekly\|monthly\|all`; key `["networth", period]`; optional `enabled` to skip in household scope               |
+| `useNetWorthHistoryHousehold(period?, { enabled? })`                                       | `GET /networth/history/household?period=...`                                  | Key `["networth","household", period]`; **404 → `null`**                                                                         |
 | `useTransactions()`                                                                       | `GET /transactions`                                                           | `useTransactionMutations` handles add/edit/delete                                                                              |
 | `useAccounts()`                                                                           | `GET /accounts`                                                               | `useAccountMutations` handles add/edit/delete                                                                                  |
 | `useAssets()`                                                                             | `GET /assets`                                                                 | Read-only                                                                                                                      |
 | `useFireProfile()` / `useSaveFireProfile()` / `useFireProjection()`                       | Personal FIRE                                                                 | `use-fire.ts`                                                                                                                  |
-| `useHouseholdFireProfile()` / `useUpdateHouseholdFire()`                                  | `GET/PUT /households/me/fire-profile`                                         | Key `["fire","household","profile"]`                                                                                           |
+| `useHouseholdFireProfile()` / `useUpdateHouseholdFire()`                                  | `GET/PUT /households/me/fire-profile`                                         | Profile key `["fire","household","profile"]`; **PUT** invalidates `["fire","household"]` (prefix) for future household FIRE queries |
 | `usePrices()`                                                                             | `GET /prices/{symbol}`                                                        | Single-symbol lookup mutation                                                                                                  |
 | `useUser()`                                                                               | `DELETE /users/me/data`                                                       | Clear all financial data mutation                                                                                              |
 
@@ -917,6 +920,7 @@ flowchart LR
   subgraph rq [React Query keys]
     H["household"]
     DH["dashboard / household"]
+    AH["analytics / household"]
     NW["networth / household / period"]
     FH["fire / household / profile"]
   end
@@ -925,6 +929,7 @@ flowchart LR
   D --> NW
   A --> H
   A --> DH
+  A --> AH
   A --> NW
   F --> H
   F --> FH
@@ -932,7 +937,7 @@ flowchart LR
 ```
 
 - **`useHousehold()`** drives whether household UI appears. If `GET /households/me` returns **404**, the client treats the user as not in a household (`data === null`).
-- **Dashboard & Analytics** add a **Household / Just me** control. **Household** uses `useDashboardHousehold` and `useNetWorthHistoryHousehold` for hero totals, trailing change, and the net worth chart. **Just me** keeps personal `useDashboard` and `useNetWorthHistory`. Category/detail views (holdings bento, `useAnalytics`) stay **personal** so users still see their own positions.
+- **Dashboard & Analytics** add a **Household / Just me** control. **Household** uses `useDashboardHousehold`, `useAnalyticsHousehold`, and `useNetWorthHistoryHousehold` for merged holdings (dashboard: per-member sections + grid; analytics: bento cards via `mergeHouseholdMemberHoldings`), hero, allocation/performance, trailing change, and the net worth chart. Personal hooks use `{ enabled: !isHouseholdView }` so they do not fetch while the merged view is active. **Just me** uses personal `useDashboard`, `useAnalytics`, and `useNetWorthHistory`. A failed `GET /households/me` (non-404) can surface a short error above the scope toggle; join-code input normalizes to uppercase as the user types.
 - **Profile** hosts create/join/invite/leave flows (`use-household.ts` mutations).
 - **Cache invalidation** after create/join/leave refreshes `household`, `dashboard`, `networth`, `fire`, and `analytics` query families so merged totals stay consistent.
 

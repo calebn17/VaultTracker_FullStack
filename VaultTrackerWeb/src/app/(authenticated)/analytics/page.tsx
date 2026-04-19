@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { mergeHouseholdMemberHoldings } from "@/lib/merge-household-grouped-holdings";
 import { useDashboard, useDashboardHousehold } from "@/lib/queries/use-dashboard";
 import { useHousehold } from "@/lib/queries/use-household";
-import { useAnalytics } from "@/lib/queries/use-analytics";
+import { useAnalytics, useAnalyticsHousehold } from "@/lib/queries/use-analytics";
 import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
 import { usePriceLookup } from "@/lib/queries/use-prices";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
@@ -33,7 +34,7 @@ function allocationPercent(
 }
 
 export default function AnalyticsPage() {
-  const { data: household } = useHousehold();
+  const { data: household, isError: householdQueryError, error: householdError } = useHousehold();
   const inHousehold = household != null;
   const [preferPersonal, setPreferPersonal] = useState(false);
   const isHouseholdView = inHousehold && !preferPersonal;
@@ -43,16 +44,23 @@ export default function AnalyticsPage() {
   const [lookup, setLookup] = useState("");
   const priceQ = usePriceLookup(lookup);
 
-  const dashboard = useDashboard();
-  const householdDashboard = useDashboardHousehold({ enabled: isHouseholdView });
-  const analytics = useAnalytics();
+  const personalDashboard = useDashboard({ enabled: !isHouseholdView });
+  const householdDashboard = useDashboardHousehold({
+    enabled: inHousehold && isHouseholdView,
+  });
+  const personalAnalytics = useAnalytics({ enabled: !isHouseholdView });
+  const householdAnalytics = useAnalyticsHousehold({ enabled: isHouseholdView });
 
-  const personalHistory = useNetWorthHistory(period);
-  const householdHistory = useNetWorthHistoryHousehold(period, { enabled: isHouseholdView });
+  const personalHistory = useNetWorthHistory(period, { enabled: !isHouseholdView });
+  const householdHistory = useNetWorthHistoryHousehold(period, {
+    enabled: inHousehold && isHouseholdView,
+  });
   const historyActive = isHouseholdView ? householdHistory : personalHistory;
 
-  const personalDaily = useNetWorthHistory("daily");
-  const householdDaily = useNetWorthHistoryHousehold("daily", { enabled: isHouseholdView });
+  const personalDaily = useNetWorthHistory("daily", { enabled: !isHouseholdView });
+  const householdDaily = useNetWorthHistoryHousehold("daily", {
+    enabled: inHousehold && isHouseholdView,
+  });
   const historyDailyActive = isHouseholdView ? householdDaily : personalDaily;
 
   const [selectedHolding, setSelectedHolding] = useState<{
@@ -60,9 +68,26 @@ export default function AnalyticsPage() {
     category: Category;
   } | null>(null);
 
-  const d = dashboard.data;
-  const loadingDashboard = dashboard.isLoading;
-  const loadingAnalytics = analytics.isLoading;
+  const analyticsActive = isHouseholdView ? householdAnalytics : personalAnalytics;
+
+  const grouped = useMemo(() => {
+    if (!isHouseholdView) return personalDashboard.data?.groupedHoldings;
+    const h = householdDashboard.data;
+    if (!h) return undefined;
+    return mergeHouseholdMemberHoldings(h.members);
+  }, [isHouseholdView, personalDashboard.data?.groupedHoldings, householdDashboard.data]);
+
+  const totals = isHouseholdView
+    ? householdDashboard.data?.categoryTotals
+    : personalDashboard.data?.categoryTotals;
+  const totalNetWorth = isHouseholdView
+    ? (householdDashboard.data?.totalNetWorth ?? 0)
+    : (personalDashboard.data?.totalNetWorth ?? 0);
+
+  const loadingDashboard = isHouseholdView
+    ? householdDashboard.isLoading
+    : personalDashboard.isLoading;
+  const loadingAnalytics = analyticsActive.isLoading;
 
   const monthChange = useMemo(
     () => computeApproxMonthChange(historyDailyActive.data?.snapshots ?? []),
@@ -72,10 +97,7 @@ export default function AnalyticsPage() {
   const monthChangeProp =
     monthChange != null ? { absolute: monthChange.absolute, percent: monthChange.percent } : null;
 
-  const totalNetWorth = d?.totalNetWorth ?? 0;
-  const grouped = d?.groupedHoldings;
-  const totals = d?.categoryTotals;
-  const alloc = analytics.data?.allocation;
+  const alloc = analyticsActive.data?.allocation;
 
   const cardLoading = loadingDashboard || loadingAnalytics;
 
@@ -85,39 +107,50 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-10">
       {inHousehold ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
-            View
-          </span>
-          <div
-            className="bg-secondary flex gap-1 rounded-md p-0.5"
-            role="group"
-            aria-label="Analytics scope"
-          >
-            <button
-              type="button"
-              className={cn(
-                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
-                isHouseholdView
-                  ? "border-primary/20 bg-card text-primary border"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              onClick={() => setPreferPersonal(false)}
+        <div className="flex flex-col gap-2">
+          {householdQueryError ? (
+            <p className="text-destructive text-sm" role="alert">
+              {householdError instanceof Error
+                ? householdError.message
+                : "Could not load household"}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
+              View
+            </span>
+            <div
+              className="bg-secondary flex gap-1 rounded-md p-0.5"
+              role="group"
+              aria-label="Analytics scope"
             >
-              Household
-            </button>
-            <button
-              type="button"
-              className={cn(
-                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
-                !isHouseholdView
-                  ? "border-primary/20 bg-card text-primary border"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              onClick={() => setPreferPersonal(true)}
-            >
-              Just me
-            </button>
+              <button
+                type="button"
+                aria-pressed={isHouseholdView}
+                className={cn(
+                  "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                  isHouseholdView
+                    ? "border-primary/20 bg-card text-primary border"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setPreferPersonal(false)}
+              >
+                Household
+              </button>
+              <button
+                type="button"
+                aria-pressed={!isHouseholdView}
+                className={cn(
+                  "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                  !isHouseholdView
+                    ? "border-primary/20 bg-card text-primary border"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setPreferPersonal(true)}
+              >
+                Just me
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -128,7 +161,7 @@ export default function AnalyticsPage() {
         loading={heroLoading}
       />
 
-      {analytics.isError ? (
+      {analyticsActive.isError ? (
         <p className="text-destructive text-sm">Failed to load analytics.</p>
       ) : null}
 
@@ -219,7 +252,7 @@ export default function AnalyticsPage() {
       </div>
 
       <PerformanceAttribution
-        performance={analytics.data?.performance}
+        performance={analyticsActive.data?.performance}
         loading={loadingAnalytics}
       />
 

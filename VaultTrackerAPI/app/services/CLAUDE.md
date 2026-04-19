@@ -6,16 +6,16 @@ Business logic layer. Routers handle HTTP; services handle everything else.
 
 ## Files and Responsibilities
 
-| File                     | What it does                                                                      |
-| ------------------------ | --------------------------------------------------------------------------------- |
-| `asset_sync.py`          | Shared helpers — mark-to-market valuation and snapshot recording                  |
-| `transaction_service.py` | Smart transaction creation: resolves account + asset by name                      |
-| `price_service.py`       | Fetches live prices from CoinGecko (crypto) and Alpha Vantage (stocks/retirement) |
-| `cache_service.py`       | In-memory TTL cache; replaceable with Redis without changing callers              |
-| `analytics_service.py`   | Portfolio allocation percentages and gain/loss performance                        |
-| `dashboard_aggregate.py` | Shared dashboard totals (used by dashboard router + FIRE projection)              |
-| `fire_service.py`        | FIRE constants + pure math                                                        |
-| `fire_projection.py`     | FIRE response assembly                                                            |
+| File                     | What it does                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `asset_sync.py`          | Shared helpers — mark-to-market valuation and snapshot recording                                                                                 |
+| `transaction_service.py` | Smart transaction creation: resolves account + asset by name, auto-creates if missing                                                            |
+| `price_service.py`       | Fetches live prices from CoinGecko (crypto) and Alpha Vantage (stocks/retirement)                                                               |
+| `cache_service.py`       | In-memory TTL cache; replaceable with Redis without changing callers                                                                             |
+| `analytics_service.py`   | `get_analytics(user)` and `get_household_analytics(household_id)` — allocation + performance (same math; household sums across member `user_id`s) |
+| `dashboard_aggregate.py` | Shared dashboard totals (used by dashboard router + FIRE projection)                                                                             |
+| `fire_service.py`        | FIRE constants + pure math                                                                                                                       |
+| `fire_projection.py`     | FIRE response assembly                                                                                                                           |
 
 ## `asset_sync.py` — the central invariant
 
@@ -29,13 +29,13 @@ Business logic layer. Routers handle HTTP; services handle everything else.
 
 The singleton `cache` object (imported from `cache_service.py`) has three separate TTL buckets:
 
-| Cache            | TTL    | Used for                                                                                                      |
-| ---------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
-| `_data`          | 5 min  | dashboard, analytics, networth — keys contain `":<user_id>"` (e.g. `"analytics:<user_id>"`, `"dashboard:household:{id}"`) |
-| `_crypto_prices` | 15 min | CoinGecko prices keyed by uppercase symbol                                                                    |
-| `_stock_prices`  | 60 min | Alpha Vantage prices keyed by uppercase symbol                                                                |
+| Cache            | TTL    | Used for                                                                                                                                                                                                                                               |
+| ---------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `_data`          | 5 min  | Per-user keys include `":<user_id>"` (e.g. `"analytics:<user_id>"`, `"networth:history:<user_id>:<period>"`). Household reads use `dashboard:household:{id}`, `analytics:household:{id}`, and `networth:history:household:{id}:<period>`. |
+| `_crypto_prices` | 15 min | CoinGecko prices keyed by uppercase symbol                                                                                                                                                                                                             |
+| `_stock_prices`  | 60 min | Alpha Vantage prices keyed by uppercase symbol                                                                                                                                                                                                         |
 
-**Invalidation:** Use `invalidate_portfolio_caches(db, user_id)` from `cache_service.py` after any write that changes asset values (transactions, price refresh, `DELETE /users/me/data`). It deletes all `_data` keys containing `":<user_id>"` **and** clears `dashboard:household:{id}` if that user is in a household. For join/leave household routes, also call `cache.invalidate_household`. Price symbol caches expire by TTL only — they are never cleared by write paths.
+**Invalidation:** Use `invalidate_portfolio_caches(db, user_id)` from `cache_service.py` after any write that changes asset values (transactions, price refresh, `DELETE /users/me/data`). It deletes all `_data` keys containing `":<user_id>"` **and** calls `invalidate_household(household_id)` when that user is in a household (clears the merged dashboard, analytics, and household net-worth history keys). Join/leave paths also call `cache.invalidate_household`. Price symbol caches expire by TTL only — they are never cleared by write paths.
 
 ## Price service routing
 

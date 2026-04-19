@@ -85,7 +85,7 @@ describe("HouseholdSettingsCard", () => {
     await user.type(screen.getByLabelText(/invite code/i), "  abc12345  ");
     await user.click(screen.getByRole("button", { name: /join household/i }));
     expect(mockJoin).toHaveBeenCalledWith(
-      { code: "abc12345" },
+      { code: "ABC12345" },
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
   });

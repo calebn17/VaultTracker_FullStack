@@ -18,6 +18,7 @@ vi.mock("@/contexts/api-client-context", () => ({
   }),
 }));
 
+import { ApiError } from "@/lib/api-client";
 import { useDashboard, useDashboardHousehold } from "@/lib/queries/use-dashboard";
 
 function makeWrapper(queryClient: QueryClient) {
@@ -92,6 +93,18 @@ describe("useDashboard", () => {
     expect(mockGet).toHaveBeenCalledWith("/api/v1/dashboard");
     expect(result.current.data?.totalNetWorth).toBe(100_000);
   });
+
+  it("does not fetch when enabled is false", () => {
+    mockGet.mockResolvedValue(dashboardFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useDashboard({ enabled: false }), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGet).not.toHaveBeenCalled();
+  });
 });
 
 describe("useDashboardHousehold", () => {
@@ -119,5 +132,18 @@ describe("useDashboardHousehold", () => {
 
     expect(result.current.fetchStatus).toBe("idle");
     expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("treats 404 as null when user has no household", async () => {
+    mockGet.mockRejectedValue(new ApiError("not found", 404));
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useDashboardHousehold(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toBeNull();
   });
 });

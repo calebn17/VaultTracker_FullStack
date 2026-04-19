@@ -213,7 +213,7 @@ describe("useUpdateHouseholdFire", () => {
 
     expect(mockPut).toHaveBeenCalledWith("/api/v1/households/me/fire-profile", payload);
     expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: ["fire", "household", "profile"],
+      queryKey: ["fire", "household"],
     });
   });
 });

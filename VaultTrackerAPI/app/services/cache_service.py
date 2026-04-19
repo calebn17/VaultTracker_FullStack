@@ -32,8 +32,9 @@ class CacheService:
                 del self._data[k]
 
     def invalidate_household(self, household_id: str) -> None:
-        """Clear cached household dashboard and net-worth history for this household."""
+        """Clear cached household dashboard, analytics, and net-worth history."""
         self._data.pop(f"dashboard:household:{household_id}", None)
+        self._data.pop(f"analytics:household:{household_id}", None)
         prefix = f"networth:history:household:{household_id}:"
         for k in list(self._data.keys()):
             if str(k).startswith(prefix):

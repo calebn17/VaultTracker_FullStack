@@ -109,7 +109,7 @@ export function HouseholdSettingsCard() {
                     name="joinCode"
                     placeholder="Enter code"
                     value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value)}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     autoComplete="off"
                     className="font-mono uppercase sm:max-w-xs"
                   />

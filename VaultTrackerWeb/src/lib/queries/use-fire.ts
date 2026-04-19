@@ -87,9 +87,7 @@ export function useUpdateHouseholdFire() {
     mutationFn: (body: FireProfileInputForm) =>
       api.put<HouseholdFireProfile>("/api/v1/households/me/fire-profile", body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["fire", "household", "profile"],
-      });
+      void queryClient.invalidateQueries({ queryKey: ["fire", "household"] });
     },
   });
 }

@@ -76,7 +76,7 @@ npm run test:e2e      # Playwright (starts dev server automatically)
 | Route           | Purpose                                                                                                                                                                                                                                                                                            |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/dashboard`    | Net worth chart, category allocation, holdings; **in a household:** **Household / Just me** toggle (defaults to household), merged hero + allocation + chart from household APIs, per-member collapsible sections (`HouseholdMemberSections`); **Just me** uses personal dashboard + holdings grid |
-| `/analytics`    | Bento grid (personal holdings), hero + **net worth trend** use **Household / Just me** when in a household (defaults to household totals + `useNetWorthHistoryHousehold`); performance + category cards stay personal                                                                              |
+| `/analytics`    | Bento grid, hero, net worth trend, performance, price lookup; **Household / Just me** when in a household — household scope uses `useAnalyticsHousehold`, merged holdings (`mergeHouseholdMemberHoldings`), and `useNetWorthHistoryHousehold`; personal hooks skipped via `enabled` when merged view is active |
 | `/fire`         | FIRE calculator: **household** mode edits shared profile (`useHouseholdFireProfile`); charts hidden until API supports household projection; **personal** mode unchanged (`useFireProfile` + `useFireProjection`)                                                                                  |
 | `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                                                                                                                                                                                        |
 | `/accounts`     | Account CRUD                                                                                                                                                                                                                                                                                       |
@@ -94,7 +94,7 @@ Unauthenticated: `/login` and `/` (redirects based on auth state).
 - **Server state:** React Query (`useQuery`/`useMutation`) — hooks in `src/lib/queries/`
 - **Client state:** React Context — `AuthContext` (Firebase user + token, `src/contexts/auth-context.tsx`) and theme (dark/light, persisted to `localStorage`)
 
-**Household (multi-account, API v1):** Shared households (`useHousehold`, profile card, dashboard/analytics toggles, household net worth history, `useHouseholdFireProfile` / `useUpdateHouseholdFire` on `/fire`). Backend contract: [`Documentation/Plans/2026-04-18-multi-account-support.md`](../Documentation/Plans/2026-04-18-multi-account-support.md); system design [`Documentation/VaultTracker System Design.md`](../Documentation/VaultTracker%20System%20Design.md).
+**Household (multi-account, API v1):** Shared households (`useHousehold`, profile card, dashboard/analytics toggles, merged analytics via `useAnalyticsHousehold`, household net worth history, `useHouseholdFireProfile` / `useUpdateHouseholdFire` on `/fire`). Backend contract: [`Documentation/Plans/2026-04-18-multi-account-support.md`](../Documentation/Plans/2026-04-18-multi-account-support.md); system design [`Documentation/VaultTracker System Design.md`](../Documentation/VaultTracker%20System%20Design.md).
 
 ### Key Files
 
@@ -117,7 +117,8 @@ Unauthenticated: `/login` and `/` (redirects based on auth state).
 | `src/app/error.tsx`                                         | Root error boundary (client); does not catch errors in the root layout (see `global-error.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `src/app/global-error.tsx`                                  | Root layout render errors — required `<html>` / `<body>`, same fallback UI as segment boundaries                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `src/app/(authenticated)/error.tsx`                         | Authenticated segment error boundary (client)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `src/lib/queries/`                                          | One file per resource: `use-dashboard.ts` (incl. `useDashboardHousehold`), `use-household.ts` (membership + create/join/leave/invite), `use-fire.ts` (incl. `useHouseholdFireProfile` / `useUpdateHouseholdFire`), `use-networth.ts` (incl. `useNetWorthHistoryHousehold`), `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-analytics.ts`, `use-prices.ts`, `use-user.ts`                                                                                                                                                                 |
+| `src/lib/merge-household-grouped-holdings.ts`               | `mergeHouseholdMemberHoldings` — concatenates per-category holdings from `HouseholdDashboardResponse.members` for household-scope dashboard grid and analytics bento |
+| `src/lib/queries/`                                          | One file per resource: `use-dashboard.ts` (`useDashboard` + `useDashboardHousehold`, optional `enabled`, household **404 → null**), `use-household.ts` (leave sets `["household"]` to `null` before portfolio invalidation), `use-fire.ts` (`useUpdateHouseholdFire` invalidates `["fire","household"]`), `use-networth.ts` (optional `enabled`; household history **404 → null**), `use-accounts.ts`, `use-transactions.ts`, `use-assets.ts`, `use-analytics.ts` (`useAnalytics` + `useAnalyticsHousehold`), `use-prices.ts`, `use-user.ts` |
 | `src/components/dashboard/member-section.tsx`               | `HouseholdMemberSections` — collapsible card per member with allocation + `HoldingsGrid`. Tests in `src/components/dashboard/__tests__/member-section.test.tsx`.                                                                                                                                                                                                                                                                                                                                                                                          |
 | `src/app/(authenticated)/dashboard/__tests__/page.test.tsx` | Household scope toggle + hero label when `useHousehold` returns data (mocked queries).                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `src/components/profile/household-settings-card.tsx`        | Profile **Household** section — `useHousehold` + create/join/invite/leave; invite preview with copy + expiry; confirm leave in `AlertDialog`. Tests in `src/components/profile/__tests__/household-settings-card.test.tsx`.                                                                                                                                                                                                                                                                                                                               |
@@ -140,17 +141,18 @@ All authenticated routes live under `src/app/(authenticated)/` with an auth-guar
 ### React Query Hook Pattern
 
 ```typescript
-// src/lib/queries/use-dashboard.ts
-export function useDashboard() {
+// src/lib/queries/use-dashboard.ts — optional enabled; household GET returns null on 404
+export function useDashboard(options?: { enabled?: boolean }) {
   const api = useApiClient();
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: () => api.get<DashboardResponse>("/api/v1/dashboard"),
+    enabled: options?.enabled ?? true,
   });
 }
 ```
 
-**Mutations must invalidate:** `["dashboard"]`, `["transactions"]`, `["networth"]`, `["analytics"]`, `["assets"]`
+**Mutations must invalidate:** `["dashboard"]`, `["transactions"]`, `["networth"]`, `["analytics"]`, `["assets"]` (prefix invalidation covers `["analytics","household"]` and `["dashboard","household"]` where applicable)
 
 Delete mutations should also invalidate their own resource key (e.g. `["accounts"]`).
 
@@ -166,7 +168,7 @@ type TransactionType = "buy" | "sell";
 
 Defined in `src/types/api.ts`. Mirror of backend schemas in `VaultTrackerAPI/app/schemas/`. Household types include `HouseholdResponse`, `HouseholdDashboardResponse`, `HouseholdInviteCodeResponse`, and `HouseholdFireProfile` (alias of `FireProfileResponse`).
 
-**Household query keys:** `["household"]` for `GET /households/me` (404 → `null`); `["dashboard", "household"]` for merged dashboard; `["networth", "household", period]` for household history; `["fire", "household", "profile"]` for shared FIRE inputs. Create/join/leave invalidate `household`, `dashboard`, `networth`, `fire`, and `analytics`; invite-code generation only invalidates `household`.
+**Household query keys:** `["household"]` for `GET /households/me` (404 → `null`); `["dashboard", "household"]` and `["analytics", "household"]` for merged dashboard and household analytics (404 → `null` on household endpoints when not a member); `["networth", "household", period]` for household history (404 → `null`); `["fire", "household", "profile"]` for shared FIRE inputs; `useUpdateHouseholdFire` invalidates the `["fire", "household"]` prefix. Create/join/leave invalidate `household`, `dashboard`, `networth`, `fire`, and `analytics`; invite-code generation only invalidates `household`.
 
 ### Category-Dependent Form Logic
 

@@ -18,7 +18,8 @@ vi.mock("@/contexts/api-client-context", () => ({
   }),
 }));
 
-import { useAnalytics } from "@/lib/queries/use-analytics";
+import { useAnalytics, useAnalyticsHousehold } from "@/lib/queries/use-analytics";
+import { ApiError } from "@/lib/api-client";
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -68,5 +69,46 @@ describe("useAnalytics", () => {
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/analytics");
     expect(result.current.data?.performance.currentValue).toBe(100_000);
+  });
+
+  it("does not fetch when enabled is false", () => {
+    mockGet.mockResolvedValue(analyticsFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useAnalytics({ enabled: false }), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+});
+
+describe("useAnalyticsHousehold", () => {
+  it("calls GET /api/v1/analytics/household when enabled", async () => {
+    mockGet.mockResolvedValue(analyticsFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useAnalyticsHousehold(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockGet).toHaveBeenCalledWith("/api/v1/analytics/household");
+    expect(result.current.data?.performance.currentValue).toBe(100_000);
+  });
+
+  it("treats 404 as null when not in a household", async () => {
+    mockGet.mockRejectedValue(new ApiError("not found", 404));
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useAnalyticsHousehold(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toBeNull();
   });
 });

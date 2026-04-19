@@ -10,6 +10,7 @@ import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { HoldingsGrid } from "@/components/dashboard/holdings-grid";
 import { HouseholdMemberSections } from "@/components/dashboard/member-section";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form";
+import { mergeHouseholdMemberHoldings } from "@/lib/merge-household-grouped-holdings";
 import { useDashboard, useDashboardHousehold } from "@/lib/queries/use-dashboard";
 import { useHousehold } from "@/lib/queries/use-household";
 import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
@@ -17,12 +18,7 @@ import { useRefreshPrices } from "@/lib/queries/use-prices";
 import { useCreateTransaction } from "@/lib/queries/use-transactions";
 import { formatCurrency } from "@/lib/format";
 import { computeApproxMonthChange } from "@/lib/networth-change";
-import type {
-  Category,
-  DashboardResponse,
-  HouseholdDashboardResponse,
-  NetWorthPeriod,
-} from "@/types/api";
+import type { Category, DashboardResponse, NetWorthPeriod } from "@/types/api";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_CHIPS: { key: Category | "all"; label: string }[] = [
@@ -43,25 +39,8 @@ const RANGE_TO_PERIOD: Record<ChartRange, NetWorthPeriod> = {
   ALL: "all",
 };
 
-function toDashboardShape(
-  household: HouseholdDashboardResponse,
-  personalGrouped: DashboardResponse["groupedHoldings"] | undefined
-): DashboardResponse {
-  return {
-    totalNetWorth: household.totalNetWorth,
-    categoryTotals: household.categoryTotals,
-    groupedHoldings: personalGrouped ?? {
-      crypto: [],
-      stocks: [],
-      cash: [],
-      realEstate: [],
-      retirement: [],
-    },
-  };
-}
-
 export default function DashboardPage() {
-  const { data: household } = useHousehold();
+  const { data: household, isError: householdQueryError, error: householdError } = useHousehold();
   const inHousehold = household != null;
   const [preferPersonal, setPreferPersonal] = useState(false);
   const isHouseholdView = inHousehold && !preferPersonal;
@@ -71,17 +50,19 @@ export default function DashboardPage() {
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
   const [chartNowMs] = useState(() => Date.now());
 
-  const personalDashboard = useDashboard();
+  const personalDashboard = useDashboard({ enabled: !isHouseholdView });
   const householdDashboard = useDashboardHousehold({
     enabled: inHousehold && isHouseholdView,
   });
 
-  const personalHistoryRange = useNetWorthHistory(RANGE_TO_PERIOD[chartRange]);
+  const personalHistoryRange = useNetWorthHistory(RANGE_TO_PERIOD[chartRange], {
+    enabled: !isHouseholdView,
+  });
   const householdHistoryRange = useNetWorthHistoryHousehold(RANGE_TO_PERIOD[chartRange], {
     enabled: inHousehold && isHouseholdView,
   });
 
-  const personalDaily = useNetWorthHistory("daily");
+  const personalDaily = useNetWorthHistory("daily", { enabled: !isHouseholdView });
   const householdDaily = useNetWorthHistoryHousehold("daily", {
     enabled: inHousehold && isHouseholdView,
   });
@@ -93,12 +74,14 @@ export default function DashboardPage() {
   const refreshPrices = useRefreshPrices();
 
   const d: DashboardResponse | undefined = useMemo(() => {
-    if (isHouseholdView) {
-      const h = householdDashboard.data;
-      if (!h) return undefined;
-      return toDashboardShape(h, personalDashboard.data?.groupedHoldings);
-    }
-    return personalDashboard.data;
+    if (!isHouseholdView) return personalDashboard.data;
+    const h = householdDashboard.data;
+    if (!h) return undefined;
+    return {
+      totalNetWorth: h.totalNetWorth,
+      categoryTotals: h.categoryTotals,
+      groupedHoldings: mergeHouseholdMemberHoldings(h.members),
+    };
   }, [isHouseholdView, householdDashboard.data, personalDashboard.data]);
 
   const loading = isHouseholdView ? householdDashboard.isLoading : personalDashboard.isLoading;
@@ -142,39 +125,50 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {inHousehold ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
-            View
-          </span>
-          <div
-            className="bg-secondary flex gap-1 rounded-md p-0.5"
-            role="group"
-            aria-label="Dashboard scope"
-          >
-            <button
-              type="button"
-              className={cn(
-                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
-                isHouseholdView
-                  ? "border-primary/20 bg-card text-primary border"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              onClick={() => setPreferPersonal(false)}
+        <div className="flex flex-col gap-2">
+          {householdQueryError ? (
+            <p className="text-destructive text-sm" role="alert">
+              {householdError instanceof Error
+                ? householdError.message
+                : "Could not load household"}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
+              View
+            </span>
+            <div
+              className="bg-secondary flex gap-1 rounded-md p-0.5"
+              role="group"
+              aria-label="Dashboard scope"
             >
-              Household
-            </button>
-            <button
-              type="button"
-              className={cn(
-                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
-                !isHouseholdView
-                  ? "border-primary/20 bg-card text-primary border"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              onClick={() => setPreferPersonal(true)}
-            >
-              Just me
-            </button>
+              <button
+                type="button"
+                aria-pressed={isHouseholdView}
+                className={cn(
+                  "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                  isHouseholdView
+                    ? "border-primary/20 bg-card text-primary border"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setPreferPersonal(false)}
+              >
+                Household
+              </button>
+              <button
+                type="button"
+                aria-pressed={!isHouseholdView}
+                className={cn(
+                  "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                  !isHouseholdView
+                    ? "border-primary/20 bg-card text-primary border"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setPreferPersonal(true)}
+              >
+                Just me
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

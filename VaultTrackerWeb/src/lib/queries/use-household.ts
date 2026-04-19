@@ -69,6 +69,9 @@ export function useLeaveHousehold() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => api.delete("/api/v1/households/me/membership"),
-    onSuccess: () => invalidateHouseholdPortfolio(queryClient),
+    onSuccess: () => {
+      queryClient.setQueryData(["household"], null);
+      invalidateHouseholdPortfolio(queryClient);
+    },
   });
 }

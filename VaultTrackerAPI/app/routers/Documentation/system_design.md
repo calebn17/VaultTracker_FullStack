@@ -9,7 +9,7 @@
 | `transactions.py` | `/transactions` | Smart + legacy create/update/delete                                     |
 | `dashboard.py`    | `/dashboard`    | `GET /` per-user aggregate; `GET /household` merged household view (membership required)  |
 | `networth.py`     | `/networth`     | `GET /history` per user; `GET /history/household` combined series; cached; `async def` |
-| `analytics.py`    | `/analytics`    | Delegates to `AnalyticsService`; cached                                 |
+| `analytics.py`    | `/analytics`    | `GET /` per user; `GET /household` aggregates all member assets (requires household); both cached |
 | `prices.py`       | `/prices`       | Delegates to `PriceService`; `async def`                                |
 | `users.py`        | `/users`        | Current user profile                                                    |
 | `fire.py`         | `/fire`         | FIRE profile + projection                                               |
