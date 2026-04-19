@@ -23,7 +23,7 @@ Business logic layer. Routers handle HTTP; services handle everything else.
 
 - `update_asset_from_transaction`: adjusts `asset.quantity`, then sets `asset.current_value = quantity × price_per_unit` (mark-to-market — the latest price revalues the whole position, not just the new units).
 - Pass `is_reversal=True` to undo an existing transaction (used by PUT and DELETE).
-- `record_networth_snapshot`: sums `current_value` across all user assets and writes a new row — this is what drives the net-worth chart.
+- `record_networth_snapshot`: sums `current_value` across all user assets and writes a new row (per-user chart). If the user is in a household, also upserts `HouseholdNetWorthSnapshot` at the same timestamp for the combined household chart.
 
 ## Cache rules
 

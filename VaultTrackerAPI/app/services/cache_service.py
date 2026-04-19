@@ -32,8 +32,12 @@ class CacheService:
                 del self._data[k]
 
     def invalidate_household(self, household_id: str) -> None:
-        """Clear cached GET /dashboard/household for this household."""
+        """Clear cached household dashboard and net-worth history for this household."""
         self._data.pop(f"dashboard:household:{household_id}", None)
+        prefix = f"networth:history:household:{household_id}:"
+        for k in list(self._data.keys()):
+            if str(k).startswith(prefix):
+                del self._data[k]
 
     def get_crypto_price(self, symbol: str) -> float | None:
         v = self._crypto_prices.get(symbol.upper())

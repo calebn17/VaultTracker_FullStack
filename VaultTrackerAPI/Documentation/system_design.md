@@ -49,7 +49,7 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 The core invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (helpers in [app/services/asset_sync.py](../app/services/asset_sync.py)):
 
 1. `update_asset_from_transaction` adjusts `asset.quantity` and resets `asset.current_value = quantity * price_per_unit` (mark-to-market, not cost-basis).
-2. `record_networth_snapshot` sums `current_value` across all user assets and writes a new row.
+2. `record_networth_snapshot` sums `current_value` across all user assets and writes a new `NetWorthSnapshot` row; if the user is in a household, it also upserts a `HouseholdNetWorthSnapshot` at the same timestamp (combined member total).
 3. Both are called inside the same DB transaction before `db.commit()`.
 
 **Update:** reverses old effect (`is_reversal=True`) then applies new values.
@@ -57,6 +57,22 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 **Delete + backdated correction:** computes `delta` and applies it to every `NetWorthSnapshot` whose `date >= tx.date`, then appends a fresh snapshot at "now".
 
 **Missing-asset guard:** If the `Asset` row is missing at update time, returns **409 Conflict**. `TransactionService.smart_update` raises `SmartUpdateMissingLinkedAssetError`; covered by tests and `VT_BREAK_TESTS` falsification fixture.
+
+## Net Worth History
+
+| Path                                     | Role                                                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/networth/history`           | Per-user `NetWorthSnapshot` series; `period` = `daily`, `weekly`, `monthly`, or `all`.                  |
+| `GET /api/v1/networth/history/household` | Household combined series from `HouseholdNetWorthSnapshot` (membership required). Same `period` query.  |
+
+`record_networth_snapshot` appends a per-user row and, when the user is in a household, upserts `(household_id, date)` on `HouseholdNetWorthSnapshot` with the sum of all members' asset `current_value`. Model: `app/models/household_networth_snapshot.py`.
+
+**Verify:**
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/test_networth.py tests/test_household_networth.py -q
+```
 
 ## Dashboard
 

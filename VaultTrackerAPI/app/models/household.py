@@ -31,3 +31,8 @@ class Household(Base):
         back_populates="household",
         cascade="all, delete-orphan",
     )
+    networth_snapshots = relationship(
+        "HouseholdNetWorthSnapshot",
+        back_populates="household",
+        cascade="all, delete-orphan",
+    )

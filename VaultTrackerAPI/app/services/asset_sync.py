@@ -11,7 +11,60 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models.asset import Asset
+from app.models.household_membership import HouseholdMembership
+from app.models.household_networth_snapshot import HouseholdNetWorthSnapshot
 from app.models.networth_snapshot import NetWorthSnapshot
+
+
+def _household_total_net_worth(db: Session, household_id: str) -> float:
+    """Sum each member's asset ``current_value`` (same basis as per-user snapshots)."""
+    member_ids = [
+        m.user_id
+        for m in db.query(HouseholdMembership)
+        .filter(HouseholdMembership.household_id == household_id)
+        .all()
+    ]
+    total = 0.0
+    for uid in member_ids:
+        assets = db.query(Asset).filter(Asset.user_id == uid).all()
+        total += sum(a.current_value or 0.0 for a in assets)
+    return total
+
+
+def _sync_household_networth_snapshot(
+    db: Session, user_id: str, when: datetime
+) -> None:
+    """
+    If the user is in a household, upsert a HouseholdNetWorthSnapshot at `when`
+    with the combined member total (same timestamp as the triggering user row).
+    """
+    membership = (
+        db.query(HouseholdMembership)
+        .filter(HouseholdMembership.user_id == user_id)
+        .first()
+    )
+    if membership is None:
+        return
+    hid = membership.household_id
+    total = _household_total_net_worth(db, hid)
+    existing = (
+        db.query(HouseholdNetWorthSnapshot)
+        .filter(
+            HouseholdNetWorthSnapshot.household_id == hid,
+            HouseholdNetWorthSnapshot.date == when,
+        )
+        .first()
+    )
+    if existing is not None:
+        existing.value = total
+    else:
+        db.add(
+            HouseholdNetWorthSnapshot(
+                household_id=hid,
+                date=when,
+                value=total,
+            )
+        )
 
 
 def record_networth_snapshot(
@@ -37,6 +90,7 @@ def record_networth_snapshot(
         when = when.astimezone(timezone.utc)
     snapshot = NetWorthSnapshot(user_id=user_id, value=net_worth, date=when)
     db.add(snapshot)
+    _sync_household_networth_snapshot(db, user_id, when)
 
 
 def update_asset_from_transaction(

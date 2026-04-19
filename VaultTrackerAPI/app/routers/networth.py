@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_current_household
+from app.models.household import Household
+from app.models.household_networth_snapshot import HouseholdNetWorthSnapshot
 from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.user import User
 from app.rate_limit import coerce_json_response, limiter, rate_limit_read
@@ -23,7 +25,7 @@ def _utc_date(dt: datetime):
 
 
 def _aggregate_snapshots(
-    snapshots: list[NetWorthSnapshot], period: str
+    snapshots: list[NetWorthSnapshot | HouseholdNetWorthSnapshot], period: str
 ) -> list[NetWorthSnapshotResponse]:
     p = period.lower().strip()
     if p == "all":
@@ -61,6 +63,41 @@ def _aggregate_snapshots(
 
     # Unknown period — return full series (backward compatible).
     return [NetWorthSnapshotResponse(date=s.date, value=s.value) for s in snapshots]
+
+
+@router.get("/history/household", response_model=NetWorthHistoryResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
+async def get_household_networth_history(
+    request: Request,
+    period: str = Query(
+        "daily", description="daily | weekly | monthly | all (unknown → all snapshots)"
+    ),
+    household: Household = Depends(require_current_household),
+    db: Session = Depends(get_db),
+):
+    """
+    Net worth history for the caller's household (combined member totals).
+
+    Rows come from HouseholdNetWorthSnapshot, written when any member's
+    portfolio triggers record_networth_snapshot.
+    """
+    cache_key = f"networth:history:household:{household.id}:{period.lower().strip()}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return NetWorthHistoryResponse.model_validate(cached)
+
+    snapshots = (
+        db.query(HouseholdNetWorthSnapshot)
+        .filter(HouseholdNetWorthSnapshot.household_id == household.id)
+        .order_by(asc(HouseholdNetWorthSnapshot.date))
+        .all()
+    )
+
+    items = _aggregate_snapshots(snapshots, period)
+    result = NetWorthHistoryResponse(snapshots=items)
+    cache.set(cache_key, result.model_dump(mode="python"))
+    return result
 
 
 @router.get("/history", response_model=NetWorthHistoryResponse)
