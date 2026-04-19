@@ -1,48 +1,15 @@
 # Analytics
 
-Second tab. Shows portfolio allocation by category and overall gain/loss performance sourced from `GET /api/v1/analytics`.
+Second tab. Portfolio allocation by category and gain/loss performance from `GET /api/v1/analytics`.
+
+> **Data flow, API models, display specs:** [`Documentation/system_design.md`](Documentation/system_design.md)
 
 ## Files
 
 | File | Role |
 |------|------|
-| `AnalyticsView.swift` | SwiftUI List UI — performance section + allocation section |
+| `AnalyticsView.swift` | SwiftUI List UI — performance + allocation sections |
 | `AnalyticsViewModel.swift` | Fetches analytics, maps to display state |
-
-## Data Flow
-
-```
-.task { viewModel.load() }
-    └─> DataService.fetchAnalytics()
-        └─> APIService.fetchAnalytics()  →  APIAnalyticsResponse
-            ├─> allocationEntries [(key, APIAllocationEntry)]  (sorted by key)
-            └─> performance: APIPerformanceBlock?
-```
-
-Pull-to-refresh calls `load()` again.
-
-## Display
-
-**Performance section** — shown only when `performance != nil`:
-- Gain / loss (currency)
-- Gain / loss % (two decimal places)
-- Cost basis (currency)
-- Current value (currency)
-
-**Allocation section** — one row per category key (sorted alphabetically):
-- Category name
-- Current value (currency)
-- Percentage (two decimal places, secondary style)
-
-## API Models (in `API/Models/APIAnalyticsModels.swift`)
-
-```swift
-struct APIAllocationEntry: Codable { value, percentage }
-struct APIPerformanceBlock: Codable { totalGainLoss, totalGainLossPercent, costBasis, currentValue }
-struct APIAnalyticsResponse: Codable { allocation: [String: APIAllocationEntry], performance: APIPerformanceBlock }
-```
-
-`APIPerformanceBlock` uses camelCase keys because the backend (Pydantic) serialises them that way — no custom `CodingKeys` needed.
 
 ## ViewModel State
 
