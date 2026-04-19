@@ -8,14 +8,21 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { CategorySummaryList } from "@/components/dashboard/category-summary-list";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { HoldingsGrid } from "@/components/dashboard/holdings-grid";
+import { HouseholdMemberSections } from "@/components/dashboard/member-section";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form";
-import { useDashboard } from "@/lib/queries/use-dashboard";
-import { useNetWorthHistory } from "@/lib/queries/use-networth";
+import { useDashboard, useDashboardHousehold } from "@/lib/queries/use-dashboard";
+import { useHousehold } from "@/lib/queries/use-household";
+import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
 import { useRefreshPrices } from "@/lib/queries/use-prices";
 import { useCreateTransaction } from "@/lib/queries/use-transactions";
 import { formatCurrency } from "@/lib/format";
 import { computeApproxMonthChange } from "@/lib/networth-change";
-import type { Category, NetWorthPeriod } from "@/types/api";
+import type {
+  Category,
+  DashboardResponse,
+  HouseholdDashboardResponse,
+  NetWorthPeriod,
+} from "@/types/api";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_CHIPS: { key: Category | "all"; label: string }[] = [
@@ -36,32 +43,80 @@ const RANGE_TO_PERIOD: Record<ChartRange, NetWorthPeriod> = {
   ALL: "all",
 };
 
+function toDashboardShape(
+  household: HouseholdDashboardResponse,
+  personalGrouped: DashboardResponse["groupedHoldings"] | undefined
+): DashboardResponse {
+  return {
+    totalNetWorth: household.totalNetWorth,
+    categoryTotals: household.categoryTotals,
+    groupedHoldings: personalGrouped ?? {
+      crypto: [],
+      stocks: [],
+      cash: [],
+      realEstate: [],
+      retirement: [],
+    },
+  };
+}
+
 export default function DashboardPage() {
+  const { data: household } = useHousehold();
+  const inHousehold = household != null;
+  const [preferPersonal, setPreferPersonal] = useState(false);
+  const isHouseholdView = inHousehold && !preferPersonal;
+
   const [chartRange, setChartRange] = useState<ChartRange>("6M");
   const [assetCategory, setAssetCategory] = useState<Category | "all">("all");
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
-  /** Stable "now" for client-side chart windowing (avoids impure Date.now in render). */
   const [chartNowMs] = useState(() => Date.now());
 
-  const dashboard = useDashboard();
+  const personalDashboard = useDashboard();
+  const householdDashboard = useDashboardHousehold({
+    enabled: inHousehold && isHouseholdView,
+  });
+
+  const personalHistoryRange = useNetWorthHistory(RANGE_TO_PERIOD[chartRange]);
+  const householdHistoryRange = useNetWorthHistoryHousehold(RANGE_TO_PERIOD[chartRange], {
+    enabled: inHousehold && isHouseholdView,
+  });
+
+  const personalDaily = useNetWorthHistory("daily");
+  const householdDaily = useNetWorthHistoryHousehold("daily", {
+    enabled: inHousehold && isHouseholdView,
+  });
+
+  const historyRangeActive = isHouseholdView ? householdHistoryRange : personalHistoryRange;
+  const historyDailyActive = isHouseholdView ? householdDaily : personalDaily;
+
   const createTx = useCreateTransaction();
-  const historyForChart = useNetWorthHistory(RANGE_TO_PERIOD[chartRange]);
-  const historyDaily = useNetWorthHistory("daily");
   const refreshPrices = useRefreshPrices();
 
-  const d = dashboard.data;
-  const loading = dashboard.isLoading;
+  const d: DashboardResponse | undefined = useMemo(() => {
+    if (isHouseholdView) {
+      const h = householdDashboard.data;
+      if (!h) return undefined;
+      return toDashboardShape(h, personalDashboard.data?.groupedHoldings);
+    }
+    return personalDashboard.data;
+  }, [isHouseholdView, householdDashboard.data, personalDashboard.data]);
+
+  const loading = isHouseholdView ? householdDashboard.isLoading : personalDashboard.isLoading;
+  const dashboardQueryError = isHouseholdView
+    ? householdDashboard.isError
+    : personalDashboard.isError;
+  const dashboardError = isHouseholdView ? householdDashboard.error : personalDashboard.error;
 
   const chartSnapshots = useMemo(() => {
-    const raw = historyForChart.data?.snapshots ?? [];
+    const raw = historyRangeActive.data?.snapshots ?? [];
     if (chartRange !== "1M") return raw;
     const cutoff = chartNowMs - 30 * 24 * 60 * 60 * 1000;
     return raw.filter((s) => new Date(s.date).getTime() >= cutoff);
-  }, [historyForChart.data?.snapshots, chartRange, chartNowMs]);
+  }, [historyRangeActive.data?.snapshots, chartRange, chartNowMs]);
 
   const monthChange = useMemo(
-    () => computeApproxMonthChange(historyDaily.data?.snapshots ?? []),
-    [historyDaily.data?.snapshots]
+    () => computeApproxMonthChange(historyDailyActive.data?.snapshots ?? []),
+    [historyDailyActive.data?.snapshots]
   );
 
   const groupedForFilter =
@@ -86,11 +141,49 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {inHousehold ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
+            View
+          </span>
+          <div
+            className="bg-secondary flex gap-1 rounded-md p-0.5"
+            role="group"
+            aria-label="Dashboard scope"
+          >
+            <button
+              type="button"
+              className={cn(
+                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                isHouseholdView
+                  ? "border-primary/20 bg-card text-primary border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setPreferPersonal(false)}
+            >
+              Household
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                !isHouseholdView
+                  ? "border-primary/20 bg-card text-primary border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setPreferPersonal(true)}
+            >
+              Just me
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-6">
           <StatCard
             variant="hero"
-            title="Total net worth"
+            title={isHouseholdView ? "Household net worth" : "Total net worth"}
             value={formatCurrency(d?.totalNetWorth ?? 0)}
             loading={loading}
           />
@@ -157,9 +250,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {dashboard.isError ? (
+      {dashboardQueryError ? (
         <p className="text-destructive text-sm">
-          {dashboard.error instanceof Error ? dashboard.error.message : "Failed to load dashboard"}
+          {dashboardError instanceof Error ? dashboardError.message : "Failed to load dashboard"}
         </p>
       ) : null}
 
@@ -262,9 +355,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="h-[260px]">
-            <NetWorthChart data={chartSnapshots} loading={historyForChart.isLoading} />
+            <NetWorthChart data={chartSnapshots} loading={historyRangeActive.isLoading} />
           </div>
-          {historyForChart.isError ? (
+          {historyRangeActive.isError ? (
             <p className="text-destructive mt-2 text-sm">Could not load history.</p>
           ) : null}
         </div>
@@ -281,34 +374,44 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-heading text-sm font-semibold">Holdings</h2>
-          <div className="flex flex-wrap gap-1">
-            {CATEGORY_CHIPS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                className={cn(
-                  "rounded-md border border-transparent px-3 py-1.5 font-mono text-[11px] transition-colors",
-                  assetCategory === key
-                    ? "border-border bg-card text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setAssetCategory(key)}
-              >
-                {label}
-              </button>
-            ))}
+      {isHouseholdView ? (
+        <section className="space-y-4">
+          <h2 className="font-heading text-sm font-semibold">Household members</h2>
+          <HouseholdMemberSections
+            members={householdDashboard.data?.members ?? []}
+            loading={householdDashboard.isLoading}
+          />
+        </section>
+      ) : (
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-heading text-sm font-semibold">Holdings</h2>
+            <div className="flex flex-wrap gap-1">
+              {CATEGORY_CHIPS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={cn(
+                    "rounded-md border border-transparent px-3 py-1.5 font-mono text-[11px] transition-colors",
+                    assetCategory === key
+                      ? "border-border bg-card text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => setAssetCategory(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <HoldingsGrid
-          grouped={groupedForFilter}
-          totalNetWorth={d?.totalNetWorth ?? 0}
-          loading={loading}
-          categoryFilter={assetCategory}
-        />
-      </section>
+          <HoldingsGrid
+            grouped={groupedForFilter}
+            totalNetWorth={d?.totalNetWorth ?? 0}
+            loading={loading}
+            categoryFilter={assetCategory}
+          />
+        </section>
+      )}
 
       <TransactionFormDialog
         open={addTransactionOpen}
