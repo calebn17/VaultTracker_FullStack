@@ -18,7 +18,7 @@ vi.mock("@/contexts/api-client-context", () => ({
   }),
 }));
 
-import { useNetWorthHistory } from "@/lib/queries/use-networth";
+import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -71,5 +71,33 @@ describe("useNetWorthHistory", () => {
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history?period=weekly");
     expect(queryClient.getQueryData(["networth", "weekly"])).toEqual(historyFixture);
+  });
+});
+
+describe("useNetWorthHistoryHousehold", () => {
+  it("uses household URL and query key", async () => {
+    mockGet.mockResolvedValue(historyFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistoryHousehold("monthly"), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history/household?period=monthly");
+    expect(queryClient.getQueryData(["networth", "household", "monthly"])).toEqual(historyFixture);
+  });
+
+  it("does not fetch when enabled is false", () => {
+    mockGet.mockResolvedValue(historyFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistoryHousehold("daily", { enabled: false }), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGet).not.toHaveBeenCalled();
   });
 });

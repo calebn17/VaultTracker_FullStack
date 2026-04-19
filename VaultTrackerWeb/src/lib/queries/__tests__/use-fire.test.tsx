@@ -19,7 +19,13 @@ vi.mock("@/contexts/api-client-context", () => ({
   }),
 }));
 
-import { useFireProfile, useFireProjection, useSaveFireProfile } from "@/lib/queries/use-fire";
+import {
+  useFireProfile,
+  useFireProjection,
+  useHouseholdFireProfile,
+  useSaveFireProfile,
+  useUpdateHouseholdFire,
+} from "@/lib/queries/use-fire";
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -154,5 +160,60 @@ describe("useSaveFireProfile", () => {
     expect(mockPut).toHaveBeenCalledWith("/api/v1/fire/profile", payload);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["fire", "profile"] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["fire", "projection"] });
+  });
+});
+
+describe("useHouseholdFireProfile", () => {
+  it("GETs /api/v1/households/me/fire-profile", async () => {
+    mockGet.mockResolvedValue(profileFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useHouseholdFireProfile(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockGet).toHaveBeenCalledWith("/api/v1/households/me/fire-profile");
+    expect(result.current.data?.currentAge).toBe(35);
+  });
+
+  it("treats 404 as null when not in household", async () => {
+    mockGet.mockRejectedValue(new ApiError("not found", 404));
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useHouseholdFireProfile(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toBeNull();
+  });
+});
+
+describe("useUpdateHouseholdFire", () => {
+  it("PUTs /api/v1/households/me/fire-profile and invalidates household profile key", async () => {
+    mockPut.mockResolvedValue(profileFixture);
+    const queryClient = makeQueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useUpdateHouseholdFire(), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    const payload = {
+      currentAge: 36,
+      annualIncome: 125_000,
+      annualExpenses: 55_000,
+      targetRetirementAge: 56 as number | null,
+    };
+
+    await result.current.mutateAsync(payload);
+
+    expect(mockPut).toHaveBeenCalledWith("/api/v1/households/me/fire-profile", payload);
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: ["fire", "household", "profile"],
+    });
   });
 });
