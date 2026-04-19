@@ -6,22 +6,22 @@ todos:
 
 - id: api-household-model
 content: "API: add Household, HouseholdMembership models + get_current_household dependency + create/get-mine endpoints + tests"
-status: pending
+status: completed
 - id: api-invite-join
 content: "API: add HouseholdInviteCode model + generate/join endpoints with cap-of-2 enforcement and TTL/single-use + tests"
-status: pending
+status: completed
 - id: api-leave
 content: "API: add leave-household endpoint with cascade cleanup when last member leaves + tests"
-status: pending
+status: completed
 - id: api-dashboard-household
 content: "API: add GET /dashboard/household (reuses per-user aggregator for each member) + household cache key + invalidation hooks from member writes + tests"
-status: pending
+status: completed
 - id: api-household-networth
 content: "API: add HouseholdNetWorthSnapshot model + upsert hook in record_networth_snapshot + GET /networth/history/household endpoint + tests"
-status: pending
+status: completed
 - id: api-household-fire
 content: "API: add HouseholdFIREProfile model + GET/PUT /households/me/fire-profile endpoints + tests"
-status: pending
+status: completed
 - id: web-household-hooks-types
 content: "Web: add Household/HouseholdDashboard/HouseholdFIRE types and useHousehold + create/join/leave/invite-code mutations with query invalidation"
 status: pending
@@ -39,7 +39,7 @@ content: "Web: switch FIRE page to household profile when in a household; keep p
 status: pending
 - id: docs-system-design
 content: Update Documentation/VaultTracker System Design.md (new entities, endpoints, data flow) and refresh VaultTrackerAPI/CLAUDE.md and VaultTrackerWeb/CLAUDE.md with household commands/notes
-status: pending
+status: completed
 isProject: false
 
 ---

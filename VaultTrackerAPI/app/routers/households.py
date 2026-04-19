@@ -348,43 +348,8 @@ async def upsert_household_fire_profile(
     household: Household = Depends(require_current_household),
     db: Session = Depends(get_db),
 ):
-    row = (
-        db.query(HouseholdFIREProfile)
-        .filter(HouseholdFIREProfile.household_id == household.id)
-        .one_or_none()
-    )
-    if row is None:
-        row = HouseholdFIREProfile(
-            household_id=household.id,
-            current_age=body.currentAge,
-            annual_income=body.annualIncome,
-            annual_expenses=body.annualExpenses,
-            target_retirement_age=body.targetRetirementAge,
-        )
-        db.add(row)
-    else:
-        _apply_household_fire_profile_input(row, body)
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        row = (
-            db.query(HouseholdFIREProfile)
-            .filter(HouseholdFIREProfile.household_id == household.id)
-            .one_or_none()
-        )
-        if row is None:
-            raise
-        _apply_household_fire_profile_input(row, body)
-        try:
-            db.commit()
-        except Exception:
-            db.rollback()
-            raise
-    except Exception:
-        db.rollback()
-        raise
-
+    row = _get_or_create_household_fire_profile(db, household.id)
+    _apply_household_fire_profile_input(row, body)
+    db.commit()
     db.refresh(row)
     return household_fire_profile_to_response(row)

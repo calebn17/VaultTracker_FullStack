@@ -5,7 +5,7 @@ Join table linking users to households. Each user may belong to at most one hous
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -13,6 +13,13 @@ from app.database import Base
 
 class HouseholdMembership(Base):
     __tablename__ = "household_memberships"
+    __table_args__ = (
+        UniqueConstraint(
+            "household_id",
+            "user_id",
+            name="uq_household_membership_household_user",
+        ),
+    )
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     household_id = Column(

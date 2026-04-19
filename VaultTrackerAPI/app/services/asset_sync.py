@@ -24,11 +24,10 @@ def _household_total_net_worth(db: Session, household_id: str) -> float:
         .filter(HouseholdMembership.household_id == household_id)
         .all()
     ]
-    total = 0.0
-    for uid in member_ids:
-        assets = db.query(Asset).filter(Asset.user_id == uid).all()
-        total += sum(a.current_value or 0.0 for a in assets)
-    return total
+    if not member_ids:
+        return 0.0
+    assets = db.query(Asset).filter(Asset.user_id.in_(member_ids)).all()
+    return sum(a.current_value or 0.0 for a in assets)
 
 
 def _sync_household_networth_snapshot(
@@ -37,6 +36,11 @@ def _sync_household_networth_snapshot(
     """
     If the user is in a household, upsert a HouseholdNetWorthSnapshot at `when`
     with the combined member total (same timestamp as the triggering user row).
+
+    ``HouseholdNetWorthSnapshot.date`` is ``DateTime(timezone=True)``, not a
+    calendar date type: it intentionally stores the same UTC instant as the
+    sibling ``NetWorthSnapshot`` row so upserts align on backdated trades and
+    chart aggregation stays consistent with per-user history.
     """
     membership = (
         db.query(HouseholdMembership)

@@ -3,7 +3,7 @@ tags:
   - vaultTracker
   - systemDesign
 title: Vault Tracker - System Design
-date: 2026-03-22
+date: 2026-04-18
 ---
 
 # VaultTracker — System Design
@@ -115,7 +115,12 @@ VaultTrackerAPI/
 │   │   ├── asset.py
 │   │   ├── transaction.py
 │   │   ├── networth_snapshot.py
-│   │   └── fire_profile.py        # FIREProfile: age, income, expenses, target retirement age
+│   │   ├── fire_profile.py        # FIREProfile: age, income, expenses, target retirement age
+│   │   ├── household.py
+│   │   ├── household_membership.py
+│   │   ├── household_invite_code.py
+│   │   ├── household_networth_snapshot.py
+│   │   └── household_fire_profile.py
 │   ├── schemas/
 │   │   ├── account.py
 │   │   ├── asset.py
@@ -137,11 +142,12 @@ VaultTrackerAPI/
 │   │   ├── analytics.py
 │   │   ├── prices.py
 │   │   ├── fire.py                # GET/PUT profile, GET projection
+│   │   ├── households.py          # Create/join/leave, invite codes, household FIRE profile
 │   │   └── users.py
 │   └── services/
 │       ├── transaction_service.py # Asset + account resolution, smart_create, smart_update
 │       ├── asset_sync.py          # update_asset_from_transaction, record_networth_snapshot
-│       ├── dashboard_aggregate.py # aggregate_dashboard (totals, grouped holdings)
+│       ├── dashboard_aggregate.py # aggregate_dashboard; aggregate_household_dashboard
 │       ├── analytics_service.py   # Allocation, gain/loss, cost basis
 │       ├── fire_service.py        # FIRE math constants, compute_blended_return
 │       ├── fire_projection.py     # build_fire_projection, profile_to_response
@@ -176,11 +182,17 @@ User (1) ──< Asset (many)
 User (1) ──< Transaction (many)
 User (1) ──< NetWorthSnapshot (many)
 User (1) ──  FIREProfile (one, auto-created on first access)
+Household (1) ──< HouseholdMembership (many) >── User (1)   # ≤1 membership per user (unique user_id)
+Household (1) ──< HouseholdInviteCode (many)
+Household (1) ──< HouseholdNetWorthSnapshot (many)
+Household (1) ──  HouseholdFIREProfile (one)
 Transaction >── Asset (many-to-one)
 Transaction >── Account (many-to-one)
 ```
 
-All primary keys are UUID strings generated server-side. All cascade deletes flow from User downward.
+All primary keys are UUID strings generated server-side. Cascade deletes flow from **User** downward for personal finance rows; deleting a **Household** (when the last member leaves and the row is removed) cascades memberships, invite codes, household net-worth snapshots, and the household FIRE profile.
+
+**Households (v1):** Up to two members share an aggregated dashboard, combined net-worth history, and one household FIRE profile. `HouseholdMembership` enforces **one household per user** (`user_id` unique) and **one membership row per (household, user)** (composite unique constraint). Accounts, assets, and transactions remain strictly `user_id`-scoped.
 
 #### Tables
 
@@ -261,6 +273,53 @@ Persistent FIRE (Financial Independence, Retire Early) planning inputs per user.
 | `created_at` | DateTime(tz) | |
 | `updated_at` | DateTime(tz) | Updated on every PUT |
 
+**`households`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String PK | UUID |
+| `created_at` | DateTime(tz) | UTC |
+
+**`household_memberships`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String PK | UUID |
+| `household_id` | String FK → households.id | |
+| `user_id` | String FK → users.id, UNIQUE | At most one household per user |
+| `joined_at` | DateTime(tz) | |
+| *(constraint)* | | Unique `(household_id, user_id)` |
+
+**`household_invite_codes`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String PK | UUID |
+| `household_id` | String FK → households.id | |
+| `code` | String UNIQUE | Short code; single-use after join |
+| `created_by_user_id` | String FK → users.id | |
+| `expires_at` | DateTime(tz) | TTL-enforced |
+| `used_at` / `used_by_user_id` | nullable | Set when consumed |
+
+**`household_networth_snapshots`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String PK | UUID |
+| `household_id` | String FK → households.id | |
+| `date` | DateTime(tz) | Same precision as `networth_snapshots.date` (upsert key with household) |
+| `value` | Float | Sum of members’ asset `current_value` at that instant |
+| *(constraint)* | | Unique `(household_id, date)` |
+
+**`household_fire_profiles`**
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String PK | UUID |
+| `household_id` | String FK → households.id, UNIQUE | One profile per household |
+| `current_age`, `annual_income`, `annual_expenses`, `target_retirement_age` | | Same semantics as `fire_profiles` |
+| `created_at` / `updated_at` | DateTime(tz) | |
+
 ### 3.4 Core Business Logic
 
 #### Asset Value Tracking (Mark-to-Market)
@@ -282,6 +341,8 @@ For **updates**, the old transaction effect is reversed before applying new valu
 #### Net Worth Snapshots
 
 `record_networth_snapshot()` is called after every transaction mutation. It sums `current_value` across all user assets and appends a new `NetWorthSnapshot` row. Snapshots are append-only and grow with every write.
+
+When the user belongs to a household, the same helper **upserts** a `HouseholdNetWorthSnapshot` for the **same UTC `date` value** as the per-user row (full `DateTime` precision, not date-only), recomputing the household total as the sum of all members’ asset `current_value`. That keeps household points aligned with the triggering user’s snapshot instant (including backdated trades).
 
 #### Cash & Real Estate Encoding
 
@@ -341,7 +402,7 @@ Every protected route uses `Depends(get_current_user)` from `app/dependencies.py
 - Token value `"vaulttracker-debug-user"` maps to `firebase_id = "debug-user"`.
 - Must be `false` in any deployed environment.
 
-All data is user-scoped — every query filters by `user_id`.
+Personal finance rows (accounts, assets, transactions, snapshots, personal FIRE) are **user-scoped** — every mutating query filters by `user_id`. Household-scoped reads and writes (`/households/*`, household dashboard, household net-worth history) require an active `HouseholdMembership` for the caller and never expose another household’s data.
 
 ### 3.6 API Endpoints
 
@@ -389,6 +450,7 @@ All routes share the prefix `/api/v1`. All except `GET /` and `GET /health` requ
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/dashboard` | Aggregated totals + grouped holdings; cache-backed (5 min TTL) |
+| GET | `/dashboard/household` | Merged household dashboard (per-member slices + totals); member-only; cache key `dashboard:household:{id}` |
 
 Response:
 ```json
@@ -407,6 +469,7 @@ Response:
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/networth/history?period=daily\|weekly\|monthly\|all` | Period-aggregated snapshots (last snapshot per period); `all` returns every snapshot unfiltered |
+| GET | `/networth/history/household?period=…` | Reads `household_networth_snapshots`; member-only; cached per household + period |
 
 **FIRE — `/api/v1/fire`**
 
@@ -415,6 +478,18 @@ Response:
 | GET | `/fire/profile` | Get user FIRE profile; auto-creates with defaults if none exists |
 | PUT | `/fire/profile` | Upsert FIRE profile inputs (`currentAge`, `annualIncome`, `annualExpenses`, `targetRetirementAge?`) |
 | GET | `/fire/projection` | Run FIRE projection from saved profile; returns curve, targets, monthly breakdown, goal assessment |
+
+**Households — `/api/v1/households`**
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/households` | Create household + join caller; **409** if already in a household |
+| GET | `/households/me` | Household id, members, `created_at`; **404** if not in a household |
+| POST | `/households/invite-codes` | Single-use code (TTL); **409** if household full (v1: max 2 members) |
+| POST | `/households/join` | Body `{ "code" }`; consume code and join |
+| DELETE | `/households/me/membership` | Leave; delete household if last member |
+| GET | `/households/me/fire-profile` | Shared household FIRE inputs (defaults on first read) |
+| PUT | `/households/me/fire-profile` | Upsert shared household FIRE inputs |
 
 **Analytics — `/api/v1/analytics`**
 
@@ -458,12 +533,14 @@ In-memory `TTLCache` (singleton `CacheService`). Cache keys are namespaced by `u
 | Endpoint | TTL | Invalidated By |
 |---|---|---|
 | Dashboard | 5 min | Any transaction write or price refresh |
+| Dashboard (household) | 5 min | Same writes, plus `cache.invalidate_household(household_id)` when any member’s portfolio changes or on join/leave |
 | Analytics | 5 min | Any transaction write or price refresh |
 | Net worth history | 5 min | Any transaction write |
+| Net worth history (household) | 5 min | Writes that upsert household snapshots (member transaction paths) |
 | FIRE projection | — | Not cached server-side; computed on each request from saved profile |
 | Price lookup | 15 min (crypto), 60 min (stocks) | Rate-limit-driven |
 
-Cache is invalidated via `cache.invalidate_user(user_id)` after any data mutation in `TransactionService` and `PriceService`.
+Cache is invalidated via `cache.invalidate_user(user_id)` after any data mutation in `TransactionService` and `PriceService`. Household-aware code also calls `cache.invalidate_household` so merged dashboard and household net-worth keys do not serve stale cross-member totals.
 
 ### 3.8 External Price APIs
 

@@ -72,8 +72,9 @@ def aggregate_household_dashboard(
     Build a merged household dashboard: sum members' totals plus each member's
     own `aggregate_dashboard` slice (join order preserved).
     """
-    memberships = (
-        db.query(HouseholdMembership)
+    rows = (
+        db.query(HouseholdMembership, User)
+        .join(User, HouseholdMembership.user_id == User.id)
         .filter(HouseholdMembership.household_id == household_id)
         .order_by(HouseholdMembership.joined_at.asc())
         .all()
@@ -88,10 +89,7 @@ def aggregate_household_dashboard(
     }
     members: list[HouseholdMemberDashboard] = []
 
-    for m in memberships:
-        u = db.query(User).filter(User.id == m.user_id).first()
-        if u is None:
-            continue
+    for m, u in rows:
         one = aggregate_dashboard(db, m.user_id)
         members.append(
             HouseholdMemberDashboard(
