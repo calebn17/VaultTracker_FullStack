@@ -6,7 +6,12 @@ Next.js 15 App Router web client for VaultTracker.
 
 ## Status
 
-All seven implementation phases are **complete**. Not yet deployed to Vercel — see `Documentation/Web App Spec.md` Phase 7 (items 7.3–7.9) for open checklist.
+All seven implementation phases are **complete**. **Household (multi-account)** flows are implemented on the web (dashboard/analytics toggles, profile card, shared FIRE inputs).
+
+- **Tests** — Vitest (unit + component) and Playwright (E2E) are wired; suites live under `src/**/__tests__/` and `e2e/`. See [Testing](#testing) and `Documentation/Testing Plan.md` for layout, scenarios, and rationale.
+- **Deployment** — Not yet deployed to Vercel; no `vercel.json`, no production URL, and the API CORS allowlist has not been updated with a Vercel domain.
+
+See `Documentation/Web App Spec.md` Phase 7 for the open checklist items (7.3–7.9).
 
 ## Commands
 
@@ -24,6 +29,34 @@ npm run test:e2e      # Playwright (starts dev server automatically)
 
 **CI (`lint-web`):** On pull requests, GitHub Actions runs `npm ci`, `prettier --check`, then ESLint with **JSON output piped to reviewdog** (check annotations + optional PR review comments). Fix blocking ESLint **errors** locally with `npm run lint` before pushing. Warnings (e.g. `no-console: warn`) do not fail ESLint's exit code unless you tighten rules.
 
+## Testing
+
+**Docs:** `Documentation/Testing Plan.md` describes the pyramid (Vitest for pure logic/schemas/components, Playwright for full flows), setup assumptions, and file map.
+
+**Vitest** (`vitest.config.ts`, `vitest.setup.ts`): runs in `jsdom`; path alias `@/` matches the app. The `e2e/` folder is **excluded** so Playwright specs are not picked up as Vitest tests.
+
+**Where tests live**
+
+| Area                 | Location                                                                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit                 | `src/lib/__tests__/*.test.ts`                                                                                                                                          |
+| React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                                                                                                 |
+| Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/components/dashboard/__tests__/`, `src/components/profile/__tests__/`, `src/contexts/__tests__/` |
+| App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `dashboard/page.test.tsx`, `fire/page.test.tsx`)                                                                         |
+| E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`, `fire`)                                                                 |
+
+**Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
+
+**Playwright** (`playwright.config.ts`): `testDir` is `./e2e`, `baseURL` `http://localhost:3000`, `webServer` runs `npm run dev` unless `CI` is set (see `reuseExistingServer`). Install browsers once: `npx playwright install --with-deps chromium`.
+
+**E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` or `/accounts` should use **client navigation** (e.g. sidebar links **Transactions** / **Accounts**). To return to the dashboard from another route, use the **Home** link (not `page.goto("/dashboard")`).
+
+**E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser. **`analytics.spec.ts`** (price lookup) and **`profile.spec.ts`** (delete all data) stub selected API routes so they pass without mutating real data or depending on live price quotes. **`fire.spec.ts`** stubs `GET/PUT /api/v1/fire/profile` and `GET /api/v1/fire/projection` with JSON fixtures (reachable, unreachable, beyond_horizon) so FIRE flows pass without a running API.
+
+**FIRE E2E navigation:** After debug login, open `/fire` via the header link **FIRE Calc** (client navigation), not `page.goto("/fire")`, so the debug session is preserved.
+
+**Auth UI copy:** Login uses **Continue with Google** (when Firebase is configured). Success toasts for new transactions use **Transaction added** (not "created").
+
 ## Tech Stack
 
 - **Next.js 15** — App Router
@@ -40,14 +73,14 @@ npm run test:e2e      # Playwright (starts dev server automatically)
 
 ## Route Structure
 
-| Route           | Purpose                                                                                                                     |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/dashboard`    | Net worth chart, category bar, holdings grid (asset row opens read-only asset detail modal), price refresh                  |
-| `/analytics`    | Bento grid: portfolio hero, category holding cards (opens asset detail), net worth chart, performance summary, price lookup |
-| `/fire`         | FIRE calculator (inputs + projection UI)                                                                                    |
-| `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                 |
-| `/accounts`     | Account CRUD                                                                                                                |
-| `/profile`      | User info, **Household** card (create / join / invite / leave), sign out, theme toggle, delete all data                     |
+| Route           | Purpose                                                                                                                                                                                                                                                                                            |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/dashboard`    | Net worth chart, category allocation, holdings; **in a household:** **Household / Just me** toggle (defaults to household), merged hero + allocation + chart from household APIs, per-member collapsible sections (`HouseholdMemberSections`); **Just me** uses personal dashboard + holdings grid |
+| `/analytics`    | Bento grid (personal holdings), hero + **net worth trend** use **Household / Just me** when in a household (defaults to household totals + `useNetWorthHistoryHousehold`); performance + category cards stay personal                                                                              |
+| `/fire`         | FIRE calculator: **household** mode edits shared profile (`useHouseholdFireProfile`); charts hidden until API supports household projection; **personal** mode unchanged (`useFireProfile` + `useFireProjection`)                                                                                  |
+| `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                                                                                                                                                                                        |
+| `/accounts`     | Account CRUD                                                                                                                                                                                                                                                                                       |
+| `/profile`      | User info, **Household** card (create / join / invite / leave), sign out, theme toggle, delete all data                                                                                                                                                                                            |
 
 Unauthenticated: `/login` and `/` (redirects based on auth state).
 
@@ -100,20 +133,9 @@ process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_HOST ?? "http://l
 
 Both env var names work; `NEXT_PUBLIC_API_URL` takes precedence.
 
-### Route Structure
+### Route Structure (Auth Guard)
 
 All authenticated routes live under `src/app/(authenticated)/` with an auth-guard layout (`layout.tsx`). When `user` is null after auth resolution, the layout renders `LoginGateRedirect` (uses `useLayoutEffect` + `router.replace`) instead of children. Client render errors in that segment are caught by `(authenticated)/error.tsx`; the root `app/error.tsx` covers child routes under the root layout. Errors in **`root/layout.tsx` itself** use `app/global-error.tsx` (Next.js replaces the root layout when it activates).
-
-Unauthenticated routes: `/login` and `/` (redirects based on auth state).
-
-| Route           | Purpose                                                                                                                                                                                                                                                                                            |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/dashboard`    | Net worth chart, category allocation, holdings; **in a household:** **Household / Just me** toggle (defaults to household), merged hero + allocation + chart from household APIs, per-member collapsible sections (`HouseholdMemberSections`); **Just me** uses personal dashboard + holdings grid |
-| `/analytics`    | Bento grid (personal holdings), hero + **net worth trend** use **Household / Just me** when in a household (defaults to household totals + `useNetWorthHistoryHousehold`); performance + category cards stay personal                                                                              |
-| `/fire`         | FIRE calculator: **household** mode edits shared profile (`useHouseholdFireProfile`); charts hidden until API supports household projection; **personal** mode unchanged (`useFireProfile` + `useFireProjection`)                                                                                  |
-| `/transactions` | Sortable table, add/edit/delete, CSV export                                                                                                                                                                                                                                                        |
-| `/accounts`     | Account CRUD                                                                                                                                                                                                                                                                                       |
-| `/profile`      | User info, **Household** card (create / join / invite / leave), sign out, theme toggle, delete all data                                                                                                                                                                                            |
 
 ### React Query Hook Pattern
 
@@ -177,31 +199,3 @@ NEXT_PUBLIC_SENTRY_DSN=   # optional
 `NEXT_PUBLIC_API_HOST` also accepted as fallback for API base URL.
 
 When deploying to Vercel: set env vars in Vercel dashboard and add the Vercel domain to `ALLOWED_ORIGINS` in `VaultTrackerAPI/app/config.py`.
-
-## Testing
-
-**Docs:** `Documentation/Testing Plan.md` describes the pyramid (Vitest for pure logic/schemas/components, Playwright for full flows), setup assumptions, and file map.
-
-**Vitest** (`vitest.config.ts`, `vitest.setup.ts`): runs in `jsdom`; path alias `@/` matches the app. The `e2e/` folder is **excluded** so Playwright specs are not picked up as Vitest tests.
-
-**Where tests live**
-
-| Area                 | Location                                                                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Unit                 | `src/lib/__tests__/*.test.ts`                                                                                                   |
-| React Query hooks    | `src/lib/queries/__tests__/*.test.tsx`                                                                                          |
-| Components / context | `src/components/__tests__/`, `src/components/layout/__tests__/`, `src/components/profile/__tests__/`, `src/contexts/__tests__/` |
-| App routes           | `src/app/(authenticated)/**/__tests__/` (e.g. `fire/page.test.tsx`)                                                             |
-| E2E                  | `e2e/*.spec.ts` (e.g. `auth`, `dashboard`, `analytics`, `transactions`, `accounts`, `profile`, `fire`)                          |
-
-**Transaction form dialog:** `TransactionFormDialog` awaits `onSubmit` (sync or `Promise`). On success it calls `onOpenChange(false)`; if `onSubmit` rejects, the dialog stays open. Authenticated pages should use `mutateAsync` in `onSubmit`, show toasts in a `try`/`catch`, and `throw` after `toast.error` so the dialog does not close on failure.
-
-**Playwright** (`playwright.config.ts`): `testDir` is `./e2e`, `baseURL` `http://localhost:3000`, `webServer` runs `npm run dev` unless `CI` is set (see `reuseExistingServer`). Install browsers once: `npx playwright install --with-deps chromium`.
-
-**E2E and debug auth:** The debug session is **only in React memory** (not persisted). After debug sign-in on `/login`, navigating with `page.goto("/transactions")` performs a **full load** and clears that session, so guarded routes bounce to `/login`. E2E flows that need `/transactions` or `/accounts` should use **client navigation** (e.g. sidebar links **Transactions** / **Accounts**). To return to the dashboard from another route, use the **Home** link (not `page.goto("/dashboard")`).
-
-**E2E and the API:** Create/delete transaction specs call the real backend (`/api/v1/transactions/...`). For them to pass you need the API running (e.g. local FastAPI), `DEBUG_AUTH_ENABLED=true` where applicable, and a reachable `NEXT_PUBLIC_API_URL` (or host) from the browser. **`analytics.spec.ts`** (price lookup) and **`profile.spec.ts`** (delete all data) stub selected API routes so they pass without mutating real data or depending on live price quotes. **`fire.spec.ts`** stubs `GET/PUT /api/v1/fire/profile` and `GET /api/v1/fire/projection` with JSON fixtures (reachable, unreachable, beyond_horizon) so FIRE flows pass without a running API.
-
-**FIRE E2E navigation:** After debug login, open `/fire` via the header link **FIRE Calc** (client navigation), not `page.goto("/fire")`, so the debug session is preserved.
-
-**Auth UI copy:** Login uses **Continue with Google** (when Firebase is configured). Success toasts for new transactions use **Transaction added** (not "created").
