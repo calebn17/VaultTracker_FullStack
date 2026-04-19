@@ -42,3 +42,9 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    household_membership = relationship(
+        "HouseholdMembership",
+        uselist=False,
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

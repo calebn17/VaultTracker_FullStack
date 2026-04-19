@@ -21,3 +21,22 @@ class DashboardResponse(BaseModel):
     totalNetWorth: float
     categoryTotals: CategoryTotals
     groupedHoldings: dict[str, list[GroupedHolding]]
+
+
+class HouseholdMemberDashboard(BaseModel):
+    """One member slice within GET /dashboard/household."""
+
+    userId: str
+    email: str | None = None
+    totalNetWorth: float
+    categoryTotals: CategoryTotals
+    groupedHoldings: dict[str, list[GroupedHolding]]
+
+
+class HouseholdDashboardResponse(BaseModel):
+    """Merged household view plus per-member breakdown (five category keys)."""
+
+    householdId: str
+    totalNetWorth: float
+    categoryTotals: CategoryTotals
+    members: list[HouseholdMemberDashboard]

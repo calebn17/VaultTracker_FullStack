@@ -2,3 +2,6 @@
 - Security
 - Event Driven processing
 - multi-account support
+    - Fast Follow:
+        - networth snapshot merge history
+- scanner tool

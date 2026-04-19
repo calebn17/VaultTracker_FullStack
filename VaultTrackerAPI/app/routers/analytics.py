@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_current_household
+from app.models.household import Household
 from app.models.user import User
 from app.rate_limit import coerce_json_response, limiter, rate_limit_read
 from app.schemas.analytics import AnalyticsResponse
@@ -27,6 +28,25 @@ def get_analytics(
         return AnalyticsResponse.model_validate(cached)
     service = AnalyticsService()
     payload = service.get_analytics(user, db)
+    body = AnalyticsResponse.model_validate(payload)
+    cache.set(cache_key, body.model_dump(mode="python"))
+    return body
+
+
+@router.get("/household", response_model=AnalyticsResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
+def get_household_analytics(
+    request: Request,
+    household: Household = Depends(require_current_household),
+    db: Session = Depends(get_db),
+):
+    cache_key = f"analytics:household:{household.id}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return AnalyticsResponse.model_validate(cached)
+    service = AnalyticsService()
+    payload = service.get_household_analytics(household.id, db)
     body = AnalyticsResponse.model_validate(payload)
     cache.set(cache_key, body.model_dump(mode="python"))
     return body

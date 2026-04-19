@@ -29,6 +29,8 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
+from app.models.household import Household
+from app.models.household_membership import HouseholdMembership
 from app.models.user import User
 
 # Well-known token sent by iOS debug builds.  Must match AuthTokenProvider.debugToken.
@@ -113,3 +115,37 @@ async def get_current_user(
         db.refresh(user)
 
     return user
+
+
+async def get_current_household(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Household | None:
+    """
+    Resolve the household the current user belongs to, if any.
+
+    Each user has at most one membership row (``user_id`` is unique).
+    """
+    membership = (
+        db.query(HouseholdMembership)
+        .filter(HouseholdMembership.user_id == current_user.id)
+        .first()
+    )
+    if membership is None:
+        return None
+    household = (
+        db.query(Household).filter(Household.id == membership.household_id).first()
+    )
+    return household
+
+
+async def require_current_household(
+    household: Household | None = Depends(get_current_household),
+) -> Household:
+    """Same as get_current_household but returns 404 when the user has no household."""
+    if household is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not a member of a household",
+        )
+    return household

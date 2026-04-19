@@ -3,6 +3,7 @@ from app.routers.analytics import router as analytics_router
 from app.routers.assets import router as assets_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.fire import router as fire_router
+from app.routers.households import router as households_router
 from app.routers.networth import router as networth_router
 from app.routers.prices import router as prices_router
 from app.routers.transactions import router as transactions_router
@@ -16,6 +17,7 @@ __all__ = [
     "transactions_router",
     "networth_router",
     "users_router",
+    "households_router",
     "analytics_router",
     "prices_router",
 ]

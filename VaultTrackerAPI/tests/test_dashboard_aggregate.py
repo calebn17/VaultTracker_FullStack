@@ -3,8 +3,13 @@
 from sqlalchemy.orm import Session
 
 from app.models.asset import Asset
+from app.models.household import Household
+from app.models.household_membership import HouseholdMembership
 from app.models.user import User
-from app.services.dashboard_aggregate import aggregate_dashboard
+from app.services.dashboard_aggregate import (
+    aggregate_dashboard,
+    aggregate_household_dashboard,
+)
 
 
 def test_aggregate_dashboard_sums_categories_and_skips_empty_positions(
@@ -81,3 +86,54 @@ def test_aggregate_dashboard_ignores_unknown_category(db_session: Session) -> No
     out = aggregate_dashboard(db_session, user.id)
     assert out.totalNetWorth == 0.0
     assert sum(len(v) for v in out.groupedHoldings.values()) == 0
+
+
+def test_aggregate_household_dashboard_merges_members(db_session: Session) -> None:
+    u1 = User(firebase_id="hh-u1")
+    u2 = User(firebase_id="hh-u2")
+    db_session.add_all([u1, u2])
+    db_session.commit()
+    db_session.refresh(u1)
+    db_session.refresh(u2)
+
+    h = Household()
+    db_session.add(h)
+    db_session.flush()
+    db_session.add_all(
+        [
+            HouseholdMembership(household_id=h.id, user_id=u1.id),
+            HouseholdMembership(household_id=h.id, user_id=u2.id),
+        ]
+    )
+    db_session.add_all(
+        [
+            Asset(
+                user_id=u1.id,
+                name="BTC",
+                symbol="BTC",
+                category="crypto",
+                quantity=1.0,
+                current_value=100.0,
+            ),
+            Asset(
+                user_id=u2.id,
+                name="Cash",
+                symbol=None,
+                category="cash",
+                quantity=1.0,
+                current_value=50.0,
+            ),
+        ]
+    )
+    db_session.commit()
+
+    out = aggregate_household_dashboard(db_session, h.id)
+    assert out.householdId == h.id
+    assert out.totalNetWorth == 150.0
+    assert out.categoryTotals.crypto == 100.0
+    assert out.categoryTotals.cash == 50.0
+    assert len(out.members) == 2
+    assert {m.userId for m in out.members} == {u1.id, u2.id}
+    by_id = {m.userId: m for m in out.members}
+    assert by_id[u1.id].totalNetWorth == 100.0
+    assert by_id[u2.id].totalNetWorth == 50.0

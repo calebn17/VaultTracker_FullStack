@@ -5,6 +5,7 @@ import type {
   FireProfileInputForm,
   FireProfileResponse,
   FireProjectionResponse,
+  HouseholdFireProfile,
 } from "@/types/api";
 
 export function useFireProfile() {
@@ -50,6 +51,43 @@ export function useSaveFireProfile() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["fire", "profile"] });
       void queryClient.invalidateQueries({ queryKey: ["fire", "projection"] });
+    },
+  });
+}
+
+export type UseHouseholdFireProfileOptions = {
+  /** When false, skips the request (e.g. user is not in a household). */
+  enabled?: boolean;
+};
+
+export function useHouseholdFireProfile(options?: UseHouseholdFireProfileOptions) {
+  const api = useApiClient();
+  const enabled = options?.enabled ?? true;
+  return useQuery({
+    queryKey: ["fire", "household", "profile"],
+    queryFn: async () => {
+      try {
+        return await api.get<HouseholdFireProfile>("/api/v1/households/me/fire-profile");
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) {
+          return null;
+        }
+        throw e;
+      }
+    },
+    enabled,
+    retry: false,
+  });
+}
+
+export function useUpdateHouseholdFire() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: FireProfileInputForm) =>
+      api.put<HouseholdFireProfile>("/api/v1/households/me/fire-profile", body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["fire", "household"] });
     },
   });
 }

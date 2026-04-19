@@ -1,11 +1,22 @@
 ---
-description: VaultTracker agent rules — change communication, design for scale, security, plans/todos (checklist sync), pre-commit lint + Prettier (web), CLAUDE.md sync, Web/API pair-programming checkpoints
+description: VaultTracker agent rules — permissions (search/tests/lint vs mutations), change communication, design for scale, security, plans/todos (checklist sync), pre-commit lint + Prettier (web), CLAUDE.md sync, Web/API pair-programming checkpoints
 alwaysApply: true
 ---
 
 # VaultTracker — agent rules
 
 Consolidated project guidance for Cursor. All sections apply unless the user asks for minimal output or to skip review.
+
+---
+
+## Permissions
+
+Boundaries for tool use in this workspace:
+
+- **Search and read** — May use **all search and discovery tools** without separate permission (e.g. semantic/codebase search, ripgrep-style search, glob/file listing, reading files, listing MCP tools/resources for inspection).
+- **Tests** — May run **shell commands whose primary purpose is running automated tests** without separate permission (e.g. `pytest`, `npm test` / `vitest`, `xcodebuild test`, project test scripts). Prefer the repo’s documented commands from `CLAUDE.md` and CI when applicable.
+- **Lint** — May run **shell commands whose primary purpose is running linters or format checks** without separate permission (e.g. `ruff check` / `ruff format --check`, `npm run lint`, `npx prettier --check`, `swiftlint`). Prefer the repo’s documented commands from `CLAUDE.md` and CI when applicable.
+- **Edits and mutations** — **Require explicit user permission before proceeding** for any tool or action that **writes, modifies, deletes, or otherwise mutates** state: repository files, patches, deletes, git operations that change history or remotes, dependency/lockfile changes, MCP tools that modify external systems, or similar. Confirm with the user (or wait for their go-ahead) before mutating; do not assume silence implies consent.
 
 ---
 

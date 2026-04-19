@@ -18,7 +18,8 @@ vi.mock("@/contexts/api-client-context", () => ({
   }),
 }));
 
-import { useNetWorthHistory } from "@/lib/queries/use-networth";
+import { ApiError } from "@/lib/api-client";
+import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
 
 function makeWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -71,5 +72,58 @@ describe("useNetWorthHistory", () => {
 
     expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history?period=weekly");
     expect(queryClient.getQueryData(["networth", "weekly"])).toEqual(historyFixture);
+  });
+
+  it("does not fetch when enabled is false", () => {
+    mockGet.mockResolvedValue(historyFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistory("daily", { enabled: false }), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+});
+
+describe("useNetWorthHistoryHousehold", () => {
+  it("uses household URL and query key", async () => {
+    mockGet.mockResolvedValue(historyFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistoryHousehold("monthly"), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockGet).toHaveBeenCalledWith("/api/v1/networth/history/household?period=monthly");
+    expect(queryClient.getQueryData(["networth", "household", "monthly"])).toEqual(historyFixture);
+  });
+
+  it("does not fetch when enabled is false", () => {
+    mockGet.mockResolvedValue(historyFixture);
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistoryHousehold("daily", { enabled: false }), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("treats 404 as null when user has no household", async () => {
+    mockGet.mockRejectedValue(new ApiError("not found", 404));
+    const queryClient = makeQueryClient();
+
+    const { result } = renderHook(() => useNetWorthHistoryHousehold("daily"), {
+      wrapper: makeWrapper(queryClient),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toBeNull();
   });
 });

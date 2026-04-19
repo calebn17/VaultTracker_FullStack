@@ -19,7 +19,7 @@ from app.services.asset_sync import (
     record_networth_snapshot,
     update_asset_from_transaction,
 )
-from app.services.cache_service import cache
+from app.services.cache_service import invalidate_portfolio_caches
 
 
 class SmartUpdateMissingLinkedAssetError(Exception):
@@ -115,7 +115,7 @@ class TransactionService:
         record_networth_snapshot(db, user.id, snapshot_at=when)
         db.commit()
         db.refresh(transaction)
-        cache.invalidate_user(user.id)
+        invalidate_portfolio_caches(db, user.id)
         return transaction
 
     def smart_update(
@@ -171,5 +171,5 @@ class TransactionService:
         record_networth_snapshot(db, user.id, snapshot_at=when)
         db.commit()
         db.refresh(tx)
-        cache.invalidate_user(user.id)
+        invalidate_portfolio_caches(db, user.id)
         return tx

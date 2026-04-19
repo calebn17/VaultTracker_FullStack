@@ -8,10 +8,10 @@ app/
   rate_limit.py    # SlowAPI limiter, key func (JWT sub / IP), 429 handler, coerce_json_response
   config.py        # Pydantic Settings, reads .env
   database.py      # SQLAlchemy engine + SessionLocal + Base
-  dependencies.py  # get_current_user — the auth dependency
-  models/          # SQLAlchemy ORM models
+  dependencies.py  # get_current_user, get_current_household, require_current_household
+  models/          # SQLAlchemy ORM models (household, household_membership added)
   schemas/         # Pydantic request/response models
-  routers/         # accounts, assets, transactions, networth, dashboard, fire, users, analytics, prices
+  routers/         # accounts, assets, transactions, networth, dashboard, fire, households, users, analytics, prices
   services/        # asset_sync, transaction_service, analytics_service, price_service, cache_service,
                    # dashboard_aggregate, fire_service, fire_projection
 ```
@@ -49,7 +49,7 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 The core invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (helpers in [app/services/asset_sync.py](../app/services/asset_sync.py)):
 
 1. `update_asset_from_transaction` adjusts `asset.quantity` and resets `asset.current_value = quantity * price_per_unit` (mark-to-market, not cost-basis).
-2. `record_networth_snapshot` sums `current_value` across all user assets and writes a new row.
+2. `record_networth_snapshot` sums `current_value` across all user assets and writes a new `NetWorthSnapshot` row; if the user is in a household, it also upserts a `HouseholdNetWorthSnapshot` at the same timestamp (combined member total).
 3. Both are called inside the same DB transaction before `db.commit()`.
 
 **Update:** reverses old effect (`is_reversal=True`) then applies new values.
@@ -57,6 +57,38 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 **Delete + backdated correction:** computes `delta` and applies it to every `NetWorthSnapshot` whose `date >= tx.date`, then appends a fresh snapshot at "now".
 
 **Missing-asset guard:** If the `Asset` row is missing at update time, returns **409 Conflict**. `TransactionService.smart_update` raises `SmartUpdateMissingLinkedAssetError`; covered by tests and `VT_BREAK_TESTS` falsification fixture.
+
+## Net Worth History
+
+| Path                                     | Role                                                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/networth/history`           | Per-user `NetWorthSnapshot` series; `period` = `daily`, `weekly`, `monthly`, or `all`.                  |
+| `GET /api/v1/networth/history/household` | Household combined series from `HouseholdNetWorthSnapshot` (membership required). Same `period` query.  |
+
+`record_networth_snapshot` appends a per-user row and, when the user is in a household, upserts `(household_id, date)` on `HouseholdNetWorthSnapshot` with the sum of all members' asset `current_value`. Model: `app/models/household_networth_snapshot.py`.
+
+**Verify:**
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/test_networth.py tests/test_household_networth.py -q
+```
+
+## Dashboard
+
+| Path                             | Role                                                                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/dashboard`          | Per-user aggregate: five category buckets. Cached at `dashboard:{user_id}`.                                                      |
+| `GET /api/v1/dashboard/household` | Merged household view: combined totals plus `members[]` each with `totalNetWorth`, `categoryTotals`, `groupedHoldings`. Requires `require_current_household`. Cached at `dashboard:household:{household_id}`. |
+
+**Cache invalidation:** After portfolio writes call `invalidate_portfolio_caches(db, user_id)` from `cache_service.py`. It clears both the user's data cache entries and `dashboard:household:{id}` if they are in a household. Join/leave household routes additionally call `cache.invalidate_household` directly.
+
+**Verify:**
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/test_dashboard_aggregate.py tests/test_dashboard_household.py tests/test_analytics_dashboard_cache.py -q
+```
 
 ## FIRE Calculator
 
@@ -68,6 +100,46 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 **Files:** `app/routers/fire.py`, `app/models/fire_profile.py`, `app/schemas/fire.py`, `app/services/fire_service.py` (constants + math), `app/services/fire_projection.py` (response assembly).
 
 `DELETE /api/v1/users/me/data` bulk-deletes `fire_profiles` for the user (cascade alone does not run on bulk delete).
+
+## Households
+
+| Path                                  | Role                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/v1/households`             | Create a household and add the caller as the first member. **409** if already in one.                                                      |
+| `POST /api/v1/households/invite-codes` | Generate a single-use invite code. **409** if household already has 2 members. Expiry controlled by `TTL_SECONDS` in `household_invite_code.py`. |
+| `POST /api/v1/households/join`              | Body `{ "code" }`. Join with a valid unused code. **400** invalid/expired; **409** already in a household or household is full.               |
+| `DELETE /api/v1/households/me/membership`   | Leave current household. **404** if not in one. Returns **204**. Deletes the household if no members remain (invite codes cascade-delete).   |
+| `GET /api/v1/households/me`                 | Current household and members. **404** if not in any household.                                                                              |
+| `GET /api/v1/households/me/fire-profile`    | Shared household FIRE inputs; same JSON shape as `GET /api/v1/fire/profile`. **404** if not in a household. First read creates defaults.     |
+| `PUT /api/v1/households/me/fire-profile`    | Upsert household FIRE profile. Body matches `FIREProfileInput`.                                                                              |
+
+**Files:**
+- `app/routers/households.py` — route handlers
+- `app/models/household.py` — `Household` ORM model (`id`, `name`, `created_at`)
+- `app/models/household_membership.py` — `HouseholdMembership` join model (`household_id`, `user_id`, `role`, `joined_at`)
+- `app/models/household_invite_code.py` — `HouseholdInviteCode` model (`code`, `household_id`, `used`, `expires_at`; `TTL_SECONDS` constant)
+- `app/models/household_fire_profile.py` — `HouseholdFireProfile` model (shared FIRE inputs keyed by `household_id`)
+- `app/schemas/household.py` — `HouseholdCreate`, `HouseholdResponse`, `HouseholdMemberResponse`
+
+**Dependencies in `app/dependencies.py`:**
+- `get_current_household` — returns the caller's `Household` or `None`
+- `require_current_household` — like above but raises **404** if not a member; use on routes that require household membership
+
+**Design notes:**
+- One user may belong to at most one household at a time; attempting to create while already a member returns **409**.
+- Households are capped at 2 members in v1; invite-code generation is blocked once full.
+- The creating user is automatically added as a member (role not yet enforced beyond membership).
+- Household data is independent of portfolio data — no cascade onto accounts/assets.
+
+## Dashboard Category Keys
+
+The dashboard router ([app/routers/dashboard.py](../app/routers/dashboard.py)) groups assets into five camelCase buckets: `crypto`, `stocks`, `cash`, `realEstate`, `retirement`. These keys must stay in sync with `DashboardMapper` in the iOS client — renaming them is a breaking change.
+
+## iOS–API Contract Points
+
+- `account_type` values (`cryptoExchange`, `brokerage`, `bank`, `retirement`, `other`) map to iOS `AccountType` via `AccountMapper.mapAccountType`.
+- `asset.category` must be one of the five dashboard buckets above.
+- `transaction_type` is `"buy"` or `"sell"` (lowercase strings).
 
 ## Settings Reference
 

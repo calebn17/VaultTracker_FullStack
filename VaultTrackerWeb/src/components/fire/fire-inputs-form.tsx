@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { fireInputSchema, type FireProfileInputForm } from "@/lib/fire/fire-input-schema";
 import { formatCurrency } from "@/lib/format";
-import { useSaveFireProfile } from "@/lib/queries/use-fire";
+import { useSaveFireProfile, useUpdateHouseholdFire } from "@/lib/queries/use-fire";
 import { ApiError } from "@/lib/api-client";
 import type { FireAllocation, FireProfileResponse, FireProjectionResponse } from "@/types/api";
 
@@ -68,12 +68,17 @@ export function FireInputsForm({
   profile,
   projection,
   projectionLoading,
+  scope = "personal",
 }: {
   profile: FireProfileResponse | null | undefined;
   projection: FireProjectionResponse | undefined;
   projectionLoading?: boolean;
+  /** Household uses shared profile PUT; personal FIRE projection is unavailable in that mode. */
+  scope?: "personal" | "household";
 }) {
-  const save = useSaveFireProfile();
+  const personalSave = useSaveFireProfile();
+  const householdSave = useUpdateHouseholdFire();
+  const save = scope === "household" ? householdSave : personalSave;
 
   const form = useForm<FireProfileInputForm>({
     resolver: zodResolver(fireInputSchema),
@@ -211,24 +216,40 @@ export function FireInputsForm({
             <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
               From your portfolio
             </p>
-            <div className="grid gap-1">
-              <span className="text-muted-foreground text-xs">Current net worth</span>
-              <span className="font-mono text-sm font-medium tabular-nums">
-                {projectionLoading ? "…" : nw != null ? formatCurrency(nw) : "—"}
-              </span>
-            </div>
-            <FireAllocationBar allocation={projection?.allocation ?? null} />
-            <div className="grid gap-1">
-              <span className="text-muted-foreground text-xs">Blended expected return</span>
-              <span className="font-mono text-sm leading-snug">{returnLabel}</span>
-            </div>
+            {scope === "household" ? (
+              <p
+                className="text-muted-foreground text-xs leading-relaxed"
+                data-slot="fire-household-portfolio-note"
+              >
+                Combined household projection is not available in the app yet. Inputs you save apply
+                to the shared household FIRE profile for both members.
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-1">
+                  <span className="text-muted-foreground text-xs">Current net worth</span>
+                  <span className="font-mono text-sm font-medium tabular-nums">
+                    {projectionLoading ? "…" : nw != null ? formatCurrency(nw) : "—"}
+                  </span>
+                </div>
+                <FireAllocationBar allocation={projection?.allocation ?? null} />
+                <div className="grid gap-1">
+                  <span className="text-muted-foreground text-xs">Blended expected return</span>
+                  <span className="font-mono text-sm leading-snug">{returnLabel}</span>
+                </div>
+              </>
+            )}
           </div>
 
           {errMessage ? <p className="text-destructive text-sm">{errMessage}</p> : null}
         </CardContent>
         <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button type="submit" disabled={save.isPending} className="w-full sm:w-auto">
-            {save.isPending ? "Saving…" : "Run simulation"}
+            {save.isPending
+              ? "Saving…"
+              : scope === "household"
+                ? "Save household profile"
+                : "Run simulation"}
           </Button>
         </CardFooter>
       </form>

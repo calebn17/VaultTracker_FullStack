@@ -88,6 +88,43 @@ export interface NetWorthHistoryResponse {
   snapshots: Array<{ date: string; value: number }>;
 }
 
+/** GET /households/me, POST /households, POST /households/join */
+export interface HouseholdMember {
+  userId: string;
+  email: string | null;
+}
+
+export interface HouseholdResponse {
+  id: string;
+  createdAt: string;
+  members: HouseholdMember[];
+}
+
+export interface HouseholdInviteCodeResponse {
+  code: string;
+  expiresAt: string;
+}
+
+export interface HouseholdJoinRequest {
+  code: string;
+}
+
+/** GET /dashboard/household */
+export interface HouseholdMemberDashboard {
+  userId: string;
+  email: string | null;
+  totalNetWorth: number;
+  categoryTotals: CategoryTotals;
+  groupedHoldings: Record<string, HoldingItem[]>;
+}
+
+export interface HouseholdDashboardResponse {
+  householdId: string;
+  totalNetWorth: number;
+  categoryTotals: CategoryTotals;
+  members: HouseholdMemberDashboard[];
+}
+
 export interface PriceRefreshResponse {
   updated: Array<{
     asset_id: string;
@@ -142,6 +179,9 @@ export interface FireProfileResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+/** GET /households/me/fire-profile — same shape as personal profile */
+export type HouseholdFireProfile = FireProfileResponse;
 
 export interface FireProjectionInputs {
   currentAge: number;
