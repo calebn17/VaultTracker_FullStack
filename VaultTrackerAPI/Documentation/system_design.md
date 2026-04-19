@@ -58,6 +58,22 @@ The core invariant: **any write to `transactions` must keep the parent `Asset` a
 
 **Missing-asset guard:** If the `Asset` row is missing at update time, returns **409 Conflict**. `TransactionService.smart_update` raises `SmartUpdateMissingLinkedAssetError`; covered by tests and `VT_BREAK_TESTS` falsification fixture.
 
+## Dashboard
+
+| Path                             | Role                                                                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/dashboard`          | Per-user aggregate: five category buckets. Cached at `dashboard:{user_id}`.                                                      |
+| `GET /api/v1/dashboard/household` | Merged household view: combined totals plus `members[]` each with `totalNetWorth`, `categoryTotals`, `groupedHoldings`. Requires `require_current_household`. Cached at `dashboard:household:{household_id}`. |
+
+**Cache invalidation:** After portfolio writes call `invalidate_portfolio_caches(db, user_id)` from `cache_service.py`. It clears both the user's data cache entries and `dashboard:household:{id}` if they are in a household. Join/leave household routes additionally call `cache.invalidate_household` directly.
+
+**Verify:**
+
+```bash
+cd VaultTrackerAPI
+./venv/bin/python -m pytest tests/test_dashboard_aggregate.py tests/test_dashboard_household.py tests/test_analytics_dashboard_cache.py -q
+```
+
 ## FIRE Calculator
 
 | Path                           | Role                                                              |

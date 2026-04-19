@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from cachetools import TTLCache
+from sqlalchemy.orm import Session
 
 
 class CacheService:
@@ -30,6 +31,10 @@ class CacheService:
             if needle in str(k):
                 del self._data[k]
 
+    def invalidate_household(self, household_id: str) -> None:
+        """Clear cached GET /dashboard/household for this household."""
+        self._data.pop(f"dashboard:household:{household_id}", None)
+
     def get_crypto_price(self, symbol: str) -> float | None:
         v = self._crypto_prices.get(symbol.upper())
         return float(v) if v is not None else None
@@ -46,3 +51,22 @@ class CacheService:
 
 
 cache = CacheService()
+
+
+def invalidate_portfolio_caches(db: Session, user_id: str) -> None:
+    """
+    Invalidate dashboard, analytics, and net-worth caches for this user.
+
+    If the user belongs to a household, also clears the merged household
+    dashboard cache so partner-visible totals stay fresh.
+    """
+    from app.models.household_membership import HouseholdMembership
+
+    cache.invalidate_user(user_id)
+    m = (
+        db.query(HouseholdMembership)
+        .filter(HouseholdMembership.user_id == user_id)
+        .first()
+    )
+    if m is not None:
+        cache.invalidate_household(m.household_id)

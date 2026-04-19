@@ -30,6 +30,7 @@ from app.schemas.household import (
     HouseholdMemberResponse,
     HouseholdResponse,
 )
+from app.services.cache_service import cache
 
 _CODE_ALPHABET = string.ascii_uppercase + string.digits
 _CODE_LENGTH = 8
@@ -223,6 +224,7 @@ async def join_household(
     db.commit()
 
     db.refresh(household)
+    cache.invalidate_household(household.id)
     return _household_to_response(db, household)
 
 
@@ -258,6 +260,7 @@ async def leave_household(
         if household is not None:
             db.delete(household)
     db.commit()
+    cache.invalidate_household(household_id)
 
 
 @router.get("/me", response_model=HouseholdResponse)

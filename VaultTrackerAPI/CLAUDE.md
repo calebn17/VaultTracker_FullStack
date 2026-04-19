@@ -76,6 +76,9 @@ VT_BREAK_TESTS=1 ./venv/bin/python -m pytest tests/ -q
 
 # Household tests
 ./venv/bin/python -m pytest tests/test_households.py -q
+
+# Dashboard tests
+./venv/bin/python -m pytest tests/test_dashboard_aggregate.py tests/test_dashboard_household.py tests/test_analytics_dashboard_cache.py -q
 ```
 
 `tests/conftest.py` uses in-memory SQLite and auth overrides — tests never touch `vaulttracker.db` or Firebase.

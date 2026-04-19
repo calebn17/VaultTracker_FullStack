@@ -23,7 +23,7 @@ from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.rate_limit import coerce_json_response, limiter, rate_limit_write
-from app.services.cache_service import cache
+from app.services.cache_service import invalidate_portfolio_caches
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -49,4 +49,4 @@ async def clear_user_data(
     db.query(Account).filter(Account.user_id == current_user.id).delete()
     db.query(FIREProfile).filter(FIREProfile.user_id == current_user.id).delete()
     db.commit()
-    cache.invalidate_user(current_user.id)
+    invalidate_portfolio_caches(db, current_user.id)

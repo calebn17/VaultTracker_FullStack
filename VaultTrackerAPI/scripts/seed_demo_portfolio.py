@@ -36,7 +36,7 @@ from app.models.networth_snapshot import NetWorthSnapshot
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.transaction import SmartTransactionCreate
-from app.services.cache_service import cache
+from app.services.cache_service import invalidate_portfolio_caches
 from app.services.transaction_service import TransactionService
 
 DEFAULT_FIREBASE_ID = "debug-user"
@@ -76,7 +76,7 @@ def clear_user_financial_data(db: Session, user_id: str) -> None:
     db.query(Asset).filter(Asset.user_id == user_id).delete()
     db.query(Account).filter(Account.user_id == user_id).delete()
     db.commit()
-    cache.invalidate_user(user_id)
+    invalidate_portfolio_caches(db, user_id)
 
 
 def get_or_create_user(db: Session, firebase_id: str) -> User:

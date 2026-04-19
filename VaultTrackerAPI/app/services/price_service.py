@@ -13,7 +13,7 @@ from app.config import settings
 from app.models.asset import Asset
 from app.models.user import User
 from app.services.asset_sync import record_networth_snapshot
-from app.services.cache_service import cache
+from app.services.cache_service import cache, invalidate_portfolio_caches
 
 _GENERIC_REFRESH_ERROR = "Unable to refresh price for this symbol."
 
@@ -143,6 +143,6 @@ class PriceService:
         if updated:
             record_networth_snapshot(db, user.id)
             db.commit()
-            cache.invalidate_user(user.id)
+            invalidate_portfolio_caches(db, user.id)
 
         return {"updated": updated, "skipped": skipped, "errors": errors}
