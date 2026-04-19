@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/auth-context";
 import { useDeleteUserData } from "@/lib/queries/use-user";
+import { HouseholdSettingsCard } from "@/components/profile/household-settings-card";
 
 export default function ProfilePage() {
   const { user, signOutUser, mode } = useAuth();
@@ -56,6 +57,8 @@ export default function ProfilePage() {
           </Button>
         </CardContent>
       </Card>
+
+      <HouseholdSettingsCard />
 
       <Card>
         <CardHeader>
