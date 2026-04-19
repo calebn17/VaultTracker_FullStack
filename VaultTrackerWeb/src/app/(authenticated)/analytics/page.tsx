@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useDashboard } from "@/lib/queries/use-dashboard";
+import { useDashboard, useDashboardHousehold } from "@/lib/queries/use-dashboard";
+import { useHousehold } from "@/lib/queries/use-household";
 import { useAnalytics } from "@/lib/queries/use-analytics";
-import { useNetWorthHistory } from "@/lib/queries/use-networth";
+import { useNetWorthHistory, useNetWorthHistoryHousehold } from "@/lib/queries/use-networth";
 import { usePriceLookup } from "@/lib/queries/use-prices";
 import { NetWorthChart } from "@/components/dashboard/net-worth-chart";
 import { AssetDetailDialog } from "@/components/dashboard/asset-detail-dialog";
@@ -22,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 function allocationPercent(
   allocation: Record<string, { percentage: number } | undefined> | undefined,
@@ -31,15 +33,27 @@ function allocationPercent(
 }
 
 export default function AnalyticsPage() {
+  const { data: household } = useHousehold();
+  const inHousehold = household != null;
+  const [preferPersonal, setPreferPersonal] = useState(false);
+  const isHouseholdView = inHousehold && !preferPersonal;
+
   const [period, setPeriod] = useState<NetWorthPeriod>("daily");
   const [symbol, setSymbol] = useState("");
   const [lookup, setLookup] = useState("");
   const priceQ = usePriceLookup(lookup);
 
   const dashboard = useDashboard();
+  const householdDashboard = useDashboardHousehold({ enabled: isHouseholdView });
   const analytics = useAnalytics();
-  const history = useNetWorthHistory(period);
-  const historyDaily = useNetWorthHistory("daily");
+
+  const personalHistory = useNetWorthHistory(period);
+  const householdHistory = useNetWorthHistoryHousehold(period, { enabled: isHouseholdView });
+  const historyActive = isHouseholdView ? householdHistory : personalHistory;
+
+  const personalDaily = useNetWorthHistory("daily");
+  const householdDaily = useNetWorthHistoryHousehold("daily", { enabled: isHouseholdView });
+  const historyDailyActive = isHouseholdView ? householdDaily : personalDaily;
 
   const [selectedHolding, setSelectedHolding] = useState<{
     holding: HoldingItem;
@@ -51,8 +65,8 @@ export default function AnalyticsPage() {
   const loadingAnalytics = analytics.isLoading;
 
   const monthChange = useMemo(
-    () => computeApproxMonthChange(historyDaily.data?.snapshots ?? []),
-    [historyDaily.data?.snapshots]
+    () => computeApproxMonthChange(historyDailyActive.data?.snapshots ?? []),
+    [historyDailyActive.data?.snapshots]
   );
 
   const monthChangeProp =
@@ -65,12 +79,53 @@ export default function AnalyticsPage() {
 
   const cardLoading = loadingDashboard || loadingAnalytics;
 
+  const heroTotal = isHouseholdView ? (householdDashboard.data?.totalNetWorth ?? 0) : totalNetWorth;
+  const heroLoading = isHouseholdView ? householdDashboard.isLoading : loadingDashboard;
+
   return (
     <div className="space-y-10">
+      {inHousehold ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground font-mono text-[10px] tracking-[0.12em] uppercase">
+            View
+          </span>
+          <div
+            className="bg-secondary flex gap-1 rounded-md p-0.5"
+            role="group"
+            aria-label="Analytics scope"
+          >
+            <button
+              type="button"
+              className={cn(
+                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                isHouseholdView
+                  ? "border-primary/20 bg-card text-primary border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setPreferPersonal(false)}
+            >
+              Household
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "rounded px-3 py-1.5 font-mono text-xs transition-colors",
+                !isHouseholdView
+                  ? "border-primary/20 bg-card text-primary border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setPreferPersonal(true)}
+            >
+              Just me
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <PortfolioHero
-        totalNetWorth={totalNetWorth}
+        totalNetWorth={heroTotal}
         monthChange={monthChangeProp}
-        loading={loadingDashboard}
+        loading={heroLoading}
       />
 
       {analytics.isError ? (
@@ -153,8 +208,11 @@ export default function AnalyticsPage() {
               </SelectContent>
             </Select>
           </div>
-          <NetWorthChart data={history.data?.snapshots ?? []} loading={history.isLoading} />
-          {history.isError ? (
+          <NetWorthChart
+            data={historyActive.data?.snapshots ?? []}
+            loading={historyActive.isLoading}
+          />
+          {historyActive.isError ? (
             <p className="text-destructive text-sm">Could not load net worth history.</p>
           ) : null}
         </div>

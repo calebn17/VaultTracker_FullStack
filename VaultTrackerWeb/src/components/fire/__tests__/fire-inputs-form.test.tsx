@@ -15,6 +15,11 @@ vi.mock("@/lib/queries/use-fire", () => ({
     isPending: false,
     error: null,
   }),
+  useUpdateHouseholdFire: () => ({
+    mutateAsync,
+    isPending: false,
+    error: null,
+  }),
 }));
 
 describe("FireInputsForm", () => {
