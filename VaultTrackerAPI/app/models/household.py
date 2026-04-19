@@ -36,3 +36,9 @@ class Household(Base):
         back_populates="household",
         cascade="all, delete-orphan",
     )
+    fire_profile = relationship(
+        "HouseholdFIREProfile",
+        uselist=False,
+        back_populates="household",
+        cascade="all, delete-orphan",
+    )

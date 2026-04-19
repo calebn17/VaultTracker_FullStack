@@ -9,12 +9,14 @@ import string
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from app.database import get_db
 from app.dependencies import get_current_user, require_current_household
 from app.models.household import Household
+from app.models.household_fire_profile import HouseholdFIREProfile
 from app.models.household_invite_code import TTL_SECONDS, HouseholdInviteCode
 from app.models.household_membership import HouseholdMembership
 from app.models.user import User
@@ -24,6 +26,7 @@ from app.rate_limit import (
     rate_limit_read,
     rate_limit_write,
 )
+from app.schemas.fire import FIREProfileInput, FIREProfileResponse
 from app.schemas.household import (
     HouseholdInviteCodeResponse,
     HouseholdJoinRequest,
@@ -31,10 +34,15 @@ from app.schemas.household import (
     HouseholdResponse,
 )
 from app.services.cache_service import cache
+from app.services.fire_projection import household_fire_profile_to_response
 
 _CODE_ALPHABET = string.ascii_uppercase + string.digits
 _CODE_LENGTH = 8
 _MAX_MEMBERS_V1 = 2
+
+_DEFAULT_FIRE_AGE = 30
+_DEFAULT_FIRE_INCOME = 0.0
+_DEFAULT_FIRE_EXPENSES = 0.0
 
 router = APIRouter(prefix="/households", tags=["Households"])
 
@@ -60,6 +68,49 @@ def _as_utc_aware(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt
+
+
+def _get_or_create_household_fire_profile(
+    db: Session, household_id: str
+) -> HouseholdFIREProfile:
+    row = (
+        db.query(HouseholdFIREProfile)
+        .filter(HouseholdFIREProfile.household_id == household_id)
+        .one_or_none()
+    )
+    if row is not None:
+        return row
+    row = HouseholdFIREProfile(
+        household_id=household_id,
+        current_age=_DEFAULT_FIRE_AGE,
+        annual_income=_DEFAULT_FIRE_INCOME,
+        annual_expenses=_DEFAULT_FIRE_EXPENSES,
+        target_retirement_age=None,
+    )
+    db.add(row)
+    try:
+        db.commit()
+        db.refresh(row)
+        return row
+    except IntegrityError:
+        db.rollback()
+        row = (
+            db.query(HouseholdFIREProfile)
+            .filter(HouseholdFIREProfile.household_id == household_id)
+            .one_or_none()
+        )
+        if row is None:
+            raise
+        return row
+
+
+def _apply_household_fire_profile_input(
+    row: HouseholdFIREProfile, body: FIREProfileInput
+) -> None:
+    row.current_age = body.currentAge
+    row.annual_income = body.annualIncome
+    row.annual_expenses = body.annualExpenses
+    row.target_retirement_age = body.targetRetirementAge
 
 
 def _household_to_response(db: Session, household: Household) -> HouseholdResponse:
@@ -273,3 +324,67 @@ async def get_my_household(
 ):
     """Return the caller's household and members (404 if not in any household)."""
     return _household_to_response(db, household)
+
+
+@router.get("/me/fire-profile", response_model=FIREProfileResponse)
+@limiter.limit(rate_limit_read)
+@coerce_json_response
+async def get_household_fire_profile(
+    request: Request,
+    household: Household = Depends(require_current_household),
+    db: Session = Depends(get_db),
+):
+    """FIRE inputs shared by the household (created with defaults on first read)."""
+    row = _get_or_create_household_fire_profile(db, household.id)
+    return household_fire_profile_to_response(row)
+
+
+@router.put("/me/fire-profile", response_model=FIREProfileResponse)
+@limiter.limit(rate_limit_write)
+@coerce_json_response
+async def upsert_household_fire_profile(
+    request: Request,
+    body: FIREProfileInput,
+    household: Household = Depends(require_current_household),
+    db: Session = Depends(get_db),
+):
+    row = (
+        db.query(HouseholdFIREProfile)
+        .filter(HouseholdFIREProfile.household_id == household.id)
+        .one_or_none()
+    )
+    if row is None:
+        row = HouseholdFIREProfile(
+            household_id=household.id,
+            current_age=body.currentAge,
+            annual_income=body.annualIncome,
+            annual_expenses=body.annualExpenses,
+            target_retirement_age=body.targetRetirementAge,
+        )
+        db.add(row)
+    else:
+        _apply_household_fire_profile_input(row, body)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        row = (
+            db.query(HouseholdFIREProfile)
+            .filter(HouseholdFIREProfile.household_id == household.id)
+            .one_or_none()
+        )
+        if row is None:
+            raise
+        _apply_household_fire_profile_input(row, body)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+    except Exception:
+        db.rollback()
+        raise
+
+    db.refresh(row)
+    return household_fire_profile_to_response(row)

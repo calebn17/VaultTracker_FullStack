@@ -10,6 +10,7 @@ from typing import Literal, cast
 from sqlalchemy.orm import Session
 
 from app.models.fire_profile import FIREProfile
+from app.models.household_fire_profile import HouseholdFIREProfile
 from app.schemas.dashboard import CategoryTotals
 from app.schemas.fire import (
     FIREAllocation,
@@ -58,6 +59,20 @@ def _allocation_and_blended_from_totals(
 
 
 def profile_to_response(profile: FIREProfile) -> FIREProfileResponse:
+    return FIREProfileResponse(
+        id=profile.id,
+        currentAge=profile.current_age,
+        annualIncome=profile.annual_income,
+        annualExpenses=profile.annual_expenses,
+        targetRetirementAge=profile.target_retirement_age,
+        createdAt=profile.created_at,
+        updatedAt=profile.updated_at,
+    )
+
+
+def household_fire_profile_to_response(
+    profile: HouseholdFIREProfile,
+) -> FIREProfileResponse:
     return FIREProfileResponse(
         id=profile.id,
         currentAge=profile.current_age,

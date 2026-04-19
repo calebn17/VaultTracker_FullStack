@@ -13,7 +13,7 @@
 | `prices.py`       | `/prices`       | Delegates to `PriceService`; `async def`                                |
 | `users.py`        | `/users`        | Current user profile                                                    |
 | `fire.py`         | `/fire`         | FIRE profile + projection                                               |
-| `households.py`   | `/households`   | Create household, invite codes, join by code, leave, `GET /me`; max 2 members in v1 |
+| `households.py`   | `/households`   | Create, invite codes, join, leave, `GET /me`, `GET/PUT /me/fire-profile`; max 2 members in v1 |
 
 ## Transaction Endpoints (Smart + Legacy)
 

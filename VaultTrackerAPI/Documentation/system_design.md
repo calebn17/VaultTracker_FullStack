@@ -110,12 +110,15 @@ cd VaultTrackerAPI
 | `POST /api/v1/households/join`              | Body `{ "code" }`. Join with a valid unused code. **400** invalid/expired; **409** already in a household or household is full.               |
 | `DELETE /api/v1/households/me/membership`   | Leave current household. **404** if not in one. Returns **204**. Deletes the household if no members remain (invite codes cascade-delete).   |
 | `GET /api/v1/households/me`                 | Current household and members. **404** if not in any household.                                                                              |
+| `GET /api/v1/households/me/fire-profile`    | Shared household FIRE inputs; same JSON shape as `GET /api/v1/fire/profile`. **404** if not in a household. First read creates defaults.     |
+| `PUT /api/v1/households/me/fire-profile`    | Upsert household FIRE profile. Body matches `FIREProfileInput`.                                                                              |
 
 **Files:**
 - `app/routers/households.py` — route handlers
 - `app/models/household.py` — `Household` ORM model (`id`, `name`, `created_at`)
 - `app/models/household_membership.py` — `HouseholdMembership` join model (`household_id`, `user_id`, `role`, `joined_at`)
 - `app/models/household_invite_code.py` — `HouseholdInviteCode` model (`code`, `household_id`, `used`, `expires_at`; `TTL_SECONDS` constant)
+- `app/models/household_fire_profile.py` — `HouseholdFireProfile` model (shared FIRE inputs keyed by `household_id`)
 - `app/schemas/household.py` — `HouseholdCreate`, `HouseholdResponse`, `HouseholdMemberResponse`
 
 **Dependencies in `app/dependencies.py`:**

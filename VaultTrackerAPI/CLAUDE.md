@@ -75,7 +75,7 @@ VT_BREAK_TESTS=1 ./venv/bin/python -m pytest tests/ -q
 ./venv/bin/python -m pytest tests/test_fire.py tests/test_fire_api.py tests/test_fire_schemas.py tests/test_fire_profile_orm.py -q
 
 # Household tests
-./venv/bin/python -m pytest tests/test_households.py -q
+./venv/bin/python -m pytest tests/test_households.py tests/test_household_fire.py -q
 
 # Dashboard tests
 ./venv/bin/python -m pytest tests/test_dashboard_aggregate.py tests/test_dashboard_household.py tests/test_analytics_dashboard_cache.py -q

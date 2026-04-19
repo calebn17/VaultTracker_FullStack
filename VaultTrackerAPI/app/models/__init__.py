@@ -2,6 +2,7 @@ from app.models.account import Account
 from app.models.asset import Asset
 from app.models.fire_profile import FIREProfile
 from app.models.household import Household
+from app.models.household_fire_profile import HouseholdFIREProfile
 from app.models.household_invite_code import HouseholdInviteCode
 from app.models.household_membership import HouseholdMembership
 from app.models.household_networth_snapshot import HouseholdNetWorthSnapshot
@@ -20,4 +21,5 @@ __all__ = [
     "HouseholdMembership",
     "HouseholdInviteCode",
     "HouseholdNetWorthSnapshot",
+    "HouseholdFIREProfile",
 ]
