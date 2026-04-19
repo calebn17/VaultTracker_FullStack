@@ -2,12 +2,14 @@
 
 Centralised networking layer. All backend communication flows through here; no other layer touches URLSession directly.
 
+> **Auth flow, debug bypass details, date decoding, environment switching:** [`Documentation/system_design.md`](Documentation/system_design.md)
+
 ## Structure
 
 ```
 API/
 ├── APIConfiguration.swift   # Base URLs, environment switch, endpoint constants
-├── APIService.swift          # Concrete URLSession implementation of APIServiceProtocol
+├── APIService.swift          # Concrete URLSession implementation
 ├── APIServiceProtocol.swift  # Interface — program against this, not the concrete class
 ├── AuthTokenProvider.swift   # Actor that vends Firebase JWT tokens
 ├── Errors/
@@ -19,48 +21,38 @@ API/
 │   └── TransactionMapper.swift
 └── Models/
     ├── APIAccountModels.swift
-    ├── APIAnalyticsModels.swift    # APIAnalyticsResponse, APIAllocationEntry, APIPerformanceBlock
+    ├── APIAnalyticsModels.swift
     ├── APIAssetModels.swift
     ├── APIDashboardResponse.swift
     ├── APIErrorResponse.swift
     ├── APINetWorthHistoryResponse.swift
-    ├── APIPriceModels.swift        # APIPriceRefreshResult, APIPriceUpdate, APIPriceError
-    └── APITransactionModels.swift  # Includes APISmartTransactionCreateRequest + APIEnrichedTransactionResponse
+    ├── APIPriceModels.swift
+    └── APITransactionModels.swift
 ```
-
-## Key Decisions
-
-**Environment switching** — Compile-time conditional: `#if DEBUG` builds use `.development` (reads `API_HOST` from scheme env vars); `RELEASE` archives automatically target `.production` (`https://vaulttracker-api.onrender.com`). No manual change needed before archiving.
-
-**Authentication** — Every request is signed by the injected `AuthTokenProvider` (defaults to `AuthTokenProvider.shared`). On a 401 response, `APIService` force-refreshes the token and retries once. If the retry also 401s, it posts `.authenticationRequired` on `NotificationCenter` and throws `APIError.unauthorized` — `AuthManager` observes this to sign the user out. `APIService.test_make(session:log:tokenProvider:)` accepts an injected provider for unit tests; production uses `shared`.
-
-**Date decoding** — The decoder uses a custom strategy that tries three ISO 8601 formats in order: with timezone + fractional seconds, with timezone only, then naive UTC. This handles both current rows (timezone-aware) and legacy rows stored before timezone support was added.
-
-**Debug bypass** — In DEBUG builds, `AuthTokenProvider` exposes `isDebugSession` and `forceTokenRefreshFailure` as **instance** (`nonisolated(unsafe) var`) properties, not statics. Set `instance.isDebugSession = true` to bypass Firebase and return the hardcoded token (`"vaulttracker-debug-user"`). Production and integration tests use `AuthTokenProvider.shared.isDebugSession = true`; unit tests in `APIServiceTests` create a per-test instance via `makeDebugProvider()` (calls `AuthTokenProvider.test_make(log:)` then sets `isDebugSession = true`) to avoid cross-suite races. The backend must have `DEBUG_AUTH_ENABLED=true` in its `.env`.
 
 ## Live Endpoints
 
-| Constant | Method | Path |
-|----------|--------|------|
-| `dashboard` | GET | `/api/v1/dashboard` |
-| `analytics` | GET | `/api/v1/analytics` |
-| `priceRefresh` | POST | `/api/v1/prices/refresh` |
-| `smartTransaction` | POST | `/api/v1/transactions/smart` |
-| `transactions` | GET/POST | `/api/v1/transactions` |
-| `accounts` | GET/POST | `/api/v1/accounts` |
-| `assets` | GET/POST | `/api/v1/assets` |
-| `networthHistory` | GET | `/api/v1/networth/history` |
-| `clearUserData` | DELETE | `/api/v1/users/me/data` |
+| Constant           | Method   | Path                         |
+| ------------------ | -------- | ---------------------------- |
+| `dashboard`        | GET      | `/api/v1/dashboard`          |
+| `analytics`        | GET      | `/api/v1/analytics`          |
+| `priceRefresh`     | POST     | `/api/v1/prices/refresh`     |
+| `smartTransaction` | POST     | `/api/v1/transactions/smart` |
+| `transactions`     | GET/POST | `/api/v1/transactions`       |
+| `accounts`         | GET/POST | `/api/v1/accounts`           |
+| `assets`           | GET/POST | `/api/v1/assets`             |
+| `networthHistory`  | GET      | `/api/v1/networth/history`   |
+| `clearUserData`    | DELETE   | `/api/v1/users/me/data`      |
 
 ## Adding a New Endpoint
 
-1. Add the path constant to `APIConfiguration.Endpoints`.
-2. Declare the method on `APIServiceProtocol`.
-3. Implement it in `APIService` using `makeRequest` + `perform` (or `performVoid` for no-body responses).
-4. Add any new request/response structs to the appropriate file under `Models/`.
-5. Add a mapper function in `Mappers/` if conversion to a domain model is needed.
+1. Add path constant to `APIConfiguration.Endpoints`
+2. Declare method on `APIServiceProtocol`
+3. Implement in `APIService` using `makeRequest` + `perform` (or `performVoid`)
+4. Add request/response structs to `Models/`
+5. Add mapper in `Mappers/` if conversion to a domain model is needed
 
 ## What Lives Here vs. Managers/
 
-- **API/** — raw network I/O and Codable ↔ API types only.
-- **Managers/DataService.swift** — orchestrates API calls and converts API types to domain models. ViewModels call `DataService`, not `APIService` directly.
+- **API/** — raw network I/O and Codable ↔ API types only
+- **Managers/DataService.swift** — orchestrates API calls and converts to domain models; ViewModels call `DataService`, not `APIService` directly
