@@ -1,9 +1,12 @@
 "use client";
 
+import { LayoutGrid, List } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { AccountFormDialog } from "@/components/accounts/account-form";
+import { AccountGridView } from "@/components/accounts/account-grid";
+import { AccountListView } from "@/components/accounts/account-list";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AccountFormDialog } from "@/components/accounts/account-form";
 import {
   useAccounts,
   useCreateAccount,
@@ -22,7 +24,7 @@ import {
   useDeleteAccount,
 } from "@/lib/queries/use-accounts";
 import { useTransactions } from "@/lib/queries/use-transactions";
-import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { AccountResponse } from "@/types/api";
 
 export default function AccountsPage() {
@@ -32,6 +34,7 @@ export default function AccountsPage() {
   const updateAcc = useUpdateAccount();
   const deleteAcc = useDeleteAccount();
 
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [addOpen, setAddOpen] = useState(false);
   const [edit, setEdit] = useState<AccountResponse | null>(null);
   const [del, setDel] = useState<AccountResponse | null>(null);
@@ -50,38 +53,65 @@ export default function AccountsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-heading text-xl font-semibold tracking-tight">Accounts</h1>
-        <Button type="button" onClick={() => setAddOpen(true)}>
-          Add account
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className="flex items-center gap-1 rounded-md border p-0.5"
+            role="group"
+            aria-label="Account layout"
+          >
+            <button
+              type="button"
+              aria-pressed={viewMode === "grid"}
+              aria-label="Grid view"
+              className={cn(
+                "rounded p-1.5 transition-colors",
+                viewMode === "grid"
+                  ? "bg-card text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setViewMode("grid")}
+            >
+              <LayoutGrid className="size-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              aria-pressed={viewMode === "list"}
+              aria-label="List view"
+              className={cn(
+                "rounded p-1.5 transition-colors",
+                viewMode === "list"
+                  ? "bg-card text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              onClick={() => setViewMode("list")}
+            >
+              <List className="size-4" aria-hidden />
+            </button>
+          </div>
+          <Button type="button" onClick={() => setAddOpen(true)}>
+            Add account
+          </Button>
+        </div>
       </div>
 
       {error ? <p className="text-destructive text-sm">Failed to load accounts.</p> : null}
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Loading…</p>
+      ) : viewMode === "grid" ? (
+        <AccountGridView
+          accounts={rows}
+          txCountByAccount={txCountByAccount}
+          onEdit={setEdit}
+          onDelete={setDel}
+        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((a) => (
-            <Card key={a.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{a.name}</CardTitle>
-                <CardDescription>{a.account_type}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <p className="text-muted-foreground">Created {formatDate(a.created_at)}</p>
-                <p>Transactions: {txCountByAccount.get(a.id) ?? 0}</p>
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => setEdit(a)}>
-                    Edit
-                  </Button>
-                  <Button type="button" variant="destructive" size="sm" onClick={() => setDel(a)}>
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <AccountListView
+          accounts={rows}
+          txCountByAccount={txCountByAccount}
+          onEdit={setEdit}
+          onDelete={setDel}
+        />
       )}
 
       {!isLoading && rows.length === 0 ? (
