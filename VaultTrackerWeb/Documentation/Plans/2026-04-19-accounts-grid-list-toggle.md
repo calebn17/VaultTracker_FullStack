@@ -50,12 +50,12 @@ Extract the existing grid into its own component, add a new list component using
 
 ## Files Summary
 
-| File | Action |
-|------|--------|
-| `src/components/accounts/account-grid.tsx` | Create — extracted card grid |
-| `src/components/accounts/account-list.tsx` | Create — table list view |
-| `src/app/(authenticated)/accounts/page.tsx` | Modify — add toggle state + render switch |
-| `Documentation/VaultTracker System Design.md` | Modify — update route description |
+| File                                          | Action                                    |
+| --------------------------------------------- | ----------------------------------------- |
+| `src/components/accounts/account-grid.tsx`    | Create — extracted card grid              |
+| `src/components/accounts/account-list.tsx`    | Create — table list view                  |
+| `src/app/(authenticated)/accounts/page.tsx`   | Modify — add toggle state + render switch |
+| `Documentation/VaultTracker System Design.md` | Modify — update route description         |
 
 ## Reuse
 
