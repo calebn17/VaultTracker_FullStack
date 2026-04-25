@@ -40,6 +40,22 @@ protocol DataServiceProtocol: AnyObject {
 
     func fetchNetWorthHistory(period: APINetWorthPeriod?) async throws -> [NetWorthSnapshot]
 
+    // MARK: - Households
+
+    func fetchHousehold() async throws -> Household?
+
+    func createHousehold() async throws -> Household
+
+    func generateInviteCode() async throws -> HouseholdInviteCode
+
+    func joinHousehold(code: String) async throws -> Household
+
+    func leaveHousehold() async throws
+
+    func fetchHouseholdDashboard() async throws -> APIHouseholdDashboardResponse
+
+    func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod?) async throws -> [NetWorthSnapshot]
+
     // MARK: - User Data
 
     func clearAllData() async throws
