@@ -67,4 +67,4 @@ API/
 ## What Lives Here vs. Managers/
 
 - **API/** — raw network I/O and Codable ↔ API types only
-- **Managers/DataService.swift** — orchestrates API calls and converts to domain models; ViewModels call `DataService`, not `APIService` directly
+- **Managers/DataService.swift** — orchestrates API calls and converts to domain models; ViewModels call `DataService`, not `APIService` directly. FIRE profile/projection methods return `APIFIREProfileResponse` / `APIFIREProjectionResponse` (no extra domain types).

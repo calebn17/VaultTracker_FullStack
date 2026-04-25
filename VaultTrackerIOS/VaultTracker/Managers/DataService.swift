@@ -133,6 +133,28 @@ final class DataService: DataServiceProtocol {
         return response.snapshots.map { NetWorthSnapshot(date: $0.date, value: $0.value) }
     }
 
+    // MARK: - FIRE
+
+    func fetchFIREProfile() async throws -> APIFIREProfileResponse {
+        try await api.fetchFIREProfile()
+    }
+
+    func updateFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        try await api.updateFIREProfile(input)
+    }
+
+    func fetchFIREProjection() async throws -> APIFIREProjectionResponse {
+        try await api.fetchFIREProjection()
+    }
+
+    func fetchHouseholdFIREProfile() async throws -> APIFIREProfileResponse {
+        try await api.fetchHouseholdFIREProfile()
+    }
+
+    func updateHouseholdFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        try await api.updateHouseholdFIREProfile(input)
+    }
+
     // MARK: - User Data
 
     /// Wipes all financial data for the current user (transactions, snapshots, assets,

@@ -9,13 +9,14 @@ Portfolio tracker: net worth, asset holdings, analytics, and transaction history
 ```
 VaultTracker/
 ├── DesignSystem/       # Digital Ledger tokens: VTColors, VTFonts (VTTypography.swift), VTComponents
-├── MainView/           # App entry point, root TabView, auth state switch
+├── MainView/           # App entry point, root TabView (Home, Analytics, FIRE, Profile), auth state switch
 ├── Login/              # Google sign-in screen
 ├── Loading/            # Splash screen during Firebase auth check
 ├── Home/               # Dashboard: net worth, category breakdown, history chart, price refresh
 ├── AddAssetModal/      # Sheet for recording buy/sell transactions via smart endpoint
 ├── Analytics/          # Allocation breakdown and gain/loss performance tab
-├── Profile/            # User info + sign-out
+├── Fire/               # FIRE calculator — personal projection vs shared household inputs (no household projection in v1)
+├── Profile/            # User info, household settings, sign-out
 ├── API/                # All networking: URLSession, protocols, models, mappers
 ├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy)
 ├── Models/             # Domain value types (Asset, Transaction, Account, etc.)

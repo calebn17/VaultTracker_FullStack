@@ -193,6 +193,128 @@ final class MockDataService: DataServiceProtocol {
         lastHouseholdNetWorthPeriodRequested = period
         return householdNetWorthHistoryStub
     }
+
+    // MARK: - FIRE
+
+    var fireProfileStub = APIFIREProfileResponse(
+        id: "fp-mock",
+        currentAge: 30,
+        annualIncome: 100_000,
+        annualExpenses: 50_000,
+        targetRetirementAge: 60,
+        createdAt: Date(timeIntervalSince1970: 0),
+        updatedAt: Date(timeIntervalSince1970: 0)
+    )
+    var fireProfileError: Error?
+    private(set) var fetchFIREProfileCallCount = 0
+
+    func fetchFIREProfile() async throws -> APIFIREProfileResponse {
+        fetchFIREProfileCallCount += 1
+        if let fireProfileError { throw fireProfileError }
+        return fireProfileStub
+    }
+
+    var updateFIREResult: APIFIREProfileResponse?
+    var updateFIREError: Error?
+    private(set) var updateFIREProfileCallCount = 0
+    private(set) var lastFIREProfileInput: APIFIREProfileInput?
+
+    func updateFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        updateFIREProfileCallCount += 1
+        lastFIREProfileInput = input
+        if let updateFIREError { throw updateFIREError }
+        if let updateFIREResult { return updateFIREResult }
+        return APIFIREProfileResponse(
+            id: fireProfileStub.id,
+            currentAge: input.currentAge,
+            annualIncome: input.annualIncome,
+            annualExpenses: input.annualExpenses,
+            targetRetirementAge: input.targetRetirementAge,
+            createdAt: fireProfileStub.createdAt,
+            updatedAt: Date()
+        )
+    }
+
+    var fireProjectionStub: APIFIREProjectionResponse = MockDataService.makeDefaultFireProjectionStub()
+
+    private static func makeDefaultFireProjectionStub() -> APIFIREProjectionResponse {
+        let inputs = APIFIREProjectionInputs(
+            currentAge: 30,
+            annualIncome: 100_000,
+            annualExpenses: 50_000,
+            currentNetWorth: 200_000,
+            targetRetirementAge: 60
+        )
+        let tier: (Double, Int?, Int?) -> APIFIRETargetTier = { amount, years, age in
+            APIFIRETargetTier(targetAmount: amount, yearsToTarget: years, targetAge: age)
+        }
+        return APIFIREProjectionResponse(
+            status: "reachable",
+            unreachableReason: nil,
+            inputs: inputs,
+            allocation: nil,
+            blendedReturn: 0.07,
+            realBlendedReturn: 0.04,
+            inflationRate: 0.03,
+            annualSavings: 20_000,
+            savingsRate: 0.2,
+            fireTargets: APIFIRETargets(
+                leanFire: tier(1, 20, 50),
+                fire: tier(2, 25, 55),
+                fatFire: tier(5, nil, 60)
+            ),
+            projectionCurve: [APIFIREProjectionPoint(age: 30, year: 2026, projectedValue: 200_000)],
+            monthlyBreakdown: APIFIREMonthlyBreakdown(monthlySurplus: 2000, monthsToFire: 120),
+            goalAssessment: nil
+        )
+    }
+    var fireProjectionError: Error?
+    private(set) var fetchFIREProjectionCallCount = 0
+
+    func fetchFIREProjection() async throws -> APIFIREProjectionResponse {
+        fetchFIREProjectionCallCount += 1
+        if let fireProjectionError { throw fireProjectionError }
+        return fireProjectionStub
+    }
+
+    var householdFIREProfileStub = APIFIREProfileResponse(
+        id: "hfp-mock",
+        currentAge: 35,
+        annualIncome: 200_000,
+        annualExpenses: 100_000,
+        targetRetirementAge: 58,
+        createdAt: Date(timeIntervalSince1970: 0),
+        updatedAt: Date(timeIntervalSince1970: 0)
+    )
+    var householdFIREError: Error?
+    private(set) var fetchHouseholdFIREProfileCallCount = 0
+
+    func fetchHouseholdFIREProfile() async throws -> APIFIREProfileResponse {
+        fetchHouseholdFIREProfileCallCount += 1
+        if let householdFIREError { throw householdFIREError }
+        return householdFIREProfileStub
+    }
+
+    var updateHouseholdFIREResult: APIFIREProfileResponse?
+    var updateHouseholdFIREError: Error?
+    private(set) var updateHouseholdFIREProfileCallCount = 0
+    private(set) var lastHouseholdFIREProfileInput: APIFIREProfileInput?
+
+    func updateHouseholdFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        updateHouseholdFIREProfileCallCount += 1
+        lastHouseholdFIREProfileInput = input
+        if let updateHouseholdFIREError { throw updateHouseholdFIREError }
+        if let updateHouseholdFIREResult { return updateHouseholdFIREResult }
+        return APIFIREProfileResponse(
+            id: householdFIREProfileStub.id,
+            currentAge: input.currentAge,
+            annualIncome: input.annualIncome,
+            annualExpenses: input.annualExpenses,
+            targetRetirementAge: input.targetRetirementAge,
+            createdAt: householdFIREProfileStub.createdAt,
+            updatedAt: Date()
+        )
+    }
 }
 
 enum MockError: Error, LocalizedError {

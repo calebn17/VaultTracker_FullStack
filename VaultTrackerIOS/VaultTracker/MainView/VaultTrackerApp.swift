@@ -67,6 +67,14 @@ struct VaultTrackerApp: App {
             }
 
             NavigationView {
+                FIREView()
+            }
+            .tabItem {
+                Image(systemName: "flame.fill")
+                Text("FIRE")
+            }
+
+            NavigationView {
                 ProfileView()
             }
             .tabItem {
