@@ -39,6 +39,7 @@ Switch is compile-time `#if DEBUG` — no source change needed before archiving.
 | --------- | --------------- | -------------------- |
 | Home      | `HomeView`      | `house`              |
 | Analytics | `AnalyticsView` | `chart.pie.fill`     |
+| FIRE      | `FIREView`      | `flame.fill`         |
 | Profile   | `ProfileView`   | `person.crop.circle` |
 
 ## Key Endpoints
@@ -46,11 +47,16 @@ Switch is compile-time `#if DEBUG` — no source change needed before archiving.
 | Operation               | Method + Path                                                |
 | ----------------------- | ------------------------------------------------------------ |
 | Dashboard               | `GET /api/v1/dashboard`                                      |
+| Dashboard (household)   | `GET /api/v1/dashboard/household`                            |
 | Analytics               | `GET /api/v1/analytics`                                      |
 | Smart transaction       | `POST /api/v1/transactions/smart`                            |
 | Price refresh           | `POST /api/v1/prices/refresh`                                |
 | Transactions (enriched) | `GET /api/v1/transactions`                                   |
 | Net worth history       | `GET /api/v1/networth/history?period=daily\|weekly\|monthly` |
+| Net worth history (household) | `GET /api/v1/networth/history/household?period=…`      |
+| Households              | `GET/POST /api/v1/households`, `GET /api/v1/households/me`, invite/join/leave (see `APIConfiguration`) |
+| FIRE (personal)         | `GET/PUT /api/v1/fire/profile`, `GET /api/v1/fire/projection` |
+| FIRE (household shared) | `GET/PUT /api/v1/households/me/fire-profile`                   |
 
 ## Firebase `GoogleService-Info.plist`
 
@@ -62,7 +68,7 @@ If this file was ever committed: **restrict keys** in Google Cloud Console and f
 
 ### Unit / Integration Tests (`VaultTrackerTests/`)
 
-- **Unit tests** use Swift Testing (`@Test`, `#expect`). Covers: `HomeViewModelTests`, `AnalyticsViewModelTests`, `AddAssetFormViewModelTests`, `AuthManagerTests`, `APIServiceTests`, `AuthTokenProviderTests`.
+- **Unit tests** use Swift Testing (`@Test`, `#expect`). Covers: `HomeViewModelTests`, `AnalyticsViewModelTests`, `AddAssetFormViewModelTests`, `FIREViewModelTests`, `AuthManagerTests`, `APIServiceTests`, `AuthTokenProviderTests`, household mappers / `APIModelsCodableTests` as applicable.
 - `APIServiceTests` uses `APIService.test_make(session:log:tokenProvider:)` with a stub `URLProtocol` session and per-test `AuthTokenProvider` via `makeDebugProvider()` — avoids cross-suite races with `AuthTokenProvider.shared`.
 - `AuthManagerTests` injects `FakeFirebaseAuthBackend` + isolated `NotificationCenter` with short `authListenerTimeoutNanoseconds` for timeout tests.
 - **Integration tests** (`APIIntegrationTests`, `HomeViewModelIntegrationTests`, `AddAssetFormViewModelIntegrationTests`) hit a real local API with `DEBUG_AUTH_ENABLED=true`.
@@ -72,13 +78,14 @@ If this file was ever committed: **restrict keys** in Google Cloud Console and f
 
 Page object pattern — each screen has a `struct` in `PageObjects/`:
 
-| Page Object     | Screen                |
-| --------------- | --------------------- |
-| `LoginPage`     | Login                 |
-| `HomePage`      | Home tab              |
-| `AddAssetPage`  | Add transaction sheet |
-| `AnalyticsPage` | Analytics tab         |
-| `ProfilePage`   | Profile tab           |
+| Page Object              | Screen                         |
+| ------------------------ | ------------------------------ |
+| `LoginPage`              | Login                          |
+| `HomePage`               | Home tab                       |
+| `AddAssetPage`           | Add transaction sheet          |
+| `AnalyticsPage`          | Analytics tab                  |
+| `ProfilePage`            | Profile tab                    |
+| `HouseholdSettingsPage`  | Profile → household settings   |
 
 - BDD naming: `test_given<state>_when<action>_then<outcome>`
 - Elements resolved via `accessibilityIdentifier` — do not change identifiers without updating page objects

@@ -53,3 +53,20 @@ swiftlint --fix   # autocorrect before committing
 | New API model           | `API/Models/`                                                                                                      |
 | New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`. Household flows: `HouseholdSettingsPage`, `HouseholdFlowUITests`. |
 | Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift`, `MainView/VaultTrackerApp.swift`                                        |
+
+## Household & FIRE (architecture)
+
+- **Flow:** SwiftUI views → view models (`HomeViewModel`, `HouseholdSettingsViewModel`, `FIREViewModel`) → **`DataServiceProtocol`** / `DataService` → **`APIService`** — same layering as the rest of the app; tests use **`MockDataService`**.
+- **Household reads/writes:** `GET/POST /households`, `GET /households/me`, invite/join/leave, `GET /dashboard/household`, `GET /networth/history/household`. **`GET /households/me`** returns **404** with detail `Not a member of a household` when the user has no household; `fetchHousehold()` maps that to **`nil`** (not a thrown error).
+- **FIRE:** Personal: `GET/PUT /fire/profile`, `GET /fire/projection`. Household (member): `GET/PUT /households/me/fire-profile`. There is **no** household projection endpoint; in household mode the FIRE tab edits shared inputs and **does not** show a combined projection (same contract as web).
+- **Analytics:** `AnalyticsViewModel` still uses **`GET /analytics`** only (personal). Household allocation bento is web-only in v1.
+
+### Verify
+
+```bash
+# SwiftLint (same as CI path)
+cd VaultTrackerIOS/VaultTracker && swiftlint lint
+```
+
+- **Unit tests:** Xcode **Cmd+U** with scheme **VaultTracker** (or `xcodebuild test` per root `CLAUDE.md` / CI). Household/FIRE logic: e.g. `FIREViewModelTests`, mapper tests, `MockDataService`.
+- **UI tests** (`HouseholdFlowUITests`, etc.): need a **running API** with `DEBUG_AUTH_ENABLED=true`; not in the default CI unit-test-only plan.
