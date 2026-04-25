@@ -778,7 +778,7 @@ vaulttracker-web/
 │   │   │   └── asset-detail-dialog.tsx # Read-only asset modal (holdings, recent txns)
 │   │   ├── analytics/                  # Bento grid: allocation donut, performance, price lookup
 │   │   ├── transactions/               # Table, add/edit form dialog
-│   │   ├── accounts/                   # Account cards, add/edit form
+│   │   ├── accounts/                   # account-grid.tsx, account-list.tsx, account-form.tsx
 │   │   └── fire/                       # FIRE inputs form, projection chart, targets
 │   ├── lib/
 │   │   ├── api-client.ts               # Fetch wrapper: JWT header, 401 retry
