@@ -33,6 +33,12 @@ struct HomeViewState {
 final class HomeViewModel: ObservableObject {
     @Published var snapshots: [NetWorthSnapshot] = []
     @Published var viewState = HomeViewState()
+    /// `true` when the user belongs to a household (from `fetchHousehold()`).
+    @Published var isInHousehold: Bool = false
+    /// `true` = merged household dashboard; `false` = personal dashboard. Ignored when not in a household.
+    @Published var householdMode: Bool = true
+    /// Set when `isInHousehold && householdMode`; drives member sections and merged hero totals.
+    @Published var householdViewState: HouseholdHomeViewState?
     @Published var shouldPresentSheet: Bool = false
     @Published var selectedPeriod: APINetWorthPeriod = .daily
     @Published var isRefreshingPrices: Bool = false
@@ -43,13 +49,30 @@ final class HomeViewModel: ObservableObject {
         self.dataService = dataService
     }
 
+    /// Toggles household vs personal dashboard and reloads. No-op if not in a household.
+    func setHouseholdMode(_ value: Bool) {
+        guard isInHousehold, value != householdMode else { return }
+        householdMode = value
+        Task { await loadData() }
+    }
+
     func loadData() async {
         viewState.isLoading = true
         viewState.errorMessage = nil
         let selectedFilter = viewState.selectedFilter
         do {
-            let dashboard = try await dataService.fetchDashboard()
-            viewState = DashboardMapper.toViewState(dashboard)
+            let household = try await dataService.fetchHousehold()
+            isInHousehold = household != nil
+            if isInHousehold, householdMode {
+                let dashboard = try await dataService.fetchHouseholdDashboard()
+                let merged = HouseholdDashboardMapper.toViewState(dashboard)
+                householdViewState = merged
+                applyHouseholdAggregateToViewState(merged)
+            } else {
+                householdViewState = nil
+                let dashboard = try await dataService.fetchDashboard()
+                viewState = DashboardMapper.toViewState(dashboard)
+            }
             selectFilter(category: selectedFilter)
             await rebuildHistoricalSnapshots()
         } catch let error as APIError {
@@ -60,6 +83,24 @@ final class HomeViewModel: ObservableObject {
         viewState.isLoading = false
     }
 
+    /// Copies merged household category totals into `HomeViewState` for the shared hero and category bar.
+    private func applyHouseholdAggregateToViewState(_ aggregate: HouseholdHomeViewState) {
+        var next = viewState
+        next.totalNetworthValue = aggregate.totalNetWorth
+        next.cryptoTotalValue = aggregate.categoryTotals.crypto
+        next.stocksTotalValue = aggregate.categoryTotals.stocks
+        next.cashTotalValue = aggregate.categoryTotals.cash
+        next.realEstateTotalValue = aggregate.categoryTotals.realEstate
+        next.retirementTotalValue = aggregate.categoryTotals.retirement
+        next.cryptoGroupedAssetHoldings = []
+        next.stocksGroupedAssetHoldings = []
+        next.cashGroupedAssetHoldings = []
+        next.realEstateGroupedAssetHoldings = []
+        next.retirementGroupedAssetHoldings = []
+        next.filteredAssets = []
+        viewState = next
+    }
+
     func clearData() async {
         viewState.isLoading = true
         viewState.errorMessage = nil
@@ -67,6 +108,9 @@ final class HomeViewModel: ObservableObject {
             try await dataService.clearAllData()
             viewState = HomeViewState()
             snapshots = []
+            isInHousehold = false
+            householdViewState = nil
+            householdMode = true
         } catch let error as APIError {
             viewState.errorMessage = error.errorDescription
         } catch {
@@ -131,7 +175,11 @@ final class HomeViewModel: ObservableObject {
 
     private func rebuildHistoricalSnapshots() async {
         do {
-            snapshots = try await dataService.fetchNetWorthHistory(period: selectedPeriod)
+            if isInHousehold, householdMode {
+                snapshots = try await dataService.fetchHouseholdNetWorthHistory(period: selectedPeriod)
+            } else {
+                snapshots = try await dataService.fetchNetWorthHistory(period: selectedPeriod)
+            }
         } catch {
             VTLog.shared.error("Error fetching net worth history", error: error, category: .ui)
             snapshots = []
