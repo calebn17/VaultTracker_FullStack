@@ -34,5 +34,25 @@ class BaseTestCase: XCTestCase {
         return modal.save().waitForLoad()
     }
 
+    /// If the user is in a household, runs **Leave household** from Profile and confirms. Returns whether a leave was performed.
+    /// Requires local API + debug auth (same as other UI tests that hit the backend).
+    func leaveHouseholdIfInHousehold(app: XCUIApplication) -> Bool {
+        _ = HomePage(app: app).tapProfileTab()
+        let page = HouseholdSettingsPage(app: app).waitForSection().scrollUntilSectionHittable()
+        guard page.leaveButton.exists else { return false }
+        page.leaveButton.tap()
+        let sheetButton = app.sheets.firstMatch.buttons["Leave"]
+        if sheetButton.waitForExistence(timeout: 4) {
+            sheetButton.tap()
+        } else {
+            let fallback = app.buttons["Leave"]
+            if fallback.waitForExistence(timeout: 2) {
+                fallback.tap()
+            }
+        }
+        _ = page.createButton.waitForExistence(timeout: 20)
+        return true
+    }
+
 }
 

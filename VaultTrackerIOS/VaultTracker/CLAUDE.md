@@ -51,5 +51,5 @@ swiftlint --fix   # autocorrect before committing
 | New data operation      | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock                                      |
 | New domain type         | `Models/`                                                                                                          |
 | New API model           | `API/Models/`                                                                                                      |
-| New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`                                     |
+| New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`. Household flows: `HouseholdSettingsPage`, `HouseholdFlowUITests`. |
 | Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift`, `MainView/VaultTrackerApp.swift`                                        |

@@ -57,6 +57,7 @@ struct MemberSectionView: View {
                 memberCategoryBlock(category: category)
             }
         }
+        .accessibilityIdentifier("householdMemberExpanded_\(member.userId)")
     }
 
     @ViewBuilder
