@@ -68,4 +68,49 @@ protocol APIServiceProtocol {
 
     /// Delete all financial data for the current user (accounts, assets, transactions, snapshots).
     func clearAllData() async throws
+
+    // MARK: - Households
+
+    /// Current household, or `nil` when the user is not in a household.
+    /// Maps GET `/households/me` **404** with detail `notInHouseholdAPIDetail` to `nil`; other errors throw.
+    func fetchHousehold() async throws -> APIHouseholdResponse?
+
+    /// Create a household and become the first member (POST `/households`).
+    func createHousehold() async throws -> APIHouseholdResponse
+
+    /// Generate a short-lived invite code (POST `/households/invite-codes`).
+    func generateInviteCode() async throws -> APIHouseholdInviteCodeResponse
+
+    /// Join a household with an invite code (POST `/households/join`).
+    func joinHousehold(code: String) async throws -> APIHouseholdResponse
+
+    /// Leave the current household (DELETE `/households/me/membership`).
+    func leaveHousehold() async throws
+
+    // MARK: - Household dashboard & history
+
+    /// Merged household dashboard (GET `/dashboard/household`).
+    func fetchHouseholdDashboard() async throws -> APIHouseholdDashboardResponse
+
+    /// Net worth history for the household (GET `/networth/history/household`).
+    func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod?) async throws -> APINetWorthHistoryResponse
+
+    // MARK: - Household FIRE (shared profile shape)
+
+    /// GET `/households/me/fire-profile`
+    func fetchHouseholdFIREProfile() async throws -> APIFIREProfileResponse
+
+    /// PUT `/households/me/fire-profile`
+    func updateHouseholdFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse
+
+    // MARK: - Personal FIRE
+
+    /// GET `/fire/profile`
+    func fetchFIREProfile() async throws -> APIFIREProfileResponse
+
+    /// PUT `/fire/profile`
+    func updateFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse
+
+    /// GET `/fire/projection`
+    func fetchFIREProjection() async throws -> APIFIREProjectionResponse
 }
