@@ -327,10 +327,9 @@ VaultTrackerIOS/VaultTracker/
 
 | Component | Test file | Key tests |
 |-----------|-----------|-----------|
+| `PendingTransactionStore` + `CachedDataStore` | `VaultTrackerTests/OfflineStoresTests.swift` (serialized suite) | In-memory SwiftData: pending queue CRUD; personal + household dashboard round-trip; net worth per scope/period; transactions upsert + replace-all; `clearAllCaches` |
 | `NetworkMonitoring` fake | Used across tests | Toggle `isConnected` without `NWPathMonitor` |
 | `NWPathNetworkMonitor` | Optional integration / manual | Smoke only if needed |
-| `PendingTransactionStore` | `PendingTransactionStoreTests.swift` | CRUD, SwiftData in-memory |
-| `CachedDataStore` | `CachedDataStoreTests.swift` | Personal + household + net worth rows (per period + scope) + transaction rows |
 | `OfflineSyncManager` | `OfflineSyncManagerTests.swift` | FIFO, single-flight, classified retries, failure states |
 | `TransactionRepository` | `TransactionRepositoryTests.swift` | Online vs offline write, dual dashboard cache, net worth cache per period + scope, stale fallback |
 

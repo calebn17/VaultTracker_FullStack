@@ -18,7 +18,7 @@ VaultTracker/
 ├── Fire/               # FIRE calculator — personal projection vs shared household inputs (no household projection in v1)
 ├── Profile/            # User info, household settings, sign-out
 ├── API/                # All networking: URLSession, protocols, models, mappers
-├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy)
+├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy), Offline/ SwiftData cache + pending queue
 ├── Models/             # Domain value types (Asset, Transaction, Account, etc.)
 ├── Custom UI Components/ # Reusable SwiftUI primitives
 ├── Utils/              # VTLogging / VTLogLive, extensions, UIKit bridges
@@ -49,6 +49,7 @@ swiftlint --fix   # autocorrect before committing
 | New API endpoint        | `API/APIConfiguration.swift`, `API/APIServiceProtocol.swift`, `API/APIService.swift`                               |
 | New screen / tab        | Create `FeatureName/FeatureView.swift` + `FeatureNameViewModel.swift`, add tab in `MainView/VaultTrackerApp.swift` |
 | New data operation      | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock                                      |
+| Offline cache / queue   | `Managers/Offline/` (`OfflinePersistence`, stores, `@Model` types in `Offline/Models/`); unit tests: `VaultTrackerTests/OfflineStoresTests.swift` |
 | New domain type         | `Models/`                                                                                                          |
 | New API model           | `API/Models/`                                                                                                      |
 | New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`. Household flows: `HouseholdSettingsPage`, `HouseholdFlowUITests`. |
