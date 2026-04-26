@@ -62,8 +62,9 @@ struct HomeViewModelTests {
         #expect(viewModel.viewState.errorMessage == nil)
     }
 
-    @Test func loadDataCallsDashboardServiceOnce() async {
+    @Test func loadDataCallsHouseholdThenDashboardAndHistory() async {
         await viewModel.loadData()
+        #expect(mockService.fetchHouseholdCallCount == 1)
         #expect(mockService.fetchDashboardCallCount == 1)
         #expect(mockService.fetchNetWorthHistoryCallCount == 1)
     }
@@ -186,6 +187,7 @@ struct HomeViewModelTests {
 
         #expect(mockService.createSmartTransactionCallCount == 1)
         #expect(mockService.lastSmartTransactionRequest?.assetName == "Acme")
+        #expect(mockService.fetchHouseholdCallCount == 1)
         #expect(mockService.fetchDashboardCallCount == 1)
     }
 
@@ -206,6 +208,7 @@ struct HomeViewModelTests {
         await viewModel.onSave(smartRequest: req)
 
         #expect(mockService.createSmartTransactionCallCount == 1)
+        #expect(mockService.fetchHouseholdCallCount == 0)
         #expect(mockService.fetchDashboardCallCount == 0)
         #expect(viewModel.viewState.errorMessage != nil)
     }
@@ -216,6 +219,7 @@ struct HomeViewModelTests {
         await viewModel.refreshPrices()
 
         #expect(mockService.refreshPricesCallCount == 1)
+        #expect(mockService.fetchHouseholdCallCount == 1)
         #expect(mockService.fetchDashboardCallCount == 1)
     }
 
@@ -225,6 +229,7 @@ struct HomeViewModelTests {
         await viewModel.refreshPrices()
 
         #expect(mockService.refreshPricesCallCount == 1)
+        #expect(mockService.fetchHouseholdCallCount == 0)
         #expect(mockService.fetchDashboardCallCount == 0)
         #expect(viewModel.viewState.errorMessage != nil)
         #expect(viewModel.isRefreshingPrices == false)
@@ -244,5 +249,60 @@ struct HomeViewModelTests {
         #expect(viewModel.selectedPeriod == .weekly)
         #expect(mockService.lastNetWorthPeriodRequested == .weekly)
         #expect(mockService.fetchNetWorthHistoryCallCount >= 2)
+    }
+
+    // MARK: - Household mode
+
+    @Test func loadDataWhenInHouseholdUsesHouseholdDashboardAndHistory() async {
+        mockService.householdStub = mockService.createHouseholdStub
+        mockService.householdDashboardStub = APIHouseholdDashboardResponse(
+            householdId: "mock-household",
+            totalNetWorth: 50_000,
+            categoryTotals: APICategoryTotals(stocks: 50_000),
+            members: [
+                APIHouseholdMemberDashboard(
+                    userId: "a",
+                    email: "a@a.com",
+                    totalNetWorth: 30_000,
+                    categoryTotals: APICategoryTotals(stocks: 30_000),
+                    groupedHoldings: [:]
+                )
+            ]
+        )
+        mockService.householdNetWorthHistoryStub = [NetWorthSnapshot(date: Date(), value: 50_000)]
+
+        await viewModel.loadData()
+
+        #expect(viewModel.isInHousehold)
+        #expect(viewModel.householdViewState != nil)
+        #expect(viewModel.householdViewState?.totalNetWorth == 50_000)
+        #expect(viewModel.householdViewState?.members.count == 1)
+        #expect(mockService.fetchHouseholdCallCount == 1)
+        #expect(mockService.fetchHouseholdDashboardCallCount == 1)
+        #expect(mockService.fetchHouseholdNetWorthHistoryCallCount == 1)
+        #expect(mockService.fetchDashboardCallCount == 0)
+    }
+
+    @Test func setHouseholdModeToJustMeLoadsPersonalDashboard() async {
+        mockService.householdStub = mockService.createHouseholdStub
+        mockService.householdDashboardStub = APIHouseholdDashboardResponse(
+            householdId: "mock-household",
+            totalNetWorth: 1,
+            categoryTotals: APICategoryTotals(),
+            members: []
+        )
+        await viewModel.loadData()
+        #expect(viewModel.householdMode)
+        #expect(mockService.fetchHouseholdDashboardCallCount == 1)
+        #expect(mockService.fetchDashboardCallCount == 0)
+
+        viewModel.setHouseholdMode(false)
+        for _ in 0..<80 where mockService.fetchDashboardCallCount < 1 {
+            try? await Task.sleep(nanoseconds: 25_000_000)
+        }
+
+        #expect(!viewModel.householdMode)
+        #expect(mockService.fetchHouseholdCallCount == 2)
+        #expect(mockService.fetchDashboardCallCount == 1)
     }
 }

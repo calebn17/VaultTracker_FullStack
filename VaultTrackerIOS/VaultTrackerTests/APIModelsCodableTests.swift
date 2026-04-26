@@ -2,6 +2,10 @@
 //  APIModelsCodableTests.swift
 //  VaultTrackerTests
 //
+//  These exercises encode/decode our Codable API models against hand-written JSON.
+//  When the corresponding VaultTrackerAPI routes or Pydantic schemas change, update
+//  the fixtures and expectations here so the suite stays aligned with the wire format.
+//
 
 import Testing
 import Foundation
@@ -171,5 +175,152 @@ struct APIModelsCodableTests {
         #expect(row.asset.name == "Thing")
         #expect(row.account.accountType == "brokerage")
         #expect(row.totalValue == 10)
+    }
+
+    @Test func householdResponseDecodesFromJSON() throws {
+        let json = """
+        {
+          "id": "hh-1",
+          "createdAt": "2026-04-20T12:00:00Z",
+          "members": [
+            { "userId": "u1", "email": "a@example.com" },
+            { "userId": "u2", "email": null }
+          ]
+        }
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let h = try decoder.decode(APIHouseholdResponse.self, from: json)
+        #expect(h.id == "hh-1")
+        #expect(h.members.count == 2)
+        #expect(h.members[0].userId == "u1")
+        #expect(h.members[0].email == "a@example.com")
+        #expect(h.members[1].email == nil)
+    }
+
+    @Test func householdJoinRequestEncodesCodeKey() throws {
+        let req = APIHouseholdJoinRequest(code: "ABCD1234")
+        let data = try JSONEncoder().encode(req)
+        let obj = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(obj["code"] as? String == "ABCD1234")
+    }
+
+    @Test func householdDashboardDecodesNestedGroupedHoldings() throws {
+        let json = """
+        {
+          "householdId": "hh-1",
+          "totalNetWorth": 100000.0,
+          "categoryTotals": {
+            "crypto": 0.0,
+            "stocks": 100000.0,
+            "cash": 0.0,
+            "realEstate": 0.0,
+            "retirement": 0.0
+          },
+          "members": [
+            {
+              "userId": "u1",
+              "email": "a@example.com",
+              "totalNetWorth": 50000.0,
+              "categoryTotals": {
+                "crypto": 0.0,
+                "stocks": 50000.0,
+                "cash": 0.0,
+                "realEstate": 0.0,
+                "retirement": 0.0
+              },
+              "groupedHoldings": {
+                "stocks": [
+                  {
+                    "id": "as1",
+                    "name": "Acme",
+                    "symbol": "ACM",
+                    "quantity": 1.0,
+                    "current_value": 50000.0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+        """.data(using: .utf8)!
+        let d = try JSONDecoder().decode(APIHouseholdDashboardResponse.self, from: json)
+        #expect(d.householdId == "hh-1")
+        #expect(d.totalNetWorth == 100_000)
+        #expect(d.members[0].groupedHoldings["stocks"]?.first?.currentValue == 50_000)
+    }
+
+    @Test func fireProfileInputEncodesCamelCaseKeys() throws {
+        let input = APIFIREProfileInput(
+            currentAge: 35,
+            annualIncome: 120_000,
+            annualExpenses: 60_000,
+            targetRetirementAge: 55
+        )
+        let data = try JSONEncoder().encode(input)
+        let obj = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(obj["currentAge"] as? Int == 35)
+        #expect(obj["annualIncome"] as? Double == 120_000)
+        #expect(obj["annualExpenses"] as? Double == 60_000)
+        #expect(obj["targetRetirementAge"] as? Int == 55)
+    }
+
+    @Test func fireProfileResponseDecodesFromJSON() throws {
+        let json = """
+        {
+          "id": "fp-1",
+          "currentAge": 40,
+          "annualIncome": 100000.0,
+          "annualExpenses": 50000.0,
+          "targetRetirementAge": 60,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-01-02T00:00:00Z"
+        }
+        """.data(using: .utf8)!
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let p = try decoder.decode(APIFIREProfileResponse.self, from: json)
+        #expect(p.id == "fp-1")
+        #expect(p.currentAge == 40)
+        #expect(p.targetRetirementAge == 60)
+    }
+
+    @Test func fireProjectionResponseDecodesMinimalPayload() throws {
+        let json = """
+        {
+          "status": "reachable",
+          "unreachableReason": null,
+          "inputs": {
+            "currentAge": 30,
+            "annualIncome": 100000.0,
+            "annualExpenses": 50000.0,
+            "currentNetWorth": 200000.0,
+            "targetRetirementAge": 60
+          },
+          "allocation": null,
+          "blendedReturn": 0.07,
+          "realBlendedReturn": 0.04,
+          "inflationRate": 0.03,
+          "annualSavings": 20000.0,
+          "savingsRate": 0.2,
+          "fireTargets": {
+            "leanFire": { "targetAmount": 1.0, "yearsToTarget": 20, "targetAge": 50 },
+            "fire": { "targetAmount": 2.0, "yearsToTarget": 25, "targetAge": 55 },
+            "fatFire": { "targetAmount": 5.0, "yearsToTarget": null, "targetAge": 60 }
+          },
+          "projectionCurve": [
+            { "age": 30, "year": 2026, "projectedValue": 200000.0 }
+          ],
+          "monthlyBreakdown": { "monthlySurplus": 2000.0, "monthsToFire": 120 },
+          "goalAssessment": null
+        }
+        """.data(using: .utf8)!
+        let p = try JSONDecoder().decode(APIFIREProjectionResponse.self, from: json)
+        #expect(p.status == "reachable")
+        #expect(p.unreachableReason == nil)
+        #expect(p.inputs.currentNetWorth == 200_000)
+        #expect(p.fireTargets.fire.targetAmount == 2.0)
+        #expect(p.projectionCurve.count == 1)
+        #expect(p.monthlyBreakdown.monthsToFire == 120)
     }
 }

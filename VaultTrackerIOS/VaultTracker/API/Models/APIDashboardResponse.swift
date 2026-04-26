@@ -22,7 +22,7 @@ struct APIDashboardResponse: Codable {
 }
 
 /// Category-wise breakdown of asset values
-struct APICategoryTotals: Codable {
+struct APICategoryTotals: Codable, Equatable {
     let crypto: Double
     let stocks: Double
     let cash: Double
@@ -45,7 +45,7 @@ struct APICategoryTotals: Codable {
 }
 
 /// Individual asset holding within a category group
-struct APIGroupedHolding: Codable {
+struct APIGroupedHolding: Codable, Equatable {
     let id: String
     let name: String
     let symbol: String?

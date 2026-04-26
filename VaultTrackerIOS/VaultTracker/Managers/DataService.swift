@@ -101,6 +101,60 @@ final class DataService: DataServiceProtocol {
         return response.snapshots.map { NetWorthSnapshot(date: $0.date, value: $0.value) }
     }
 
+    // MARK: - Households
+
+    func fetchHousehold() async throws -> Household? {
+        guard let response = try await api.fetchHousehold() else { return nil }
+        return HouseholdMapper.toDomain(response)
+    }
+
+    func createHousehold() async throws -> Household {
+        HouseholdMapper.toDomain(try await api.createHousehold())
+    }
+
+    func generateInviteCode() async throws -> HouseholdInviteCode {
+        HouseholdMapper.inviteToDomain(try await api.generateInviteCode())
+    }
+
+    func joinHousehold(code: String) async throws -> Household {
+        HouseholdMapper.toDomain(try await api.joinHousehold(code: code))
+    }
+
+    func leaveHousehold() async throws {
+        try await api.leaveHousehold()
+    }
+
+    func fetchHouseholdDashboard() async throws -> APIHouseholdDashboardResponse {
+        try await api.fetchHouseholdDashboard()
+    }
+
+    func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod? = nil) async throws -> [NetWorthSnapshot] {
+        let response = try await api.fetchHouseholdNetWorthHistory(period: period)
+        return response.snapshots.map { NetWorthSnapshot(date: $0.date, value: $0.value) }
+    }
+
+    // MARK: - FIRE
+
+    func fetchFIREProfile() async throws -> APIFIREProfileResponse {
+        try await api.fetchFIREProfile()
+    }
+
+    func updateFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        try await api.updateFIREProfile(input)
+    }
+
+    func fetchFIREProjection() async throws -> APIFIREProjectionResponse {
+        try await api.fetchFIREProjection()
+    }
+
+    func fetchHouseholdFIREProfile() async throws -> APIFIREProfileResponse {
+        try await api.fetchHouseholdFIREProfile()
+    }
+
+    func updateHouseholdFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        try await api.updateHouseholdFIREProfile(input)
+    }
+
     // MARK: - User Data
 
     /// Wipes all financial data for the current user (transactions, snapshots, assets,

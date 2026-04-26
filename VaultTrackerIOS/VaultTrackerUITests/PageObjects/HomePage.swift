@@ -74,6 +74,29 @@ struct HomePage {
     }
 
     @discardableResult
+    func tapHomeTab() -> HomePage {
+        app.tabBars.buttons["Home"].tap()
+        return self
+    }
+
+    /// Visible when the user is in a household (Household / Just Me scope).
+    var householdModePicker: XCUIElement { app.identified("householdModePicker") }
+
+    /// First member card on the home dashboard (identifier prefix `householdMemberSection_`).
+    var anyHouseholdMemberSection: XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH[c] %@", "householdMemberSection_"))
+            .firstMatch
+    }
+
+    /// Expanded member body (only exists while expanded). Identifier `householdMemberExpanded_<userId>`.
+    var anyHouseholdMemberExpanded: XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH[c] %@", "householdMemberExpanded_"))
+            .firstMatch
+    }
+
+    @discardableResult
     func selectPeriodSegment(index: Int) -> Self {
         periodPicker.buttons.element(boundBy: index).tap()
         return self

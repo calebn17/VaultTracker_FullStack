@@ -25,15 +25,59 @@ private enum HomeLedgerChrome {
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
     @State private var expandedCategories: Set<AssetCategory> = []
+    @State private var expandedMemberUserIds: Set<String> = []
     @State private var showClearConfirmation = false
 
     init() {
         _viewModel = StateObject(wrappedValue: HomeViewModel())
     }
 
+    private var useHouseholdMemberLayout: Bool {
+        viewModel.isInHousehold && viewModel.householdMode && viewModel.householdViewState != nil
+    }
+
+    private var householdModeBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.householdMode },
+            set: { viewModel.setHouseholdMode($0) }
+        )
+    }
+
+    @ViewBuilder
+    private var memberHouseholdList: some View {
+        if let members = viewModel.householdViewState?.members {
+            VStack(spacing: 8) {
+                ForEach(members) { member in
+                    MemberSectionView(
+                        member: member,
+                        isExpanded: Binding(
+                            get: { expandedMemberUserIds.contains(member.userId) },
+                            set: { isOn in
+                                if isOn {
+                                    expandedMemberUserIds.insert(member.userId)
+                                } else {
+                                    expandedMemberUserIds.remove(member.userId)
+                                }
+                            }
+                        )
+                    )
+                }
+            }
+        }
+    }
+
     var body: some View {
         ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: 24) {
+
+                if viewModel.isInHousehold {
+                    Picker("Dashboard scope", selection: householdModeBinding) {
+                        Text("Household").tag(true)
+                        Text("Just Me").tag(false)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("householdModePicker")
+                }
 
                 if let errorMessage = viewModel.viewState.errorMessage {
                     HStack {
@@ -57,7 +101,9 @@ struct HomeView: View {
                     .accessibilityIdentifier("errorBanner")
                 }
 
-                filterBarView
+                if !viewModel.isInHousehold || !viewModel.householdMode {
+                    filterBarView
+                }
 
                 Picker("Period", selection: Binding(
                     get: { viewModel.selectedPeriod },
@@ -87,7 +133,9 @@ struct HomeView: View {
                     assetBarView
                 }
 
-                if viewModel.viewState.selectedFilter == nil {
+                if useHouseholdMemberLayout {
+                    memberHouseholdList
+                } else if viewModel.viewState.selectedFilter == nil {
                     assetListView
                 } else {
                     aggregatedAssetListView(holdings: viewModel.viewState.filteredAssets)
@@ -156,6 +204,11 @@ struct HomeView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This will permanently delete all your accounts, assets, and transactions.")
+        }
+        .onChange(of: viewModel.householdMode) { _, newValue in
+            if newValue, viewModel.isInHousehold {
+                expandedMemberUserIds = []
+            }
         }
         .overlay {
             if viewModel.viewState.isLoading {
@@ -294,13 +347,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func expandedDetailView(for category: AssetCategory) -> some View {
-        let holdings: GroupedAssetHolding = switch category {
-        case .crypto:     viewModel.viewState.cryptoGroupedAssetHoldings
-        case .stocks:     viewModel.viewState.stocksGroupedAssetHoldings
-        case .realEstate: viewModel.viewState.realEstateGroupedAssetHoldings
-        case .cash:       viewModel.viewState.cashGroupedAssetHoldings
-        case .retirement: viewModel.viewState.retirementGroupedAssetHoldings
-        }
+        let holdings: GroupedAssetHolding = holdingsForExpandedDetail(category)
 
         ForEach(holdings, id: \.id) { holding in
             HStack {
@@ -313,14 +360,7 @@ struct HomeView: View {
                         .font(VTFonts.monoLarge)
                         .fontWeight(.bold)
                         .foregroundStyle(VTColors.textPrimary)
-
-                    let quantityString: String = switch category {
-                    case .cash, .realEstate: ""
-                    case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
-                    case .crypto: "\(holding.quantity.twoDecimalString) coins"
-                    }
-
-                    Text(quantityString)
+                    Text(quantityText(for: category, holding: holding))
                         .font(VTFonts.monoCaption)
                         .foregroundStyle(VTColors.textSubdued)
                 }
@@ -369,6 +409,32 @@ struct HomeView: View {
                 .background(VTColors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
+        }
+    }
+
+    private func holdingsForExpandedDetail(_ category: AssetCategory) -> GroupedAssetHolding {
+        switch category {
+        case .crypto:
+            return viewModel.viewState.cryptoGroupedAssetHoldings
+        case .stocks:
+            return viewModel.viewState.stocksGroupedAssetHoldings
+        case .realEstate:
+            return viewModel.viewState.realEstateGroupedAssetHoldings
+        case .cash:
+            return viewModel.viewState.cashGroupedAssetHoldings
+        case .retirement:
+            return viewModel.viewState.retirementGroupedAssetHoldings
+        }
+    }
+
+    private func quantityText(for category: AssetCategory, holding: APIGroupedHolding) -> String {
+        switch category {
+        case .cash, .realEstate:
+            return ""
+        case .stocks, .retirement:
+            return "\(holding.quantity.twoDecimalString) shares"
+        case .crypto:
+            return "\(holding.quantity.twoDecimalString) coins"
         }
     }
 }

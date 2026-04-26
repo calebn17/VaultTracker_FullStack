@@ -4,4 +4,6 @@
 - multi-account support
     - Fast Follow:
         - networth snapshot merge history
+- UI: Text/Input field validations
+- iOS: offline support
 - scanner tool

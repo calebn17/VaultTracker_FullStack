@@ -64,6 +64,9 @@
 		AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEEE45F2F62B371000A8ADD /* APIErrorResponse.swift */; };
 		B2E108012F8A0001001B0001 /* APIAnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */; };
 		B2E108032F8A0001001B0002 /* APIPriceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108022F8A0001001B0002 /* APIPriceModels.swift */; };
+		C6AA04252E1B2006042500A2 /* APIHouseholdModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AA04252E1B2006042500A1 /* APIHouseholdModels.swift */; };
+		C6AA04252E1B2006042500A4 /* APIFIREModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AA04252E1B2006042500A3 /* APIFIREModels.swift */; };
+		C6AA04252E1B2006042500A6 /* Household.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AA04252E1B2006042500A5 /* Household.swift */; };
 		B2E108052F8A0001001B0003 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108042F8A0001001B0003 /* AnalyticsView.swift */; };
 		B2E108072F8A0001001B0004 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */; };
 		C2E201012F8C0001001C0001 /* TransactionMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */; };
@@ -83,6 +86,8 @@
 		E1B201082F8D0001001B0001 /* AddAssetModalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201072F8D0001001B0001 /* AddAssetModalUITests.swift */; };
 		E1B2010A2F8D0001001B0001 /* AnalyticsTabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B201092F8D0001001B0001 /* AnalyticsTabUITests.swift */; };
 		E1B2010C2F8D0001001B0001 /* ProfileTabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B2010B2F8D0001001B0001 /* ProfileTabUITests.swift */; };
+		C6F104252E1B2006042510A1 /* HouseholdSettingsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F104252E1B2006042510A0 /* HouseholdSettingsPage.swift */; };
+		C6F104252E1B2006042510A3 /* HouseholdFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F104252E1B2006042510A2 /* HouseholdFlowUITests.swift */; };
 		E2B301022F8E0001001E0001 /* AnalyticsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B301012F8E0001001E0001 /* AnalyticsViewModelTests.swift */; };
 		E2B301042F8E0001001E0001 /* AddAssetFormViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */; };
 		E4F300122FA0000100CA0001 /* VTLogging.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300112FA0000100CA0001 /* VTLogging.swift */; };
@@ -90,6 +95,17 @@
 		E4F300172FA0000100CA0004 /* VTLoggingSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F300182FA0000100CA0004 /* VTLoggingSpy.swift */; };
 		E4F300192FA0000100CA0005 /* AuthTokenProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F3001A2FA0000100CA0005 /* AuthTokenProviderTests.swift */; };
 		E4F3002A2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F3002B2FA0000300CA0010 /* VTLogCrashlyticsSupportTests.swift */; };
+		C6CC04252E1B2006042500B1 /* HouseholdMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500B0 /* HouseholdMapper.swift */; };
+		C6CC04252E1B2006042500B3 /* HouseholdDashboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500B2 /* HouseholdDashboardMapper.swift */; };
+		C6CC04252E1B2006042500B5 /* HouseholdSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500B4 /* HouseholdSettingsViewModel.swift */; };
+		C6CC04252E1B2006042500B7 /* HouseholdSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500B6 /* HouseholdSettingsView.swift */; };
+		C6CC04252E1B2006042500B9 /* MemberSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500B8 /* MemberSectionView.swift */; };
+		C6CC04252E1B2006042500BB /* HouseholdMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500BA /* HouseholdMapperTests.swift */; };
+		C6CC04252E1B2006042500BD /* HouseholdDashboardMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500BC /* HouseholdDashboardMapperTests.swift */; };
+		C6CC04252E1B2006042500BF /* HouseholdSettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CC04252E1B2006042500BE /* HouseholdSettingsViewModelTests.swift */; };
+		C6EF04252E1B2006042500F2 /* FIREView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EF04252E1B2006042500F1 /* FIREView.swift */; };
+		C6EF04252E1B2006042500F4 /* FIREViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EF04252E1B2006042500F3 /* FIREViewModel.swift */; };
+		C6EF04252E1B2006042500F6 /* FIREViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6EF04252E1B2006042500F5 /* FIREViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,6 +186,20 @@
 		AFEEE4662F62B371000A8ADD /* AuthTokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTokenProvider.swift; sourceTree = "<group>"; };
 		B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIAnalyticsModels.swift; sourceTree = "<group>"; };
 		B2E108022F8A0001001B0002 /* APIPriceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIPriceModels.swift; sourceTree = "<group>"; };
+		C6AA04252E1B2006042500A1 /* APIHouseholdModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHouseholdModels.swift; sourceTree = "<group>"; };
+		C6AA04252E1B2006042500A3 /* APIFIREModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIFIREModels.swift; sourceTree = "<group>"; };
+		C6AA04252E1B2006042500A5 /* Household.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Household.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500B0 /* HouseholdMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdMapper.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500B2 /* HouseholdDashboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdDashboardMapper.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500B4 /* HouseholdSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdSettingsViewModel.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500B6 /* HouseholdSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdSettingsView.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500B8 /* MemberSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberSectionView.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500BA /* HouseholdMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdMapperTests.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500BC /* HouseholdDashboardMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdDashboardMapperTests.swift; sourceTree = "<group>"; };
+		C6CC04252E1B2006042500BE /* HouseholdSettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdSettingsViewModelTests.swift; sourceTree = "<group>"; };
+		C6EF04252E1B2006042500F1 /* FIREView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FIREView.swift; sourceTree = "<group>"; };
+		C6EF04252E1B2006042500F3 /* FIREViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FIREViewModel.swift; sourceTree = "<group>"; };
+		C6EF04252E1B2006042500F5 /* FIREViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FIREViewModelTests.swift; sourceTree = "<group>"; };
 		B2E108042F8A0001001B0003 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
 		B2E108062F8A0001001B0004 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
 		C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMapperTests.swift; sourceTree = "<group>"; };
@@ -179,6 +209,8 @@
 		C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAssetPage.swift; sourceTree = "<group>"; };
 		C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsPage.swift; sourceTree = "<group>"; };
 		C2E2012E2F8D0001001B0001 /* ProfilePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePage.swift; sourceTree = "<group>"; };
+		C6F104252E1B2006042510A0 /* HouseholdSettingsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdSettingsPage.swift; sourceTree = "<group>"; };
+		C6F104252E1B2006042510A2 /* HouseholdFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HouseholdFlowUITests.swift; sourceTree = "<group>"; };
 		C3D100012E90000100ABC001 /* VTColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTColors.swift; sourceTree = "<group>"; };
 		C3D100022E90000100ABC002 /* VTTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTTypography.swift; sourceTree = "<group>"; };
 		C3D100032E90000100ABC003 /* VTComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VTComponents.swift; sourceTree = "<group>"; };
@@ -278,6 +310,7 @@
 				AF66F46A2E29C0DE0096DCDA /* GoogleService-Info.plist */,
 				AF07A2332E22B6C3005FFB77 /* AddAssetModal */,
 				B2E108082F8A0001001B0005 /* Analytics */,
+				C6EF04252E1B2006042500FF /* Fire */,
 				AF43369A2E0F9C6B00AFC1A0 /* Models */,
 				AF4336932E0E270300AFC1A0 /* Custom UI Components */,
 				AF07A2262E1B2661005FFB77 /* MainView */,
@@ -309,6 +342,7 @@
 				E1B201072F8D0001001B0001 /* AddAssetModalUITests.swift */,
 				E1B201092F8D0001001B0001 /* AnalyticsTabUITests.swift */,
 				E1B2010B2F8D0001001B0001 /* ProfileTabUITests.swift */,
+				C6F104252E1B2006042510A2 /* HouseholdFlowUITests.swift */,
 			);
 			path = VaultTrackerUITests;
 			sourceTree = "<group>";
@@ -320,6 +354,7 @@
 				AF07A2202E1A3B71005FFB77 /* NetWorthChartView.swift */,
 				AF43368B2E0CE2BE00AFC1A0 /* HomeViewModel.swift */,
 				AF4336912E0CE32000AFC1A0 /* HomeView.swift */,
+				C6CC04252E1B2006042500B8 /* MemberSectionView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -352,6 +387,7 @@
 				AF07A22B2E1E23FD005FFB77 /* Account.swift */,
 				AF07A21E2E1A3B58005FFB77 /* NetWorthSnapshot.swift */,
 				AF43369B2E0F9C8000AFC1A0 /* AssetModel.swift */,
+				C6AA04252E1B2006042500A5 /* Household.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -368,6 +404,10 @@
 				AF4D44722F694B6D0055FF21 /* APIErrorTests.swift */,
 				AF4D44732F694B6D0055FF21 /* AssetMapperTests.swift */,
 				AF4D44742F694B6D0055FF21 /* DashboardMapperTests.swift */,
+				C6CC04252E1B2006042500BA /* HouseholdMapperTests.swift */,
+				C6CC04252E1B2006042500BC /* HouseholdDashboardMapperTests.swift */,
+				C6CC04252E1B2006042500BE /* HouseholdSettingsViewModelTests.swift */,
+				C6EF04252E1B2006042500F5 /* FIREViewModelTests.swift */,
 				AF4D44752F694B6D0055FF21 /* HomeViewModelTests.swift */,
 				C2E201002F8C0001001C0001 /* TransactionMapperTests.swift */,
 				C2E201022F8C0001001C0002 /* APIModelsCodableTests.swift */,
@@ -403,6 +443,8 @@
 			isa = PBXGroup;
 			children = (
 				AF56EC342E29F72800253BE3 /* ProfileView.swift */,
+				C6CC04252E1B2006042500B4 /* HouseholdSettingsViewModel.swift */,
+				C6CC04252E1B2006042500B6 /* HouseholdSettingsView.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -429,6 +471,8 @@
 				AFEEE4572F62B371000A8ADD /* AccountMapper.swift */,
 				AFEEE4582F62B371000A8ADD /* AssetMapper.swift */,
 				AFEEE4592F62B371000A8ADD /* DashboardMapper.swift */,
+				C6CC04252E1B2006042500B0 /* HouseholdMapper.swift */,
+				C6CC04252E1B2006042500B2 /* HouseholdDashboardMapper.swift */,
 				AFEEE45A2F62B371000A8ADD /* TransactionMapper.swift */,
 			);
 			path = Mappers;
@@ -445,6 +489,8 @@
 				AFEEE4612F62B371000A8ADD /* APITransactionModels.swift */,
 				B2E108002F8A0001001B0001 /* APIAnalyticsModels.swift */,
 				B2E108022F8A0001001B0002 /* APIPriceModels.swift */,
+				C6AA04252E1B2006042500A1 /* APIHouseholdModels.swift */,
+				C6AA04252E1B2006042500A3 /* APIFIREModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -472,6 +518,15 @@
 			path = Analytics;
 			sourceTree = "<group>";
 		};
+		C6EF04252E1B2006042500FF /* Fire */ = {
+			isa = PBXGroup;
+			children = (
+				C6EF04252E1B2006042500F1 /* FIREView.swift */,
+				C6EF04252E1B2006042500F3 /* FIREViewModel.swift */,
+			);
+			path = Fire;
+			sourceTree = "<group>";
+		};
 		C2E2012F2F8D0001001B0001 /* PageObjects */ = {
 			isa = PBXGroup;
 			children = (
@@ -480,6 +535,7 @@
 				C2E2012C2F8D0001001B0001 /* AddAssetPage.swift */,
 				C2E2012D2F8D0001001B0001 /* AnalyticsPage.swift */,
 				C2E2012E2F8D0001001B0001 /* ProfilePage.swift */,
+				C6F104252E1B2006042510A0 /* HouseholdSettingsPage.swift */,
 			);
 			path = PageObjects;
 			sourceTree = "<group>";
@@ -660,7 +716,10 @@
 				AF4336972E0E27FF00AFC1A0 /* CustomTextField.swift in Sources */,
 				AF56EC322E29F5D100253BE3 /* LoginView.swift in Sources */,
 				AF56EC352E29F72800253BE3 /* ProfileView.swift in Sources */,
+				C6CC04252E1B2006042500B5 /* HouseholdSettingsViewModel.swift in Sources */,
+				C6CC04252E1B2006042500B7 /* HouseholdSettingsView.swift in Sources */,
 				AF4336922E0CE32000AFC1A0 /* HomeView.swift in Sources */,
+				C6CC04252E1B2006042500B9 /* MemberSectionView.swift in Sources */,
 				AF07A2282E1CE0FA005FFB77 /* HomeViewWrapper.swift in Sources */,
 				AF43368C2E0CE2BE00AFC1A0 /* HomeViewModel.swift in Sources */,
 				AF56EC382E2B203500253BE3 /* LoadingView.swift in Sources */,
@@ -674,6 +733,8 @@
 				AFEEE46E2F62B371000A8ADD /* AuthTokenProvider.swift in Sources */,
 				AFEEE46F2F62B371000A8ADD /* APITransactionModels.swift in Sources */,
 				AFEEE4702F62B371000A8ADD /* DashboardMapper.swift in Sources */,
+				C6CC04252E1B2006042500B1 /* HouseholdMapper.swift in Sources */,
+				C6CC04252E1B2006042500B3 /* HouseholdDashboardMapper.swift in Sources */,
 				AFEEE4712F62B371000A8ADD /* APINetWorthHistoryResponse.swift in Sources */,
 				AFEEE4722F62B371000A8ADD /* AccountMapper.swift in Sources */,
 				AFEEE4732F62B371000A8ADD /* APIAssetModels.swift in Sources */,
@@ -682,8 +743,12 @@
 				AFEEE4762F62B371000A8ADD /* APIErrorResponse.swift in Sources */,
 				B2E108012F8A0001001B0001 /* APIAnalyticsModels.swift in Sources */,
 				B2E108032F8A0001001B0002 /* APIPriceModels.swift in Sources */,
+				C6AA04252E1B2006042500A2 /* APIHouseholdModels.swift in Sources */,
+				C6AA04252E1B2006042500A4 /* APIFIREModels.swift in Sources */,
 				B2E108052F8A0001001B0003 /* AnalyticsView.swift in Sources */,
 				B2E108072F8A0001001B0004 /* AnalyticsViewModel.swift in Sources */,
+				C6EF04252E1B2006042500F2 /* FIREView.swift in Sources */,
+				C6EF04252E1B2006042500F4 /* FIREViewModel.swift in Sources */,
 				AF07A2212E1A3B71005FFB77 /* NetWorthChartView.swift in Sources */,
 				AF56EC2F2E29CA9900253BE3 /* Utilities.swift in Sources */,
 				E4F300122FA0000100CA0001 /* VTLogging.swift in Sources */,
@@ -698,6 +763,7 @@
 				AF4D44812F694C730055FF21 /* DataServiceProtocol.swift in Sources */,
 				AF43365E2E0CDFE700AFC1A0 /* VaultTrackerApp.swift in Sources */,
 				AF07A22C2E1E23FD005FFB77 /* Account.swift in Sources */,
+				C6AA04252E1B2006042500A6 /* Household.swift in Sources */,
 				C3D100042E90000100ABC004 /* VTColors.swift in Sources */,
 				C3D100052E90000100ABC005 /* VTTypography.swift in Sources */,
 				C3D100062E90000100ABC006 /* VTComponents.swift in Sources */,
@@ -710,6 +776,10 @@
 			files = (
 				AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */,
 				AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */,
+				C6CC04252E1B2006042500BB /* HouseholdMapperTests.swift in Sources */,
+				C6CC04252E1B2006042500BD /* HouseholdDashboardMapperTests.swift in Sources */,
+				C6CC04252E1B2006042500BF /* HouseholdSettingsViewModelTests.swift in Sources */,
+				C6EF04252E1B2006042500F6 /* FIREViewModelTests.swift in Sources */,
 				AF4D447C2F694B6D0055FF21 /* APIErrorTests.swift in Sources */,
 				AF7FFD1D2F69651B008F1008 /* HomeViewModelIntegrationTests.swift in Sources */,
 				E2B301022F8E0001001E0001 /* AnalyticsViewModelTests.swift in Sources */,
@@ -739,11 +809,13 @@
 				E1B201082F8D0001001B0001 /* AddAssetModalUITests.swift in Sources */,
 				E1B2010A2F8D0001001B0001 /* AnalyticsTabUITests.swift in Sources */,
 				E1B2010C2F8D0001001B0001 /* ProfileTabUITests.swift in Sources */,
+				C6F104252E1B2006042510A3 /* HouseholdFlowUITests.swift in Sources */,
 				C2E201302F8D0001001B0001 /* LoginPage.swift in Sources */,
 				C2E201312F8D0001001B0001 /* HomePage.swift in Sources */,
 				C2E201322F8D0001001B0001 /* AddAssetPage.swift in Sources */,
 				C2E201332F8D0001001B0001 /* AnalyticsPage.swift in Sources */,
 				C2E201342F8D0001001B0001 /* ProfilePage.swift in Sources */,
+				C6F104252E1B2006042510A1 /* HouseholdSettingsPage.swift in Sources */,
 				C3D200022E90000200DE001 /* XCUIApplication+Identified.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

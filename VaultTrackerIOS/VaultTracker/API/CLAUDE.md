@@ -27,6 +27,8 @@ API/
     ├── APIErrorResponse.swift
     ├── APINetWorthHistoryResponse.swift
     ├── APIPriceModels.swift
+    ├── APIHouseholdModels.swift   # Household + household dashboard (camelCase JSON)
+    ├── APIFIREModels.swift        # FIRE profile + projection (shared with household FIRE)
     └── APITransactionModels.swift
 ```
 
@@ -42,6 +44,16 @@ API/
 | `accounts`         | GET/POST | `/api/v1/accounts`           |
 | `assets`           | GET/POST | `/api/v1/assets`             |
 | `networthHistory`  | GET      | `/api/v1/networth/history`   |
+| `networthHistoryHousehold` | GET | `/api/v1/networth/history/household` |
+| `households`      | POST     | `/api/v1/households`         |
+| `householdsMe`    | GET      | `/api/v1/households/me`     |
+| `householdsInviteCodes` | POST | `/api/v1/households/invite-codes` |
+| `householdsJoin`  | POST     | `/api/v1/households/join`   |
+| `householdsMeMembership` | DELETE | `/api/v1/households/me/membership` |
+| `householdsMeFireProfile` | GET, PUT | `/api/v1/households/me/fire-profile` |
+| `dashboardHousehold` | GET   | `/api/v1/dashboard/household` |
+| `fireProfile`     | GET, PUT | `/api/v1/fire/profile`       |
+| `fireProjection`  | GET      | `/api/v1/fire/projection`    |
 | `clearUserData`    | DELETE   | `/api/v1/users/me/data`      |
 
 ## Adding a New Endpoint
@@ -55,4 +67,4 @@ API/
 ## What Lives Here vs. Managers/
 
 - **API/** — raw network I/O and Codable ↔ API types only
-- **Managers/DataService.swift** — orchestrates API calls and converts to domain models; ViewModels call `DataService`, not `APIService` directly
+- **Managers/DataService.swift** — orchestrates API calls and converts to domain models; ViewModels call `DataService`, not `APIService` directly. FIRE profile/projection methods return `APIFIREProfileResponse` / `APIFIREProjectionResponse` (no extra domain types).

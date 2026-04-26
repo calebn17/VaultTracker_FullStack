@@ -56,6 +56,12 @@ private final class StubURLProtocol: URLProtocol {
     override func stopLoading() {}
 }
 
+private let testHousehold200JSON = Data(
+    """
+    {"id":"h1","createdAt":"2026-01-01T00:00:00+00:00","members":[{"userId":"u1","email":"a@b.com"}]}
+    """.utf8
+)
+
 @Suite("APIService", .serialized)
 struct APIServiceTests {
 
@@ -292,6 +298,96 @@ extension APIServiceTests {
         }
 
         #expect(spy.entries.contains { $0.message == "Token refresh failed after 401" })
+    }
+
+    @Test func fetchHousehold200Decodes() async throws {
+        StubURLProtocol.handler = { request in
+            let url = try #require(request.url)
+            #expect(url.path == "/api/v1/households/me")
+            #expect(request.httpMethod == "GET")
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, testHousehold200JSON)
+        }
+        defer { StubURLProtocol.handler = nil }
+
+        let api = makeService(log: VTLoggingSpy())
+        let h = try await api.fetchHousehold()
+        #expect(h?.id == "h1")
+        #expect(h?.members.count == 1)
+        #expect(h?.members[0].userId == "u1")
+    }
+
+    @Test func fetchHouseholdNotInHousehold404ReturnsNil() async throws {
+        let body = Data(
+            """
+            {"detail":"Not a member of a household"}
+            """.utf8
+        )
+        StubURLProtocol.handler = { request in
+            let url = try #require(request.url)
+            #expect(url.path == "/api/v1/households/me")
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: 404,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, body)
+        }
+        defer { StubURLProtocol.handler = nil }
+
+        let api = makeService(log: VTLoggingSpy())
+        let h = try await api.fetchHousehold()
+        #expect(h == nil)
+    }
+
+    @Test func fetchHouseholdOther404Throws() async throws {
+        let body = Data(
+            """
+            {"detail":"Household not found"}
+            """.utf8
+        )
+        StubURLProtocol.handler = { request in
+            let url = try #require(request.url)
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: 404,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, body)
+        }
+        defer { StubURLProtocol.handler = nil }
+
+        let api = makeService(log: VTLoggingSpy())
+        await #expect(throws: APIError.self) {
+            try await api.fetchHousehold()
+        }
+    }
+
+    @Test func createHousehold201UsesPostPath() async throws {
+        StubURLProtocol.handler = { request in
+            let url = try #require(request.url)
+            #expect(request.httpMethod == "POST")
+            #expect(url.path == "/api/v1/households")
+            let response = HTTPURLResponse(
+                url: url,
+                statusCode: 201,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, testHousehold200JSON)
+        }
+        defer { StubURLProtocol.handler = nil }
+
+        let api = makeService(log: VTLoggingSpy())
+        let h = try await api.createHousehold()
+        #expect(h.id == "h1")
     }
 }
 #endif

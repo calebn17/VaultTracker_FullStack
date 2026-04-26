@@ -24,7 +24,7 @@ VaultTracker is a personal net-worth tracker that lets users log financial trans
 4. **View analytics** — allocation percentages, gain/loss, cost basis
 5. **Refresh prices** — pull live crypto/stock prices from CoinGecko and Alpha Vantage
 6. **View net worth history** — time-series chart with daily/weekly/monthly granularity
-7. **Household (web app v1)** — Optional second member via short-lived invite code; merged household net worth, **household allocation and performance analytics**, and combined history on Dashboard and Analytics (**Household** vs **Just me**); shared household FIRE inputs on `/fire`. Category bento cards use **merged holdings** from `GET /dashboard/household` (concatenated per-member `groupedHoldings`). Accounts, assets, and transactions stay **per user**. The **iOS app does not consume household APIs yet** (backend contract is stable for a future release).
+7. **Household** — Optional second member via short-lived invite code; merged household net worth and combined history on Dashboard (**Household** vs **Just me** / **Just Me**). **Household allocation and performance analytics** (bento, merged holdings) are available on **web**; **iOS** uses `GET /dashboard/household` and `GET /networth/history/household` for merged totals and history, **Profile** flows for create/join/invite/leave, and the **FIRE** tab for personal projection vs shared household inputs (no household-wide projection API in v1—same as web). Accounts, assets, and transactions stay **per user**.
 
 ---
 
@@ -601,6 +601,12 @@ VaultTrackerApp (entry point)
 │       VTColors, VTFonts, VTTypography, VTComponents
 │       (buttons, chips, surfaces — shared across all views)
 │
+├── Fire/
+│       FIREView + FIREViewModel — personal FIRE projection; household shared inputs, no combined projection (v1)
+│
+├── Profile/
+│       ProfileView, HouseholdSettingsView + HouseholdSettingsViewModel — create/join/invite/leave
+│
 └── Views (SwiftUI)
         │
         └── ViewModels (@MainActor, ObservableObject)
@@ -617,7 +623,7 @@ App launch
   → FirebaseApp.configure()
   → AuthManager subscribes to Auth.auth().addStateDidChangeListener
       .authenticating → LoadingView
-      .authenticated  → TabView (Home + Profile + Analytics)
+      .authenticated  → TabView (Home + Analytics + FIRE + Profile)
       .unauthenticated → LoginView
 
 Login tap
@@ -662,6 +668,21 @@ API request
 | `priceRefresh`     | `POST /api/v1/prices/refresh`              |
 | `clearUserData`    | `DELETE /api/v1/users/me/data`             |
 
+**Household & FIRE** (paths in `APIConfiguration`; `notInHouseholdAPIDetail` matches the API’s 404 body for “not in a household”):
+
+| Constant                   | Path                                                         |
+| -------------------------- | ------------------------------------------------------------ |
+| `households`               | `POST /api/v1/households`                                    |
+| `householdsMe`             | `GET /api/v1/households/me`                                  |
+| `householdsInviteCodes`    | `POST /api/v1/households/invite-codes`                       |
+| `householdsJoin`           | `POST /api/v1/households/join`                               |
+| `householdsMeMembership`   | `DELETE /api/v1/households/me/membership`                    |
+| `householdsMeFireProfile`  | `GET/PUT /api/v1/households/me/fire-profile`                 |
+| `dashboardHousehold`       | `GET /api/v1/dashboard/household`                             |
+| `networthHistoryHousehold` | `GET /api/v1/networth/history/household`                     |
+| `fireProfile`              | `GET/PUT /api/v1/fire/profile`                               |
+| `fireProjection`           | `GET /api/v1/fire/projection`                                |
+
 Base URL: `https://vaulttracker-api.onrender.com` (production). Switched via `APIConfiguration.environment`.
 
 ### 4.5 Data Layer
@@ -670,12 +691,16 @@ Base URL: `https://vaulttracker-api.onrender.com` (production). Switched via `AP
 
 Delegates all I/O to `APIService`. Converts API response types (`APIXxxResponse`) to domain models via mapper enums:
 
-| Mapper                        | Converts                                          |
-| ----------------------------- | ------------------------------------------------- |
-| `DashboardMapper.toViewState` | `APIDashboardResponse` → `HomeViewState`          |
-| `AssetMapper.toDomain`        | `APIAssetResponse` → `Asset`                      |
-| `AccountMapper.toDomain`      | Maps `account_type` strings to `AccountType` enum |
-| `TransactionMapper.toDomain`  | `APIEnrichedTransactionResponse` → `Transaction`  |
+| Mapper                            | Converts                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `DashboardMapper.toViewState`     | `APIDashboardResponse` → `HomeViewState`                                 |
+| `HouseholdDashboardMapper`        | `APIHouseholdDashboardResponse` → household dashboard view state (merged totals, per-member sections) |
+| `HouseholdMapper`                | API household DTOs ↔ `Household` domain                                  |
+| `AssetMapper.toDomain`          | `APIAssetResponse` → `Asset`                                             |
+| `AccountMapper.toDomain`        | Maps `account_type` strings to `AccountType` enum                        |
+| `TransactionMapper.toDomain`    | `APIEnrichedTransactionResponse` → `Transaction`                         |
+
+`DataServiceProtocol` exposes household helpers (`fetchHousehold`, `fetchHouseholdDashboard`, `fetchHouseholdNetWorthHistory`, membership/invite, `fetchFIREProfile` / `fetchFIREProjection`, `fetchHouseholdFIREProfile` / `updateHouseholdFIREProfile`, etc.) used by `HomeViewModel`, `HouseholdSettingsViewModel`, and `FIREViewModel`.
 
 `fetchAllTransactions()` uses the enriched endpoint — single fetch, no client-side join required.
 
@@ -697,14 +722,16 @@ Delegates all I/O to `APIService`. Converts API response types (`APIXxxResponse`
 **`HomeViewModel`** (`@MainActor`, `ObservableObject`):
 
 - `viewState: HomeViewState` — totals, grouped holdings, filter selection, loading/error state
-- `snapshots: [NetWorthSnapshot]` — data for the chart
-- `loadData()` — fetches dashboard + net worth history
+- `isInHousehold` — from `fetchHousehold()`; `householdMode` toggles **merged** (`GET /dashboard/household` + `GET /networth/history/household`) vs **Just me** (personal `GET /dashboard` + `GET /networth/history`) when the user is in a household
+- `householdViewState` — set when `isInHousehold && householdMode`; per-member data for `MemberSectionView`
+- `snapshots: [NetWorthSnapshot]` — data for the chart (switches with `householdMode`)
+- `loadData()` — fetches household membership, then merged or personal dashboard + matching net worth history
 - `onSave(transaction:)` — calls `dataService.createSmartTransaction()` → reloads dashboard
 - `refreshPrices()` — calls `dataService.refreshPrices()` → reloads dashboard
 - `selectFilter(category:)` — filters displayed holdings
 - `clearData()` — calls `DELETE /api/v1/users/me/data`
 
-**`HomeView`**: ScrollView with error banner, filter chip bar, `NetWorthChartView` (Swift Charts line + area, CatmullRom), net worth total, proportional category bar, expandable category sections, toolbar ("+" add transaction, "Refresh Prices", "Clear Data").
+**`HomeView`**: ScrollView with error banner, **mode picker** when the user is in a household, filter chip bar, `NetWorthChartView` (Swift Charts line + area, CatmullRom), net worth total, proportional category bar, expandable **member** or **category** sections (household mode uses `MemberSectionView` with stable accessibility ids for UI tests), toolbar ("+" add transaction, "Refresh Prices", "Clear Data").
 
 ### 4.8 Add Transaction Flow
 
@@ -725,9 +752,15 @@ Delegates all I/O to `APIService`. Converts API response types (`APIXxxResponse`
 
 **`AnalyticsView`**: Allocation pie/bar chart + performance cards (gain/loss, cost basis, current value).
 
-### 4.10 Household APIs (not yet in iOS)
+### 4.10 Household & FIRE (iOS)
 
-The backend exposes household membership, merged dashboard, **household analytics** (`/analytics/household`), combined net worth history, and shared household FIRE profile (`/api/v1/households/*`, `/dashboard/household`, `/networth/history/household`). The iOS app **does not** call these endpoints yet; `APIConfiguration` and mappers do not include household paths. Web parity is described in **§5.12**.
+**Data flow:** `HouseholdSettingsViewModel` and `HomeViewModel` call `DataService` → `APIService` for household membership, merged dashboard/history, and invite/join/leave. `FIREViewModel` loads **personal** `GET/PUT /fire/profile` and `GET /fire/projection` when not in a household (or for projection in any mode where applicable), and **household** `GET/PUT /households/me/fire-profile` when the user is a member; there is **no** `GET /fire/projection` for a household—UI shows a projection-unavailable state in household mode (aligned with web).
+
+**`GET /households/me`:** HTTP **404** with body detail `Not a member of a household` is treated as **not in a household**; `DataService.fetchHousehold()` returns **`nil`** instead of surfacing an error. Other household routes return errors if called without membership as documented in the API.
+
+**Analytics:** iOS **Analytics** tab remains **`GET /api/v1/analytics`** (personal). Household allocation/performance bento (web `GET /analytics/household`) is not duplicated on iOS in v1.
+
+**Verification (local):** `swiftlint lint` from `VaultTrackerIOS/VaultTracker/`; unit tests in `VaultTrackerTests` (e.g. `FIREViewModelTests`, household mappers, `MockDataService`). **UI tests** in `VaultTrackerUITests` (`HouseholdFlowUITests`, `HouseholdSettingsPage`) require a **running API** with `DEBUG_AUTH_ENABLED=true` and are not part of the default CI `VaultTrackerUnitTests` plan. Build/run tests in Xcode: **Cmd+U** for the unit test plan, or `xcodebuild test` with scheme `VaultTracker` and the project’s test plan (see root `CLAUDE.md` / CI for destinations).
 
 ---
 
@@ -1047,8 +1080,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 | Alpha Vantage rate limits | Free tier: 25 requests/day                                   | Add request queuing and per-symbol cache TTLs                                                             |
 | Offline mode              | No local persistence; app unusable without network           | Add SwiftData/IndexedDB read-only cache for last known state                                              |
 | Account type validation   | Client-side only (iOS: `isAccountTypeValidForAssetCategory`) | Enforce server-side in smart transaction endpoint                                                         |
-| FIRE on iOS               | FIRE calculator not yet in the iOS app                       | Add FIRE profile + projection screens to iOS                                                              |
-| Household on iOS          | Backend + web support two-member households                  | Add API client paths, models, and UI for household dashboard / history / shared FIRE                      |
+| FIRE on iOS               | Personal projection + household shared inputs on **FIRE** tab; no household-wide projection  | Optional: parity with web-only FIRE chart tweaks                                                       |
+| Household on iOS          | **Implemented:** settings, Home merged mode, household FIRE inputs                         | Optional: `GET /analytics/household` on iOS if product wants household bento on mobile                 |
 | Household FIRE projection | Web edits shared inputs only; no combined NW projection API  | Add `GET` projection using household profile + merged dashboard totals (or document intentional omission) |
 | FIRE return rates         | Hardcoded default returns per category                       | Allow users to override expected returns per asset class                                                  |
 | FIRE projection cache     | Projection recomputed on every request                       | Cache projection result keyed by profile hash; invalidate on profile PUT                                  |

@@ -9,13 +9,14 @@ Portfolio tracker: net worth, asset holdings, analytics, and transaction history
 ```
 VaultTracker/
 ├── DesignSystem/       # Digital Ledger tokens: VTColors, VTFonts (VTTypography.swift), VTComponents
-├── MainView/           # App entry point, root TabView, auth state switch
+├── MainView/           # App entry point, root TabView (Home, Analytics, FIRE, Profile), auth state switch
 ├── Login/              # Google sign-in screen
 ├── Loading/            # Splash screen during Firebase auth check
 ├── Home/               # Dashboard: net worth, category breakdown, history chart, price refresh
 ├── AddAssetModal/      # Sheet for recording buy/sell transactions via smart endpoint
 ├── Analytics/          # Allocation breakdown and gain/loss performance tab
-├── Profile/            # User info + sign-out
+├── Fire/               # FIRE calculator — personal projection vs shared household inputs (no household projection in v1)
+├── Profile/            # User info, household settings, sign-out
 ├── API/                # All networking: URLSession, protocols, models, mappers
 ├── Managers/           # DataService (app-layer), AuthManager, NetworkService (legacy)
 ├── Models/             # Domain value types (Asset, Transaction, Account, etc.)
@@ -50,5 +51,22 @@ swiftlint --fix   # autocorrect before committing
 | New data operation      | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock                                      |
 | New domain type         | `Models/`                                                                                                          |
 | New API model           | `API/Models/`                                                                                                      |
-| New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`                                     |
+| New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`. Household flows: `HouseholdSettingsPage`, `HouseholdFlowUITests`. |
 | Visual / ledger theming | `DesignSystem/`, `Utils/Extensions.swift`, `MainView/VaultTrackerApp.swift`                                        |
+
+## Household & FIRE (architecture)
+
+- **Flow:** SwiftUI views → view models (`HomeViewModel`, `HouseholdSettingsViewModel`, `FIREViewModel`) → **`DataServiceProtocol`** / `DataService` → **`APIService`** — same layering as the rest of the app; tests use **`MockDataService`**.
+- **Household reads/writes:** `GET/POST /households`, `GET /households/me`, invite/join/leave, `GET /dashboard/household`, `GET /networth/history/household`. **`GET /households/me`** returns **404** with detail `Not a member of a household` when the user has no household; `fetchHousehold()` maps that to **`nil`** (not a thrown error).
+- **FIRE:** Personal: `GET/PUT /fire/profile`, `GET /fire/projection`. Household (member): `GET/PUT /households/me/fire-profile`. There is **no** household projection endpoint; in household mode the FIRE tab edits shared inputs and **does not** show a combined projection (same contract as web).
+- **Analytics:** `AnalyticsViewModel` still uses **`GET /analytics`** only (personal). Household allocation bento is web-only in v1.
+
+### Verify
+
+```bash
+# SwiftLint (same as CI path)
+cd VaultTrackerIOS/VaultTracker && swiftlint lint
+```
+
+- **Unit tests:** Xcode **Cmd+U** with scheme **VaultTracker** (or `xcodebuild test` per root `CLAUDE.md` / CI). Household/FIRE logic: e.g. `FIREViewModelTests`, mapper tests, `MockDataService`.
+- **UI tests** (`HouseholdFlowUITests`, etc.): need a **running API** with `DEBUG_AUTH_ENABLED=true`; not in the default CI unit-test-only plan.

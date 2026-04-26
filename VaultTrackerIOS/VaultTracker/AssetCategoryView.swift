@@ -31,13 +31,7 @@ struct AssetCategoryView: View {
     private func assetListRow(asset: Asset) -> some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
-                let title = switch asset.category {
-                case .crypto, .retirement, .stocks: asset.symbol
-                case .cash: "Cash"
-                case .realEstate: "Real Estate"
-                }
-
-                Text(title)
+                Text(assetTitle(for: asset.category, symbol: asset.symbol))
                     .font(VTFonts.monoBody)
                     .foregroundStyle(VTColors.textPrimary)
 
@@ -65,5 +59,16 @@ struct AssetCategoryView: View {
         .padding()
         .background(VTColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func assetTitle(for category: AssetCategory, symbol: String) -> String {
+        switch category {
+        case .crypto, .retirement, .stocks:
+            return symbol
+        case .cash:
+            return "Cash"
+        case .realEstate:
+            return "Real Estate"
+        }
     }
 }

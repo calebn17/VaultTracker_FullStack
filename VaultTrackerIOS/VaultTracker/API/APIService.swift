@@ -176,6 +176,112 @@ final class APIService: APIServiceProtocol {
         let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.networthHistory, queryItems: queryItems)
         return try await perform(request)
     }
+
+    // MARK: - Households
+
+    func fetchHousehold() async throws -> APIHouseholdResponse? {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.householdsMe)
+        let endpoint = Self.endpointString(for: request)
+        var (data, response) = try await execute(request)
+        if let http = response as? HTTPURLResponse, http.statusCode == 401 {
+            log.warn("401 — retrying with refreshed token", category: .api, context: ["endpoint": endpoint])
+            (data, response) = try await dataAfterTokenRefresh(following401: request)
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.unknown(-1)
+        }
+        if 200...299 ~= http.statusCode {
+            return try decodeResponse(APIHouseholdResponse.self, from: data, endpoint: endpoint)
+        }
+        if http.statusCode == 404, isNotInHouseholdNotFoundResponse(data) {
+            return nil
+        }
+        try validate(response: response, data: data, endpoint: endpoint)
+        throw APIError.unknown(http.statusCode)
+    }
+
+    func createHousehold() async throws -> APIHouseholdResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.households, method: "POST")
+        return try await perform(request)
+    }
+
+    func generateInviteCode() async throws -> APIHouseholdInviteCodeResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.householdsInviteCodes, method: "POST")
+        return try await perform(request)
+    }
+
+    func joinHousehold(code: String) async throws -> APIHouseholdResponse {
+        let request = try await makeRequest(
+            endpoint: APIConfiguration.Endpoints.householdsJoin,
+            method: "POST",
+            body: APIHouseholdJoinRequest(code: code)
+        )
+        return try await perform(request)
+    }
+
+    func leaveHousehold() async throws {
+        let request = try await makeRequest(
+            endpoint: APIConfiguration.Endpoints.householdsMeMembership,
+            method: "DELETE"
+        )
+        try await performVoid(request)
+    }
+
+    // MARK: - Household dashboard & history
+
+    func fetchHouseholdDashboard() async throws -> APIHouseholdDashboardResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.dashboardHousehold)
+        return try await perform(request)
+    }
+
+    func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod? = nil) async throws -> APINetWorthHistoryResponse {
+        var queryItems: [URLQueryItem]?
+        if let period {
+            queryItems = [URLQueryItem(name: "period", value: period.rawValue)]
+        }
+        let request = try await makeRequest(
+            endpoint: APIConfiguration.Endpoints.networthHistoryHousehold,
+            queryItems: queryItems
+        )
+        return try await perform(request)
+    }
+
+    // MARK: - Household FIRE
+
+    func fetchHouseholdFIREProfile() async throws -> APIFIREProfileResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.householdsMeFireProfile)
+        return try await perform(request)
+    }
+
+    func updateHouseholdFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        let request = try await makeRequest(
+            endpoint: APIConfiguration.Endpoints.householdsMeFireProfile,
+            method: "PUT",
+            body: input
+        )
+        return try await perform(request)
+    }
+
+    // MARK: - Personal FIRE
+
+    func fetchFIREProfile() async throws -> APIFIREProfileResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.fireProfile)
+        return try await perform(request)
+    }
+
+    func updateFIREProfile(_ input: APIFIREProfileInput) async throws -> APIFIREProfileResponse {
+        let request = try await makeRequest(
+            endpoint: APIConfiguration.Endpoints.fireProfile,
+            method: "PUT",
+            body: input
+        )
+        return try await perform(request)
+    }
+
+    func fetchFIREProjection() async throws -> APIFIREProjectionResponse {
+        let request = try await makeRequest(endpoint: APIConfiguration.Endpoints.fireProjection)
+        return try await perform(request)
+    }
 }
 
 // MARK: - Private Helpers
@@ -285,8 +391,9 @@ private extension APIService {
     }
 
     /// Force-refreshes the Firebase token, re-signs the request, and executes it.
+    /// Returns the retry `(data, response)` when status is not 401 (does not call `validate`).
     /// If the retry also returns 401, posts `.authenticationRequired` and throws `.unauthorized`.
-    func retryWithRefreshedToken(_ original: URLRequest) async throws -> Data {
+    func dataAfterTokenRefresh(following401 original: URLRequest) async throws -> (Data, URLResponse) {
         let endpoint = Self.endpointString(for: original)
         let freshToken: String
         do {
@@ -317,8 +424,22 @@ private extension APIService {
             throw APIError.unauthorized
         }
 
+        return (retryData, retryResponse)
+    }
+
+    /// Force-refreshes the Firebase token, re-signs the request, and executes it.
+    /// If the retry also returns 401, posts `.authenticationRequired` and throws `.unauthorized`.
+    func retryWithRefreshedToken(_ original: URLRequest) async throws -> Data {
+        let endpoint = Self.endpointString(for: original)
+        let (retryData, retryResponse) = try await dataAfterTokenRefresh(following401: original)
         try validate(response: retryResponse, data: retryData, endpoint: endpoint)
         return retryData
+    }
+
+    /// `GET /households/me` — treat 404 with this `detail` as "not in a household" (`nil`); other 404s still error.
+    func isNotInHouseholdNotFoundResponse(_ data: Data) -> Bool {
+        guard let err = try? decoder.decode(APIErrorResponse.self, from: data) else { return false }
+        return err.detail == APIConfiguration.notInHouseholdAPIDetail
     }
 
     /// Validate HTTP status code, throwing a mapped APIError on failure.

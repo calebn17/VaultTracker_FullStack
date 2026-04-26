@@ -128,7 +128,49 @@ enum APIConfiguration {
 
         /// DELETE /api/v1/users/me/data - Clear all financial data for the current user
         static let clearUserData = "\(apiVersion)/users/me/data"
+
+        // MARK: Households
+
+        /// POST /api/v1/households — create (201)
+        static let households = "\(apiVersion)/households"
+
+        /// GET /api/v1/households/me
+        static let householdsMe = "\(apiVersion)/households/me"
+
+        /// POST /api/v1/households/invite-codes
+        static let householdsInviteCodes = "\(apiVersion)/households/invite-codes"
+
+        /// POST /api/v1/households/join
+        static let householdsJoin = "\(apiVersion)/households/join"
+
+        /// DELETE /api/v1/households/me/membership
+        static let householdsMeMembership = "\(apiVersion)/households/me/membership"
+
+        /// GET /api/v1/households/me/fire-profile
+        static let householdsMeFireProfile = "\(apiVersion)/households/me/fire-profile"
+
+        // MARK: Household-scoped reads
+
+        /// GET /api/v1/dashboard/household
+        static let dashboardHousehold = "\(apiVersion)/dashboard/household"
+
+        /// GET /api/v1/networth/history/household
+        static let networthHistoryHousehold = "\(apiVersion)/networth/history/household"
+
+        // MARK: FIRE (personal)
+
+        /// GET/PUT /api/v1/fire/profile
+        static let fireProfile = "\(apiVersion)/fire/profile"
+
+        /// GET /api/v1/fire/projection
+        static let fireProjection = "\(apiVersion)/fire/projection"
     }
+
+    // MARK: - API error text (client ↔ backend contract)
+
+    /// `detail` string for 404 from household-scoped routes when the user is not in a household.
+    /// `GET /households/me` — map this response to `nil` in `fetchHousehold()`.
+    static let notInHouseholdAPIDetail = "Not a member of a household"
 
     // MARK: - Full URL Builders
 
