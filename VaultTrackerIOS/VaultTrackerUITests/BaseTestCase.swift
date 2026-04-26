@@ -38,7 +38,7 @@ class BaseTestCase: XCTestCase {
     /// Requires local API + debug auth (same as other UI tests that hit the backend).
     func leaveHouseholdIfInHousehold(app: XCUIApplication) -> Bool {
         _ = HomePage(app: app).tapProfileTab()
-        let page = HouseholdSettingsPage(app: app).waitForSection().scrollUntilSectionHittable()
+        let page = HouseholdSettingsPage(app: app).waitForPageLoaded().scrollUntilSectionHittable()
         guard page.leaveButton.exists else { return false }
         page.leaveButton.tap()
         let sheetButton = app.sheets.firstMatch.buttons["Leave"]

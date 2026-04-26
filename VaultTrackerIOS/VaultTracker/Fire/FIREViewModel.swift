@@ -8,6 +8,29 @@
 
 import Foundation
 
+private enum FIREInputValidationError: LocalizedError {
+    case invalidCurrentAge
+    case invalidAnnualIncome
+    case invalidAnnualExpenses
+    case invalidTargetRetirementAge
+    case targetAgeMustExceedCurrentAge
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidCurrentAge:
+            return "Current age must be a whole number between 18 and 100."
+        case .invalidAnnualIncome:
+            return "Annual income must be a valid non-negative number."
+        case .invalidAnnualExpenses:
+            return "Annual expenses must be a valid non-negative number."
+        case .invalidTargetRetirementAge:
+            return "Target retirement age must be a whole number between 19 and 100."
+        case .targetAgeMustExceedCurrentAge:
+            return "Target retirement age must be greater than current age."
+        }
+    }
+}
+
 @MainActor
 final class FIREViewModel: ObservableObject {
     @Published var isLoading = false
@@ -57,7 +80,7 @@ final class FIREViewModel: ObservableObject {
         errorMessage = nil
         defer { isSaving = false }
         do {
-            let input = buildInput()
+            let input = try buildInput()
             if isInHousehold {
                 let profile = try await dataService.updateHouseholdFIREProfile(input)
                 applyProfile(profile)
@@ -66,6 +89,8 @@ final class FIREViewModel: ObservableObject {
                 applyProfile(profile)
                 projection = try await dataService.fetchFIREProjection()
             }
+        } catch let error as FIREInputValidationError {
+            errorMessage = error.errorDescription
         } catch let error as APIError {
             errorMessage = error.errorDescription
         } catch {
@@ -91,12 +116,24 @@ final class FIREViewModel: ObservableObject {
         return String(value)
     }
 
-    private func buildInput() -> APIFIREProfileInput {
-        let age = Int(currentAge.trimmingCharacters(in: .whitespaces)) ?? 30
-        let income = parseDouble(annualIncome)
-        let expenses = parseDouble(annualExpenses)
-        let targetStr = targetRetirementAge.trimmingCharacters(in: .whitespaces)
-        let targetAge: Int? = targetStr.isEmpty ? nil : Int(targetStr)
+    private func buildInput() throws -> APIFIREProfileInput {
+        let age = try parseWholeNumber(
+            currentAge,
+            min: 18,
+            max: 100,
+            invalidError: .invalidCurrentAge
+        )
+        let income = try parseNonNegativeNumber(annualIncome, invalidError: .invalidAnnualIncome)
+        let expenses = try parseNonNegativeNumber(annualExpenses, invalidError: .invalidAnnualExpenses)
+        let targetAge = try parseOptionalWholeNumber(
+            targetRetirementAge,
+            min: 19,
+            max: 100,
+            invalidError: .invalidTargetRetirementAge
+        )
+        if let targetAge, targetAge <= age {
+            throw FIREInputValidationError.targetAgeMustExceedCurrentAge
+        }
         return APIFIREProfileInput(
             currentAge: age,
             annualIncome: income,
@@ -105,9 +142,53 @@ final class FIREViewModel: ObservableObject {
         )
     }
 
-    private func parseDouble(_ raw: String) -> Double {
-        let trimmed = raw.trimmingCharacters(in: .whitespaces)
-        if trimmed.isEmpty { return 0 }
-        return Double(trimmed.replacingOccurrences(of: ",", with: "")) ?? 0
+    private func parseWholeNumber(
+        _ raw: String,
+        min: Int,
+        max: Int,
+        invalidError: FIREInputValidationError
+    ) throws -> Int {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.range(of: #"^\d+$"#, options: .regularExpression) != nil else {
+            throw invalidError
+        }
+        guard let value = Int(trimmed), value >= min, value <= max else {
+            throw invalidError
+        }
+        return value
+    }
+
+    private func parseOptionalWholeNumber(
+        _ raw: String,
+        min: Int,
+        max: Int,
+        invalidError: FIREInputValidationError
+    ) throws -> Int? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return nil
+        }
+        return try parseWholeNumber(trimmed, min: min, max: max, invalidError: invalidError)
+    }
+
+    private func parseNonNegativeNumber(
+        _ raw: String,
+        invalidError: FIREInputValidationError
+    ) throws -> Double {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw invalidError
+        }
+        let normalized = trimmed.replacingOccurrences(of: ",", with: "")
+        guard normalized.range(
+            of: #"^[+]?(?:\d+(?:\.\d+)?|\.\d+)$"#,
+            options: .regularExpression
+        ) != nil else {
+            throw invalidError
+        }
+        guard let value = Double(normalized), value.isFinite, value >= 0 else {
+            throw invalidError
+        }
+        return value
     }
 }

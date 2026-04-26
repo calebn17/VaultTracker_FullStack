@@ -159,13 +159,7 @@ final class HomeViewModel: ObservableObject {
     func selectFilter(category: AssetCategory?) {
         viewState.selectedFilter = category
         if let category {
-            viewState.filteredAssets = switch category {
-            case .crypto:     viewState.cryptoGroupedAssetHoldings
-            case .stocks:     viewState.stocksGroupedAssetHoldings
-            case .cash:       viewState.cashGroupedAssetHoldings
-            case .realEstate: viewState.realEstateGroupedAssetHoldings
-            case .retirement: viewState.retirementGroupedAssetHoldings
-            }
+            viewState.filteredAssets = groupedHoldings(for: category)
         } else {
             viewState.filteredAssets = []
         }
@@ -183,6 +177,21 @@ final class HomeViewModel: ObservableObject {
         } catch {
             VTLog.shared.error("Error fetching net worth history", error: error, category: .ui)
             snapshots = []
+        }
+    }
+
+    private func groupedHoldings(for category: AssetCategory) -> GroupedAssetHolding {
+        switch category {
+        case .crypto:
+            return viewState.cryptoGroupedAssetHoldings
+        case .stocks:
+            return viewState.stocksGroupedAssetHoldings
+        case .cash:
+            return viewState.cashGroupedAssetHoldings
+        case .realEstate:
+            return viewState.realEstateGroupedAssetHoldings
+        case .retirement:
+            return viewState.retirementGroupedAssetHoldings
         }
     }
 }

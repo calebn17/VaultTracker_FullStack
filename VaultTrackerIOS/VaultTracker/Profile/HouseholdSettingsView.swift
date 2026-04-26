@@ -34,7 +34,6 @@ struct HouseholdSettingsView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityIdentifier("householdSettingsSection")
         .task {
             await viewModel.loadHousehold()
         }
@@ -80,23 +79,7 @@ struct HouseholdSettingsView: View {
                 .font(VTFonts.body)
                 .fontWeight(.semibold)
                 .foregroundStyle(VTColors.textPrimary)
-            ForEach(household.members, id: \.userId) { member in
-                HStack {
-                    Image(systemName: "person.crop.circle")
-                        .foregroundStyle(VTColors.primary)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(member.email ?? "Household member")
-                            .font(VTFonts.body)
-                            .foregroundStyle(VTColors.textPrimary)
-                        Text("ID: \(String(member.userId.prefix(8)))…")
-                            .font(VTFonts.caption)
-                            .foregroundStyle(VTColors.textSubdued)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("householdMember_\(member.userId)")
-            }
-            .accessibilityIdentifier("householdMembersList")
+            memberList(household)
 
             Button {
                 Task { await viewModel.generateInviteCode() }
@@ -108,47 +91,10 @@ struct HouseholdSettingsView: View {
             .accessibilityIdentifier("householdGenerateCodeButton")
 
             if let invite = viewModel.inviteCode {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Code: \(invite.code)")
-                        .font(VTFonts.monoBody)
-                        .foregroundStyle(VTColors.textPrimary)
-                        .accessibilityIdentifier("householdInviteCodeLabel")
-                    Text("Expires: \(invite.expiresAt, style: .relative) from now")
-                        .font(VTFonts.caption)
-                        .foregroundStyle(VTColors.textSubdued)
-                        .accessibilityIdentifier("householdInviteCodeExpiryText")
-                    Button {
-                        UIPasteboard.general.string = invite.code
-                        showCopiedToast = true
-                    } label: {
-                        Text("Copy code")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(VTPrimaryButtonStyle())
-                    .accessibilityIdentifier("householdCopyInviteCodeButton")
-                }
-                .padding()
-                .background(VTColors.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                inviteCodeCard(invite)
             }
 
-            Button("Leave household", role: .destructive) {
-                showLeaveConfirmation = true
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .accessibilityIdentifier("householdLeaveButton")
-            .confirmationDialog(
-                "Leave this household?",
-                isPresented: $showLeaveConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Leave", role: .destructive) {
-                    Task { await viewModel.leaveHousehold() }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("You can create or join another household later.")
-            }
+            leaveHouseholdButton
         }
         .overlay(alignment: .top) {
             if showCopiedToast {
@@ -167,6 +113,68 @@ struct HouseholdSettingsView: View {
                     showCopiedToast = false
                 }
             }
+        }
+    }
+
+    private func memberList(_ household: Household) -> some View {
+        ForEach(household.members, id: \.userId) { member in
+            HStack {
+                Image(systemName: "person.crop.circle")
+                    .foregroundStyle(VTColors.primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(member.email ?? "Household member")
+                        .font(VTFonts.body)
+                        .foregroundStyle(VTColors.textPrimary)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("householdMember_\(member.userId)")
+        }
+        .accessibilityIdentifier("householdMembersList")
+    }
+
+    private func inviteCodeCard(_ invite: HouseholdInviteCode) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Code: \(invite.code)")
+                .font(VTFonts.monoBody)
+                .foregroundStyle(VTColors.textPrimary)
+                .accessibilityIdentifier("householdInviteCodeLabel")
+            Text("Expires: \(invite.expiresAt, style: .relative) from now")
+                .font(VTFonts.caption)
+                .foregroundStyle(VTColors.textSubdued)
+                .accessibilityIdentifier("householdInviteCodeExpiryText")
+            Button {
+                UIPasteboard.general.string = invite.code
+                showCopiedToast = true
+            } label: {
+                Text("Copy code")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(VTPrimaryButtonStyle())
+            .accessibilityIdentifier("householdCopyInviteCodeButton")
+        }
+        .padding()
+        .background(VTColors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var leaveHouseholdButton: some View {
+        Button("Leave household", role: .destructive) {
+            showLeaveConfirmation = true
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .accessibilityIdentifier("householdLeaveButton")
+        .confirmationDialog(
+            "Leave this household?",
+            isPresented: $showLeaveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Leave", role: .destructive) {
+                Task { await viewModel.leaveHousehold() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You can create or join another household later.")
         }
     }
 }

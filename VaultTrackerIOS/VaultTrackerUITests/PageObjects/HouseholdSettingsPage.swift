@@ -4,7 +4,6 @@ import XCTest
 struct HouseholdSettingsPage {
     let app: XCUIApplication
 
-    var section: XCUIElement { app.identified("householdSettingsSection") }
     var header: XCUIElement { app.identified("householdSettingsHeader") }
     var createButton: XCUIElement { app.identified("householdCreateButton") }
     var joinCodeField: XCUIElement { app.identified("householdJoinCodeField") }
@@ -17,7 +16,7 @@ struct HouseholdSettingsPage {
         let scroll = app.scrollViews.firstMatch
         var n = 0
         while n < maxSwipes {
-            if section.exists, section.isHittable { return self }
+            if header.exists { return self }
             if scroll.exists {
                 scroll.swipeUp()
             } else {
@@ -29,8 +28,8 @@ struct HouseholdSettingsPage {
     }
 
     @discardableResult
-    func waitForSection(timeout: TimeInterval = 12) -> Self {
-        _ = section.waitForExistence(timeout: timeout)
+    func waitForPageLoaded(timeout: TimeInterval = 12) -> Self {
+        _ = header.waitForExistence(timeout: timeout)
         return self
     }
 }

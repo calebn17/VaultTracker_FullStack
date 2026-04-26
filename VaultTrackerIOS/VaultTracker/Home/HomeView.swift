@@ -347,13 +347,7 @@ struct HomeView: View {
 
     @ViewBuilder
     private func expandedDetailView(for category: AssetCategory) -> some View {
-        let holdings: GroupedAssetHolding = switch category {
-        case .crypto:     viewModel.viewState.cryptoGroupedAssetHoldings
-        case .stocks:     viewModel.viewState.stocksGroupedAssetHoldings
-        case .realEstate: viewModel.viewState.realEstateGroupedAssetHoldings
-        case .cash:       viewModel.viewState.cashGroupedAssetHoldings
-        case .retirement: viewModel.viewState.retirementGroupedAssetHoldings
-        }
+        let holdings: GroupedAssetHolding = holdingsForExpandedDetail(category)
 
         ForEach(holdings, id: \.id) { holding in
             HStack {
@@ -366,14 +360,7 @@ struct HomeView: View {
                         .font(VTFonts.monoLarge)
                         .fontWeight(.bold)
                         .foregroundStyle(VTColors.textPrimary)
-
-                    let quantityString: String = switch category {
-                    case .cash, .realEstate: ""
-                    case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
-                    case .crypto: "\(holding.quantity.twoDecimalString) coins"
-                    }
-
-                    Text(quantityString)
+                    Text(quantityText(for: category, holding: holding))
                         .font(VTFonts.monoCaption)
                         .foregroundStyle(VTColors.textSubdued)
                 }
@@ -422,6 +409,32 @@ struct HomeView: View {
                 .background(VTColors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
+        }
+    }
+
+    private func holdingsForExpandedDetail(_ category: AssetCategory) -> GroupedAssetHolding {
+        switch category {
+        case .crypto:
+            return viewModel.viewState.cryptoGroupedAssetHoldings
+        case .stocks:
+            return viewModel.viewState.stocksGroupedAssetHoldings
+        case .realEstate:
+            return viewModel.viewState.realEstateGroupedAssetHoldings
+        case .cash:
+            return viewModel.viewState.cashGroupedAssetHoldings
+        case .retirement:
+            return viewModel.viewState.retirementGroupedAssetHoldings
+        }
+    }
+
+    private func quantityText(for category: AssetCategory, holding: APIGroupedHolding) -> String {
+        switch category {
+        case .cash, .realEstate:
+            return ""
+        case .stocks, .retirement:
+            return "\(holding.quantity.twoDecimalString) shares"
+        case .crypto:
+            return "\(holding.quantity.twoDecimalString) coins"
         }
     }
 }

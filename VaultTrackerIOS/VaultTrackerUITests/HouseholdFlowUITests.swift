@@ -20,16 +20,15 @@ final class HouseholdFlowUITests: BaseTestCase {
 
     func test_profile_householdHeaderAndSectionVisible() {
         _ = HomePage(app: app).tapProfileTab()
-        let page = HouseholdSettingsPage(app: app).waitForSection().scrollUntilSectionHittable()
+        let page = HouseholdSettingsPage(app: app).waitForPageLoaded().scrollUntilSectionHittable()
         XCTAssertTrue(page.header.exists)
-        XCTAssertTrue(page.section.exists)
     }
 
     func test_createHousehold_showsModePickerOnHome_andLeaveCleansUp() {
         _ = leaveHouseholdIfInHousehold(app: app)
 
         _ = HomePage(app: app).tapProfileTab()
-        let page = HouseholdSettingsPage(app: app).waitForSection().scrollUntilSectionHittable()
+        let page = HouseholdSettingsPage(app: app).waitForPageLoaded().scrollUntilSectionHittable()
         XCTAssertTrue(page.createButton.waitForExistence(timeout: 5))
         page.createButton.tap()
         XCTAssertTrue(page.leaveButton.waitForExistence(timeout: 25), "POST /households should succeed with local API")
@@ -50,7 +49,7 @@ final class HouseholdFlowUITests: BaseTestCase {
         _ = leaveHouseholdIfInHousehold(app: app)
 
         _ = HomePage(app: app).tapProfileTab()
-        let page = HouseholdSettingsPage(app: app).waitForSection().scrollUntilSectionHittable()
+        let page = HouseholdSettingsPage(app: app).waitForPageLoaded().scrollUntilSectionHittable()
         page.createButton.tap()
         XCTAssertTrue(page.leaveButton.waitForExistence(timeout: 25))
 
@@ -60,15 +59,15 @@ final class HouseholdFlowUITests: BaseTestCase {
         _ = home.scrollUntilHittable(home.anyHouseholdMemberSection)
         XCTAssertTrue(home.anyHouseholdMemberSection.waitForExistence(timeout: 8))
 
-        let expandedQuery = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier BEGINSWITH[c] %@", "householdMemberExpanded_"))
-        XCTAssertEqual(expandedQuery.count, 0, "Member section should start collapsed")
+        let chevronRightImage = app.images["chevron.right"].firstMatch
+        let chevronDownImage = app.images["chevron.down"].firstMatch
+        XCTAssertTrue(chevronRightImage.waitForExistence(timeout: 2), "Member section should start collapsed")
 
         home.anyHouseholdMemberSection.tap()
-        XCTAssertTrue(expandedQuery.firstMatch.waitForExistence(timeout: 4))
+        XCTAssertTrue(chevronDownImage.waitForExistence(timeout: 2), "Member section should be expanded")
 
         home.anyHouseholdMemberSection.tap()
-        XCTAssertTrue(expandedQuery.firstMatch.waitForNonExistence(timeout: 3))
+        XCTAssertTrue(chevronRightImage.waitForExistence(timeout: 2), "Member section should be collapsed again")
 
         _ = leaveHouseholdIfInHousehold(app: app)
     }

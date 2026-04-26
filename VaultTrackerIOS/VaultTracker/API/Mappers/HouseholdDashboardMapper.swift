@@ -36,17 +36,26 @@ struct MemberViewState: Identifiable, Equatable {
 
     /// Holdings for a category, accepting either camelCase or legacy `real_estate` keys.
     func groupedHoldings(for category: AssetCategory) -> [APIGroupedHolding] {
-        let keys: [String] = switch category {
-        case .crypto: ["crypto"]
-        case .stocks: ["stocks"]
-        case .cash: ["cash"]
-        case .realEstate: ["realEstate", "real_estate"]
-        case .retirement: ["retirement"]
-        }
+        let keys = keys(for: category)
         for key in keys {
             if let holdings = groupedByCategory[key] { return holdings }
         }
         return []
+    }
+
+    private func keys(for category: AssetCategory) -> [String] {
+        switch category {
+        case .crypto:
+            return ["crypto"]
+        case .stocks:
+            return ["stocks"]
+        case .cash:
+            return ["cash"]
+        case .realEstate:
+            return ["realEstate", "real_estate"]
+        case .retirement:
+            return ["retirement"]
+        }
     }
 }
 

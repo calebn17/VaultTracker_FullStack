@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var authManager: AuthManager
-    
+
     var body: some View {
         VStack {
             Spacer()
@@ -20,7 +20,7 @@ struct LoginView: View {
                 .foregroundStyle(VTColors.textPrimary)
 
             // Google Sign-In Button
-            Button(action: {
+            Button {
                 Task {
                     do {
                         try await authManager.signInWithGoogle()
@@ -28,7 +28,7 @@ struct LoginView: View {
                         // AuthManager already logs sign-in failures
                     }
                 }
-            }) {
+            } label: {
                 HStack {
                     Image(systemName: "g.circle.fill")
                         .resizable()
@@ -47,9 +47,9 @@ struct LoginView: View {
             Spacer()
 
 #if DEBUG
-            Button(action: {
+            Button {
                 authManager.signInDebug()
-            }) {
+            } label: {
                 HStack {
                     Image(systemName: "ladybug.fill")
                     Text("Debug Login")

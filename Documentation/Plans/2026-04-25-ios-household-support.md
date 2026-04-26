@@ -6,49 +6,49 @@ todos:
 
 - id: ios-api-household-models
   content: "API Models + tests: add APIHouseholdResponse, APIHouseholdMember, APIHouseholdInviteCodeResponse, APIHouseholdDashboardResponse, and APIHouseholdMemberDashboard to API/Models/ using the backend field names"
-  status: pending
+  status: completed
 - id: ios-api-household-endpoints
   content: "API Layer + tests: add household methods to APIServiceProtocol + APIService (create, get-mine with 404-to-nil, generate-code, join, leave, dashboard/household, networth/history/household, fire-profile GET/PUT)"
-  status: pending
+  status: completed
 - id: ios-domain-models
   content: "Domain Models: add Household, HouseholdMember, HouseholdInviteCode, and FIRE profile domain types only if the UI should not use APIFIREProfileResponse directly"
-  status: pending
+  status: completed
 - id: ios-mappers
   content: "Mappers + tests: add HouseholdMapper, HouseholdDashboardMapper.toViewState, and FIRE profile mapping if domain FIRE types are introduced"
-  status: pending
+  status: completed
 - id: ios-dataservice-household
   content: "DataService + MockDataService + tests: add household methods to DataServiceProtocol + DataService (fetchHousehold, createHousehold, generateInviteCode, joinHousehold, leaveHousehold, fetchHouseholdDashboard, fetchHouseholdNetWorthHistory, getHouseholdFIRE, updateHouseholdFIRE)"
-  status: pending
+  status: completed
 - id: ios-household-settings-vm
   content: "ViewModel + tests: create HouseholdSettingsViewModel for create/join/leave/invite flows with state management"
-  status: pending
+  status: completed
 - id: ios-household-settings-ui
   content: "UI + UI page object: expand ProfileView with HouseholdSettingsSection (create, join via code input, leave with confirm, generate code with copy + expiry display) and stable accessibility identifiers"
-  status: pending
+  status: completed
 - id: ios-homevm-household-mode
   content: "HomeViewModel + tests: add householdMode toggle, extend loadData for household dashboard, wire net worth history to household endpoint when in household mode"
-  status: pending
+  status: completed
 - id: ios-homeview-household-ui
   content: "HomeView + UI tests: add Household/Just Me segmented toggle (visible when in household), render per-member collapsible MemberSection components"
-  status: pending
+  status: completed
 - id: ios-fire-api-models
   content: "FIRE API + tests: add APIFIREProfileInput, APIFIREProfileResponse, APIFIREProjectionResponse and all nested types to API/Models/; add personal FIRE endpoints and household FIRE GET/PUT using the same input/response types"
-  status: pending
+  status: completed
 - id: ios-fire-dataservice
   content: "FIRE DataService + MockDataService: add fetchFIREProfile, updateFIREProfile, fetchFIREProjection, fetchHouseholdFIRE, and updateHouseholdFIRE to DataServiceProtocol + DataService"
-  status: pending
+  status: completed
 - id: ios-fire-screen
   content: "FIRE UI + tests: create FIREView + FIREViewModel (new tab or profile subsection), edit household shared inputs when in household, show personal projection only in personal mode"
-  status: pending
+  status: completed
 - id: ios-tests-unit
   content: "Unit Test Sweep: fill any remaining gaps after slice tests for HouseholdMapper, HouseholdDashboardMapper, HouseholdSettingsViewModel, HomeViewModel household mode, FIREViewModel"
-  status: pending
+  status: completed
 - id: ios-tests-ui
   content: "UI Test Sweep: add HouseholdSettingsPage page object if not already added and cover create/join/leave flows, dashboard household toggle, member section expansion"
-  status: pending
+  status: completed
 - id: ios-docs-update
   content: "Docs: update VaultTrackerIOS/VaultTracker/CLAUDE.md and Documentation/VaultTracker System Design.md with household iOS changes"
-  status: pending
+  status: completed
 isProject: false
 
 ---
@@ -233,7 +233,7 @@ final class HouseholdSettingsViewModel: ObservableObject {
     @Published var joinCode: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    
+
     func loadHousehold() async
     func createHousehold() async
     func generateInviteCode() async
@@ -283,7 +283,7 @@ func loadData() async {
     // Check household membership
     household = try? await dataService.fetchHousehold()
     isInHousehold = household != nil
-    
+
     if isInHousehold && householdMode {
         // Load household dashboard
         let response = try await dataService.fetchHouseholdDashboard()

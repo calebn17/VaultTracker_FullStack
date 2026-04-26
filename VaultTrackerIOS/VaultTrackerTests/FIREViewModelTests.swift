@@ -70,4 +70,57 @@ struct FIREViewModelTests {
         #expect(mock.updateFIREProfileCallCount == 0)
         #expect(mock.fetchFIREProjectionCallCount == 0)
     }
+
+    @Test func saveWithTrimmedInputsNormalizesAndSendsPayload() async {
+        let mock = MockDataService()
+        let vm = FIREViewModel(dataService: mock)
+        await vm.load()
+
+        vm.currentAge = " 40 "
+        vm.annualIncome = " 120,000.5 "
+        vm.annualExpenses = " 60,000 "
+        vm.targetRetirementAge = " 61 "
+
+        await vm.save()
+
+        #expect(vm.errorMessage == nil)
+        #expect(mock.updateFIREProfileCallCount == 1)
+        #expect(mock.lastFIREProfileInput?.currentAge == 40)
+        #expect(mock.lastFIREProfileInput?.annualIncome == 120_000.5)
+        #expect(mock.lastFIREProfileInput?.annualExpenses == 60_000)
+        #expect(mock.lastFIREProfileInput?.targetRetirementAge == 61)
+    }
+
+    @Test func saveWithMalformedIncomeSkipsUpdateAndShowsValidationError() async {
+        let mock = MockDataService()
+        let vm = FIREViewModel(dataService: mock)
+        await vm.load()
+
+        vm.currentAge = "40"
+        vm.annualIncome = "'; DROP TABLE fire_profiles; --"
+        vm.annualExpenses = "50000"
+        vm.targetRetirementAge = "62"
+
+        await vm.save()
+
+        #expect(mock.updateFIREProfileCallCount == 0)
+        #expect(vm.errorMessage != nil)
+        #expect(vm.errorMessage?.contains("Annual income") == true)
+    }
+
+    @Test func saveWithTargetAgeNotGreaterThanCurrentAgeSkipsUpdate() async {
+        let mock = MockDataService()
+        let vm = FIREViewModel(dataService: mock)
+        await vm.load()
+
+        vm.currentAge = "45"
+        vm.annualIncome = "120000"
+        vm.annualExpenses = "65000"
+        vm.targetRetirementAge = "45"
+
+        await vm.save()
+
+        #expect(mock.updateFIREProfileCallCount == 0)
+        #expect(vm.errorMessage?.contains("Target retirement age") == true)
+    }
 }

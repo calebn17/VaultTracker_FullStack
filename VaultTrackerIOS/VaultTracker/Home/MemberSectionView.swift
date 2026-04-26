@@ -28,26 +28,32 @@ struct MemberSectionView: View {
     }
 
     private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(displayName)
-                    .font(VTFonts.body)
-                    .foregroundStyle(VTColors.textPrimary)
-                Text("Total: \(member.totalNetWorth.currencyFormat())")
-                    .font(VTFonts.monoBody)
-                    .foregroundStyle(VTColors.textSubdued)
-            }
-            Spacer()
-            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                .foregroundStyle(VTColors.textSubdued)
-        }
-        .padding()
-        .contentShape(Rectangle())
-        .onTapGesture {
+        Button {
             withAnimation {
                 isExpanded.toggle()
             }
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayName)
+                        .font(VTFonts.body)
+                        .foregroundStyle(VTColors.textPrimary)
+                    Text("Total: \(member.totalNetWorth.currencyFormat())")
+                        .font(VTFonts.monoBody)
+                        .foregroundStyle(VTColors.textSubdued)
+                }
+                Spacer()
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .foregroundStyle(VTColors.textSubdued)
+            }
+            .padding()
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("householdMemberHeaderButton_\(member.userId)")
+        .accessibilityLabel(displayName)
+        .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+        .accessibilityHint("Double tap to toggle member details.")
     }
 
     @ViewBuilder
@@ -96,12 +102,7 @@ struct MemberSectionView: View {
                             .font(VTFonts.monoLarge)
                             .fontWeight(.bold)
                             .foregroundStyle(VTColors.textPrimary)
-                        let quantityString: String = switch category {
-                        case .cash, .realEstate: ""
-                        case .stocks, .retirement: "\(holding.quantity.twoDecimalString) shares"
-                        case .crypto: "\(holding.quantity.twoDecimalString) coins"
-                        }
-                        Text(quantityString)
+                        Text(quantityText(for: category, holding: holding))
                             .font(VTFonts.monoCaption)
                             .foregroundStyle(VTColors.textSubdued)
                     }
@@ -109,6 +110,17 @@ struct MemberSectionView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 6)
             }
+        }
+    }
+
+    private func quantityText(for category: AssetCategory, holding: APIGroupedHolding) -> String {
+        switch category {
+        case .cash, .realEstate:
+            return ""
+        case .stocks, .retirement:
+            return "\(holding.quantity.twoDecimalString) shares"
+        case .crypto:
+            return "\(holding.quantity.twoDecimalString) coins"
         }
     }
 }
