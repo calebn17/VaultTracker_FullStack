@@ -15,6 +15,9 @@ enum PendingStatus: String, Codable, CaseIterable, Sendable {
 @Model
 final class PendingTransaction {
     @Attribute(.unique) var id: UUID
+    /// Firebase Auth uid for the account that queued this write; must match the active session to sync.
+    /// Default empty supports store migration; rows with no uid are never synced.
+    var userId: String = ""
     /// Encoded `APISmartTransactionCreateRequest`
     var request: Data
     var createdAt: Date
@@ -25,6 +28,7 @@ final class PendingTransaction {
 
     init(
         id: UUID = UUID(),
+        userId: String,
         request: Data,
         createdAt: Date = Date(),
         retryCount: Int = 0,
@@ -32,6 +36,7 @@ final class PendingTransaction {
         status: PendingStatus = .pending
     ) {
         self.id = id
+        self.userId = userId
         self.request = request
         self.createdAt = createdAt
         self.retryCount = retryCount

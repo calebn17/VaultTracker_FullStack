@@ -17,11 +17,18 @@ final class PendingTransactionStore {
     }
 
     /// Inserts a new pending row and returns its id.
-    func insert(requestData: Data, status: PendingStatus = .pending) throws -> UUID {
-        let row = PendingTransaction(request: requestData, status: status)
+    func insert(requestData: Data, userId: String, status: PendingStatus = .pending) throws -> UUID {
+        let row = PendingTransaction(userId: userId, request: requestData, status: status)
         modelContext.insert(row)
         try modelContext.save()
         return row.id
+    }
+
+    func fetchAllSortedByCreatedAt(forUserId userId: String) throws -> [PendingTransaction] {
+        let sort = SortDescriptor(\PendingTransaction.createdAt, order: .forward)
+        let predicate = #Predicate<PendingTransaction> { $0.userId == userId }
+        let descriptor = FetchDescriptor<PendingTransaction>(predicate: predicate, sortBy: [sort])
+        return try modelContext.fetch(descriptor)
     }
 
     func fetchAllSortedByCreatedAt() throws -> [PendingTransaction] {
@@ -54,6 +61,14 @@ final class PendingTransactionStore {
     func deleteAll() throws {
         let all = try fetchAllSortedByCreatedAt()
         for row in all {
+            modelContext.delete(row)
+        }
+        try modelContext.save()
+    }
+
+    func deleteAll(forUserId userId: String) throws {
+        let rows = try fetchAllSortedByCreatedAt(forUserId: userId)
+        for row in rows {
             modelContext.delete(row)
         }
         try modelContext.save()

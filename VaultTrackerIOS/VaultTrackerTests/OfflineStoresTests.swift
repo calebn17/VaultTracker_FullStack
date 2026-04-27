@@ -57,8 +57,9 @@ struct OfflineStoresTests {
         let dataA = try JSONEncoder().encode(reqA)
         let dataB = try JSONEncoder().encode(reqB)
 
-        let idA = try store.insert(requestData: dataA)
-        let idB = try store.insert(requestData: dataB)
+        let uid = "pending-store-test-user"
+        let idA = try store.insert(requestData: dataA, userId: uid)
+        let idB = try store.insert(requestData: dataB, userId: uid)
 
         let rows = try store.fetchAllSortedByCreatedAt()
         #expect(rows.count == 2)
@@ -76,6 +77,28 @@ struct OfflineStoresTests {
 
         try store.deleteAll()
         #expect(try store.fetchAllSortedByCreatedAt().isEmpty)
+    }
+
+    @Test func pendingDeleteAllForUserPreservesOtherUsers() throws {
+        let (store, _) = try makePendingStore()
+        let data = try JSONEncoder().encode(APISmartTransactionCreateRequest(
+            transactionType: "buy",
+            category: "stocks",
+            assetName: "Acme",
+            symbol: "ACM",
+            quantity: 1,
+            pricePerUnit: 10,
+            accountName: "Broker",
+            accountType: "brokerage",
+            date: nil
+        ))
+
+        try store.insert(requestData: data, userId: "u1")
+        try store.insert(requestData: data, userId: "u2")
+        try store.deleteAll(forUserId: "u1")
+
+        #expect(try store.fetchAllSortedByCreatedAt(forUserId: "u1").isEmpty)
+        #expect(try store.fetchAllSortedByCreatedAt(forUserId: "u2").count == 1)
     }
 
     // MARK: - CachedDataStore
@@ -216,5 +239,29 @@ struct OfflineStoresTests {
         try store.upsertPersonalDashboard(userId: userId, data: try JSONEncoder().encode(dash))
         try store.clearAllCaches()
         #expect(try store.personalDashboard(userId: userId) == nil)
+    }
+
+    @Test func cacheClearAllCachesForUserPreservesOtherUsers() throws {
+        let (store, _) = try makeCacheStore()
+        let dash = APIDashboardResponse(
+            totalNetWorth: 1,
+            categoryTotals: APICategoryTotals(),
+            groupedHoldings: [:]
+        )
+        let data = try JSONEncoder().encode(dash)
+
+        try store.upsertPersonalDashboard(userId: "u1", data: data)
+        try store.upsertHouseholdDashboard(userId: "u1", data: data)
+        try store.upsertNetWorthHistory(userId: "u1", scope: .personal, period: .daily, data: data)
+        try store.upsertTransaction(userId: "u1", transactionId: "t1", data: data)
+        try store.upsertPersonalDashboard(userId: "u2", data: data)
+
+        try store.clearAllCaches(for: "u1")
+
+        #expect(try store.personalDashboard(userId: "u1") == nil)
+        #expect(try store.householdDashboard(userId: "u1") == nil)
+        #expect(try store.netWorthHistory(userId: "u1", scope: .personal, period: .daily) == nil)
+        #expect(try store.transactions(for: "u1").isEmpty)
+        #expect(try store.personalDashboard(userId: "u2") != nil)
     }
 }

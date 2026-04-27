@@ -20,7 +20,10 @@ final class LocalDataStack: ObservableObject {
     let syncManager: OfflineSyncManager
     private var repositoryCache: DataRepository?
 
-    init(dataService: DataServiceProtocol = DataService.shared) throws {
+    init(
+        dataService: DataServiceProtocol = DataService.shared,
+        currentUserId: @escaping () -> String? = { nil }
+    ) throws {
         self.modelContainer = try OfflinePersistence.makeModelContainer(inMemory: false)
         let context = ModelContext(modelContainer)
         self.cache = CachedDataStore(modelContext: context)
@@ -29,7 +32,8 @@ final class LocalDataStack: ObservableObject {
         self.syncManager = OfflineSyncManager(
             dataService: dataService,
             pendingStore: pendingStore,
-            network: networkMonitor
+            network: networkMonitor,
+            currentUserId: currentUserId
         )
     }
 

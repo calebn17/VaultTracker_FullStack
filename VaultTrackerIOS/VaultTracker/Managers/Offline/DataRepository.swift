@@ -36,6 +36,7 @@ protocol DataRepositoryProtocol: AnyObject {
         -> ([NetWorthSnapshot], isStale: Bool)
     func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod) async throws
         -> ([NetWorthSnapshot], isStale: Bool)
+    func clearLocalData() throws
 }
 
 @MainActor
@@ -77,9 +78,16 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
 
     func createTransaction(_ request: APISmartTransactionCreateRequest) async throws {
         if network.isConnected {
-            try await dataService.createSmartTransaction(request)
+            do {
+                try await dataService.createSmartTransaction(request)
+            } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
+                let uid = try requireUserId()
+                try syncManager.enqueue(request, userId: uid)
+            }
         } else {
-            try syncManager.enqueue(request)
+            let uid = try requireUserId()
+            try syncManager.enqueue(request, userId: uid)
         }
     }
 
@@ -92,6 +100,7 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
                 try cache.upsertPersonalDashboard(userId: uid, data: data)
                 return (dashboard, false)
             } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
                 return (try decodePersonalFromCacheOrThrow(userId: uid), true)
             }
         } else {
@@ -108,6 +117,7 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
                 try cache.upsertHouseholdDashboard(userId: uid, data: data)
                 return (dashboard, false)
             } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
                 return (try decodeHouseholdFromCacheOrThrow(userId: uid), true)
             }
         } else {
@@ -127,6 +137,7 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
                 try cache.replaceAllTransactions(for: uid, rows: rows)
                 return (domain, false)
             } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
                 return (try loadTransactionsFromCacheOrThrow(userId: uid), true)
             }
         } else {
@@ -149,6 +160,7 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
                 )
                 return (mapNetWorthResponse(response), false)
             } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
                 return (try loadNetWorthFromCacheOrThrow(
                     userId: uid, scope: .personal, period: period
                 ), true)
@@ -175,6 +187,7 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
                 )
                 return (mapNetWorthResponse(response), false)
             } catch {
+                guard isOfflineFallbackEligible(error) else { throw error }
                 return (try loadNetWorthFromCacheOrThrow(
                     userId: uid, scope: .household, period: period
                 ), true)
@@ -186,11 +199,21 @@ final class DataRepository: ObservableObject, DataRepositoryProtocol {
         }
     }
 
+    func clearLocalData() throws {
+        let uid = try requireUserId()
+        try cache.clearAllCaches(for: uid)
+        try syncManager.clearPendingForCurrentUser()
+    }
+
     // MARK: - Private
 
     private func requireUserId() throws -> String {
         guard let id = currentUserId() else { throw OfflineError.missingUserContext }
         return id
+    }
+
+    private func isOfflineFallbackEligible(_ error: Error) -> Bool {
+        isAPIErrorRetryableInOfflineSync(error)
     }
 
     private func mapNetWorthResponse(_ response: APINetWorthHistoryResponse) -> [NetWorthSnapshot] {

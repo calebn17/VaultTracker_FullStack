@@ -12,7 +12,7 @@ import FirebaseCrashlytics
 
 @main
 struct VaultTrackerApp: App {
-    @StateObject var authManager = AuthManager()
+    @StateObject private var authManager: AuthManager
     @StateObject private var localDataStack: LocalDataStack
 
     init() {
@@ -29,9 +29,11 @@ struct VaultTrackerApp: App {
             Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
 #endif
         }
+        let auth = AuthManager()
+        _authManager = StateObject(wrappedValue: auth)
         let stack: LocalDataStack
         do {
-            stack = try LocalDataStack()
+            stack = try LocalDataStack(currentUserId: { auth.user?.uid })
         } catch {
             fatalError("Local data stack failed: \(error)")
         }

@@ -35,6 +35,12 @@ func isAPIErrorRetryableInOfflineSync(_ error: Error) -> Bool {
 final class OfflineSyncManager: ObservableObject {
     private static let log = Logger(subsystem: "com.vaulttracker", category: "OfflineSync")
 
+    struct FailedPendingItem: Identifiable, Equatable {
+        let id: UUID
+        let title: String
+        let detail: String?
+    }
+
     enum SyncStatus: Equatable {
         case idle
         case syncing(progress: Int, total: Int)
@@ -45,10 +51,12 @@ final class OfflineSyncManager: ObservableObject {
     /// Queue depth that still needs a successful server write (`pending` + in-flight `syncing`).
     @Published private(set) var pendingCount: Int = 0
     @Published private(set) var failedCount: Int = 0
+    @Published private(set) var failedItems: [FailedPendingItem] = []
 
     private let dataService: DataServiceProtocol
     private let pendingStore: PendingTransactionStore
     private let network: NetworkMonitoring
+    private let currentUserId: () -> String?
     private let beforeSecondAttemptNs: UInt64
     private let beforeThirdAttemptNs: UInt64
     private let requestDecoder: JSONDecoder
@@ -62,12 +70,14 @@ final class OfflineSyncManager: ObservableObject {
         dataService: DataServiceProtocol,
         pendingStore: PendingTransactionStore,
         network: NetworkMonitoring,
+        currentUserId: @escaping () -> String?,
         beforeSecondAttemptNs: UInt64 = 2_000_000_000,
         beforeThirdAttemptNs: UInt64 = 4_000_000_000
     ) {
         self.dataService = dataService
         self.pendingStore = pendingStore
         self.network = network
+        self.currentUserId = currentUserId
         self.beforeSecondAttemptNs = beforeSecondAttemptNs
         self.beforeThirdAttemptNs = beforeThirdAttemptNs
         self.requestDecoder = JSONDecoder()
@@ -86,9 +96,9 @@ final class OfflineSyncManager: ObservableObject {
 
     /// Encodes and appends a smart-transaction to the outbox; refresh metrics. Call when offline
     /// (or when the repository decides not to post immediately). Does **not** start a network sync.
-    func enqueue(_ request: APISmartTransactionCreateRequest) throws {
+    func enqueue(_ request: APISmartTransactionCreateRequest, userId: String) throws {
         let data = try JSONEncoder().encode(request)
-        _ = try pendingStore.insert(requestData: data, status: .pending)
+        _ = try pendingStore.insert(requestData: data, userId: userId, status: .pending)
         Task { await refreshQueueMetrics() }
     }
 
@@ -108,7 +118,15 @@ final class OfflineSyncManager: ObservableObject {
 
     /// Removes a single queued item by id.
     func discardPending(id: UUID) throws {
+        guard let uid = currentUserId() else { return }
+        guard let row = try pendingStore.fetch(id: id), row.userId == uid else { return }
         try pendingStore.delete(id: id)
+        Task { await refreshQueueMetrics() }
+    }
+
+    func clearPendingForCurrentUser() throws {
+        guard let uid = currentUserId() else { return }
+        try pendingStore.deleteAll(forUserId: uid)
         Task { await refreshQueueMetrics() }
     }
 
@@ -155,7 +173,8 @@ final class OfflineSyncManager: ObservableObject {
     /// Returns `(displayTotal, list)` where `displayTotal` is the count of in-scope rows (for
     /// progress) and `list` is the work batch (subset that is still pending/failed in order).
     private func selectWork(includeFailed: Bool) throws -> (Int, [PendingTransaction]) {
-        let rows = try pendingStore.fetchAllSortedByCreatedAt()
+        guard let uid = currentUserId() else { return (0, []) }
+        let rows = try pendingStore.fetchAllSortedByCreatedAt(forUserId: uid)
         let inScope: [PendingTransaction] = rows.filter { row in
             switch row.pendingStatus {
             case .pending, .syncing: return true
@@ -167,7 +186,8 @@ final class OfflineSyncManager: ObservableObject {
     }
 
     private func resetStuckSyncingToPending() throws {
-        let rows = try pendingStore.fetchAllSortedByCreatedAt()
+        guard let uid = currentUserId() else { return }
+        let rows = try pendingStore.fetchAllSortedByCreatedAt(forUserId: uid)
         for row in rows where row.pendingStatus == .syncing {
             try pendingStore.updateStatus(
                 id: row.id, status: .pending, retryCount: row.retryCount, lastError: row.lastError
@@ -224,20 +244,40 @@ final class OfflineSyncManager: ObservableObject {
 
     private func refreshQueueMetrics() async {
         do {
-            let rows = try pendingStore.fetchAllSortedByCreatedAt()
+            guard let uid = currentUserId() else {
+                pendingCount = 0
+                failedCount = 0
+                failedItems = []
+                syncStatus = .idle
+                return
+            }
+            let rows = try pendingStore.fetchAllSortedByCreatedAt(forUserId: uid)
             let outstanding = rows
                 .filter { $0.pendingStatus == .pending || $0.pendingStatus == .syncing }
                 .count
-            let failed = rows.filter { $0.pendingStatus == .failed }.count
+            let failedRows = rows.filter { $0.pendingStatus == .failed }
             pendingCount = outstanding
-            failedCount = failed
-            if failed > 0 {
-                syncStatus = .failed(unsyncedCount: failed)
+            failedCount = failedRows.count
+            failedItems = failedRows.map(failedItem)
+            if failedCount > 0 {
+                syncStatus = .failed(unsyncedCount: failedCount)
             } else {
                 syncStatus = .idle
             }
         } catch {
             Self.log.error("refreshQueueMetrics: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    private func failedItem(from row: PendingTransaction) -> FailedPendingItem {
+        let title: String
+        if let request = try? requestDecoder.decode(APISmartTransactionCreateRequest.self, from: row.request) {
+            title = [request.transactionType.capitalized, request.assetName]
+                .filter { !$0.isEmpty }
+                .joined(separator: " ")
+        } else {
+            title = "Stored transaction"
+        }
+        return FailedPendingItem(id: row.id, title: title, detail: row.lastError)
     }
 }

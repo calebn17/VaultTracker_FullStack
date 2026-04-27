@@ -158,4 +158,24 @@ final class CachedDataStore {
         try modelContext.fetch(FetchDescriptor<CachedTransaction>()).forEach { modelContext.delete($0) }
         try modelContext.save()
     }
+
+    func clearAllCaches(for userId: String) throws {
+        let personalPredicate = #Predicate<CachedPersonalDashboard> { $0.userId == userId }
+        try modelContext.fetch(FetchDescriptor<CachedPersonalDashboard>(predicate: personalPredicate))
+            .forEach { modelContext.delete($0) }
+
+        let householdPredicate = #Predicate<CachedHouseholdDashboard> { $0.userId == userId }
+        try modelContext.fetch(FetchDescriptor<CachedHouseholdDashboard>(predicate: householdPredicate))
+            .forEach { modelContext.delete($0) }
+
+        let historyPredicate = #Predicate<CachedNetWorthHistory> { $0.userId == userId }
+        try modelContext.fetch(FetchDescriptor<CachedNetWorthHistory>(predicate: historyPredicate))
+            .forEach { modelContext.delete($0) }
+
+        let transactionPredicate = #Predicate<CachedTransaction> { $0.userId == userId }
+        try modelContext.fetch(FetchDescriptor<CachedTransaction>(predicate: transactionPredicate))
+            .forEach { modelContext.delete($0) }
+
+        try modelContext.save()
+    }
 }

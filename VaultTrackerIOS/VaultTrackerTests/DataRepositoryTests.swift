@@ -43,6 +43,7 @@ struct DataRepositoryTests {
             dataService: data,
             pendingStore: pending,
             network: network,
+            currentUserId: { Self.testUser },
             beforeSecondAttemptNs: 0,
             beforeThirdAttemptNs: 0
         )
@@ -70,7 +71,60 @@ struct DataRepositoryTests {
         let req = Self.sampleSmartRequest()
         try await repo.createTransaction(req)
         #expect(data.createSmartTransactionCallCount == 0)
-        #expect(try pending.fetchAllSortedByCreatedAt().count == 1)
+        let rows = try pending.fetchAllSortedByCreatedAt(forUserId: Self.testUser)
+        #expect(rows.count == 1)
+        #expect(rows[0].userId == Self.testUser)
+    }
+
+    @Test func createWhenOnlineTransportFailsEnqueues() async throws {
+        let (repo, _, data, _, pending, _) = try makeSUT(online: true)
+        data.createSmartTransactionError = APIError.networkError(Self.sampleURLError())
+        let req = Self.sampleSmartRequest()
+        try await repo.createTransaction(req)
+        #expect(data.createSmartTransactionCallCount == 1)
+        let rows = try pending.fetchAllSortedByCreatedAt(forUserId: Self.testUser)
+        #expect(rows.count == 1)
+        #expect(rows[0].userId == Self.testUser)
+    }
+
+    @Test func createWhenOnlineValidationFailsDoesNotEnqueue() async throws {
+        let (repo, _, data, _, pending, _) = try makeSUT(online: true)
+        data.createSmartTransactionError = APIError.validationError(["assetName is required"])
+        await #expect(throws: APIError.self) {
+            try await repo.createTransaction(Self.sampleSmartRequest())
+        }
+        #expect(data.createSmartTransactionCallCount == 1)
+        #expect(try pending.fetchAllSortedByCreatedAt(forUserId: Self.testUser).isEmpty)
+    }
+
+    @Test func createWhenOfflineWithoutUserThrows() async throws {
+        let container = try OfflinePersistence.makeModelContainer(inMemory: true)
+        let context = ModelContext(container)
+        let pending = PendingTransactionStore(modelContext: context)
+        let cache = CachedDataStore(modelContext: context)
+        let data = MockDataService()
+        let api = MockAPIService()
+        let network = FakeNetworkMonitor(isConnected: false)
+        let sync = OfflineSyncManager(
+            dataService: data,
+            pendingStore: pending,
+            network: network,
+            currentUserId: { nil },
+            beforeSecondAttemptNs: 0,
+            beforeThirdAttemptNs: 0
+        )
+        let repo = DataRepository(
+            dataService: data,
+            api: api,
+            network: network,
+            cache: cache,
+            syncManager: sync,
+            currentUserId: { nil }
+        )
+        await #expect(throws: OfflineError.self) {
+            try await repo.createTransaction(Self.sampleSmartRequest())
+        }
+        #expect(try pending.fetchAllSortedByCreatedAt().isEmpty)
     }
 
     @Test func fetchPersonalDashboardSucceedsAndCaches() async throws {
@@ -94,6 +148,15 @@ struct DataRepositoryTests {
         #expect(d.0.totalNetWorth == data.dashboardStub.totalNetWorth)
     }
 
+    @Test func fetchPersonalDashboardAuthErrorDoesNotFallbackToCache() async throws {
+        let (repo, _, data, _, _, _) = try makeSUT(online: true)
+        _ = try await repo.fetchPersonalDashboard()
+        data.dashboardError = APIError.unauthorized
+        await #expect(throws: APIError.self) {
+            _ = try await repo.fetchPersonalDashboard()
+        }
+    }
+
     @Test func fetchPersonalDashboardOfflineServesCache() async throws {
         let (repo, _, data, _, _, network) = try makeSUT(online: true)
         _ = try await repo.fetchPersonalDashboard()
@@ -113,6 +176,16 @@ struct DataRepositoryTests {
         let rows = try cache.transactions(for: Self.testUser)
         #expect(rows.count == 1)
         #expect(rows[0].transactionId == "tx-1")
+    }
+
+    @Test func fetchTransactionsAuthErrorDoesNotFallbackToCache() async throws {
+        let (repo, _, _, api, _, _) = try makeSUT(online: true)
+        api.fetchTransactionsResult = [Self.minimalEnriched(id: "tx-1")]
+        _ = try await repo.fetchTransactions()
+        api.fetchTransactionsError = APIError.forbidden
+        await #expect(throws: APIError.self) {
+            _ = try await repo.fetchTransactions()
+        }
     }
 
     @Test func fetchNetWorthHistoryCachesAPILayer() async throws {
@@ -146,6 +219,7 @@ struct DataRepositoryTests {
             dataService: data,
             pendingStore: pending,
             network: network,
+            currentUserId: { nil },
             beforeSecondAttemptNs: 0,
             beforeThirdAttemptNs: 0
         )
@@ -162,6 +236,27 @@ struct DataRepositoryTests {
         }
     }
 
+    @Test func clearLocalDataClearsCurrentUserCacheAndPendingRows() async throws {
+        let (repo, cache, _, _, pending, _) = try makeSUT(online: false)
+        let request = Self.sampleSmartRequest()
+        let encodedDashboard = try JSONEncoder().encode(APIDashboardResponse(
+            totalNetWorth: 99,
+            categoryTotals: APICategoryTotals(),
+            groupedHoldings: [:]
+        ))
+        try cache.upsertPersonalDashboard(userId: Self.testUser, data: encodedDashboard)
+        try cache.upsertPersonalDashboard(userId: "other-user", data: encodedDashboard)
+        try pending.insert(requestData: try JSONEncoder().encode(request), userId: Self.testUser)
+        try pending.insert(requestData: try JSONEncoder().encode(request), userId: "other-user")
+
+        try repo.clearLocalData()
+
+        #expect(try cache.personalDashboard(userId: Self.testUser) == nil)
+        #expect(try pending.fetchAllSortedByCreatedAt(forUserId: Self.testUser).isEmpty)
+        #expect(try cache.personalDashboard(userId: "other-user") != nil)
+        #expect(try pending.fetchAllSortedByCreatedAt(forUserId: "other-user").count == 1)
+    }
+
     // MARK: - Helpers
 
     private static func sampleSmartRequest() -> APISmartTransactionCreateRequest {
@@ -176,6 +271,10 @@ struct DataRepositoryTests {
             accountType: "brokerage",
             date: nil
         )
+    }
+
+    private static func sampleURLError() -> URLError {
+        URLError(.notConnectedToInternet)
     }
 
     private static func minimalEnriched(id: String) -> APIEnrichedTransactionResponse {

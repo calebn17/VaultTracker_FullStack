@@ -69,19 +69,18 @@ final class HomeViewModel: ObservableObject {
         lastLoadServedFromCache = false
         let selectedFilter = viewState.selectedFilter
         do {
-            let household = try await dataService.fetchHousehold()
-            isInHousehold = household != nil
+            try await refreshHouseholdMembership()
             if let repo = dataRepository {
                 if isInHousehold, householdMode {
                     let (dashboard, stale) = try await repo.fetchHouseholdDashboard()
-                    lastLoadServedFromCache = stale
+                    lastLoadServedFromCache = lastLoadServedFromCache || stale
                     let merged = HouseholdDashboardMapper.toViewState(dashboard)
                     householdViewState = merged
                     applyHouseholdAggregateToViewState(merged)
                 } else {
                     householdViewState = nil
                     let (dashboard, stale) = try await repo.fetchPersonalDashboard()
-                    lastLoadServedFromCache = stale
+                    lastLoadServedFromCache = lastLoadServedFromCache || stale
                     viewState = DashboardMapper.toViewState(dashboard)
                 }
             } else {
@@ -131,6 +130,7 @@ final class HomeViewModel: ObservableObject {
         viewState.errorMessage = nil
         do {
             try await dataService.clearAllData()
+            try dataRepository?.clearLocalData()
             viewState = HomeViewState()
             snapshots = []
             isInHousehold = false
@@ -198,6 +198,16 @@ final class HomeViewModel: ObservableObject {
     }
 
     // MARK: - Private
+
+    private func refreshHouseholdMembership() async throws {
+        do {
+            let household = try await dataService.fetchHousehold()
+            isInHousehold = household != nil
+        } catch {
+            guard dataRepository != nil, isAPIErrorRetryableInOfflineSync(error) else { throw error }
+            lastLoadServedFromCache = true
+        }
+    }
 
     private func rebuildHistoricalSnapshots() async {
         do {

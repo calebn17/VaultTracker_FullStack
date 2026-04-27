@@ -32,9 +32,12 @@ private final class FakeNetworkMonitor: NetworkMonitoring {
 @MainActor
 struct OfflineSyncManagerTests {
 
+    private static let syncTestUser = "offline-sync-test-user"
+
     private func makeSUT(
         mock: MockDataService = MockDataService(),
-        isOnline: Bool = true
+        isOnline: Bool = true,
+        currentUserId: @escaping () -> String? = { Self.syncTestUser }
     ) throws -> (OfflineSyncManager, PendingTransactionStore, MockDataService, FakeNetworkMonitor) {
         let container = try OfflinePersistence.makeModelContainer(inMemory: true)
         let context = ModelContext(container)
@@ -44,6 +47,7 @@ struct OfflineSyncManagerTests {
             dataService: mock,
             pendingStore: pendingStore,
             network: network,
+            currentUserId: currentUserId,
             beforeSecondAttemptNs: 0,
             beforeThirdAttemptNs: 0
         )
@@ -72,8 +76,8 @@ struct OfflineSyncManagerTests {
             symbols.append(req.symbol)
         }
         let (manager, _, _, _) = try makeSUT(mock: mock, isOnline: true)
-        try manager.enqueue(try sampleRequest(symbol: "1"))
-        try manager.enqueue(try sampleRequest(symbol: "2"))
+        try manager.enqueue(try sampleRequest(symbol: "1"), userId: Self.syncTestUser)
+        try manager.enqueue(try sampleRequest(symbol: "2"), userId: Self.syncTestUser)
         await manager.syncNow()
         #expect(symbols == ["1", "2"])
     }
@@ -84,7 +88,7 @@ struct OfflineSyncManagerTests {
         let mock = MockDataService()
         mock.createSmartTransactionError = APIError.validationError(["bad"])
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: true)
-        try manager.enqueue(try sampleRequest())
+        try manager.enqueue(try sampleRequest(), userId: Self.syncTestUser)
         await manager.syncNow()
         #expect(data.createSmartTransactionCallCount == 1)
         let rows = try store.fetchAllSortedByCreatedAt()
@@ -92,11 +96,30 @@ struct OfflineSyncManagerTests {
         #expect(rows[0].pendingStatus == .failed)
     }
 
+    @Test func failedRowsAreExposedAndDiscardableForCurrentUser() async throws {
+        let mock = MockDataService()
+        mock.createSmartTransactionError = APIError.validationError(["bad"])
+        let (manager, store, _, _) = try makeSUT(mock: mock, isOnline: true)
+        try manager.enqueue(try sampleRequest(symbol: "ACM"), userId: Self.syncTestUser)
+        await manager.syncNow()
+
+        let item = try #require(manager.failedItems.first)
+        #expect(item.title == "Buy N")
+        #expect(item.detail?.isEmpty == false)
+
+        try manager.discardPending(id: item.id)
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        #expect(manager.failedItems.isEmpty)
+        #expect(manager.failedCount == 0)
+        #expect(try store.fetchAllSortedByCreatedAt(forUserId: Self.syncTestUser).isEmpty)
+    }
+
     @Test func serverErrorRetriesUpToThreeTimes() async throws {
         let mock = MockDataService()
         mock.createSmartTransactionError = APIError.serverError(503)
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: true)
-        try manager.enqueue(try sampleRequest())
+        try manager.enqueue(try sampleRequest(), userId: Self.syncTestUser)
         await manager.syncNow()
         #expect(data.createSmartTransactionCallCount == 3)
         let row = try #require(try store.fetchAllSortedByCreatedAt().first)
@@ -105,11 +128,57 @@ struct OfflineSyncManagerTests {
 
     // MARK: - includeFailed
 
+    @Test func pendingRowsForOtherUserAreNotSynced() async throws {
+        let mock = MockDataService()
+        let container = try OfflinePersistence.makeModelContainer(inMemory: true)
+        let context = ModelContext(container)
+        let pendingStore = PendingTransactionStore(modelContext: context)
+        let dataBlob = try JSONEncoder().encode(try sampleRequest(symbol: "A"))
+        _ = try pendingStore.insert(requestData: dataBlob, userId: "user-a", status: .pending)
+
+        let network = FakeNetworkMonitor(isConnected: true)
+        let manager = OfflineSyncManager(
+            dataService: mock,
+            pendingStore: pendingStore,
+            network: network,
+            currentUserId: { "user-b" },
+            beforeSecondAttemptNs: 0,
+            beforeThirdAttemptNs: 0
+        )
+        await manager.syncNow()
+        #expect(mock.createSmartTransactionCallCount == 0)
+        let rows = try pendingStore.fetchAllSortedByCreatedAt(forUserId: "user-a")
+        #expect(rows.count == 1)
+        #expect(rows[0].pendingStatus == .pending)
+    }
+
+    @Test func queueMetricsOnlyCountCurrentUserRows() async throws {
+        let mock = MockDataService()
+        let container = try OfflinePersistence.makeModelContainer(inMemory: true)
+        let context = ModelContext(container)
+        let pendingStore = PendingTransactionStore(modelContext: context)
+        let blob = try JSONEncoder().encode(try sampleRequest())
+        _ = try pendingStore.insert(requestData: blob, userId: "user-a", status: .pending)
+        _ = try pendingStore.insert(requestData: blob, userId: "user-b", status: .pending)
+
+        let network = FakeNetworkMonitor(isConnected: false)
+        let manager = OfflineSyncManager(
+            dataService: mock,
+            pendingStore: pendingStore,
+            network: network,
+            currentUserId: { "user-b" },
+            beforeSecondAttemptNs: 0,
+            beforeThirdAttemptNs: 0
+        )
+        await manager.syncNow()
+        #expect(manager.pendingCount == 1)
+    }
+
     @Test func syncWithRetryFailedOffSkipsFailedRows() async throws {
         let mock = MockDataService()
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: true)
         let dataBlob = try JSONEncoder().encode(try sampleRequest())
-        _ = try store.insert(requestData: dataBlob, status: .failed)
+        _ = try store.insert(requestData: dataBlob, userId: Self.syncTestUser, status: .failed)
         await manager.syncNow(retryFailedItems: false)
         #expect(data.createSmartTransactionCallCount == 0)
         #expect(try store.fetchAllSortedByCreatedAt().count == 1)
@@ -119,7 +188,7 @@ struct OfflineSyncManagerTests {
         let mock = MockDataService()
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: true)
         let dataBlob = try JSONEncoder().encode(try sampleRequest())
-        _ = try store.insert(requestData: dataBlob, status: .failed)
+        _ = try store.insert(requestData: dataBlob, userId: Self.syncTestUser, status: .failed)
         await manager.syncNow(retryFailedItems: true)
         #expect(data.createSmartTransactionCallCount == 1)
         #expect(try store.fetchAllSortedByCreatedAt().isEmpty)
@@ -130,7 +199,7 @@ struct OfflineSyncManagerTests {
     @Test func noProgressWhenOffline() async throws {
         let mock = MockDataService()
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: false)
-        try manager.enqueue(try sampleRequest())
+        try manager.enqueue(try sampleRequest(), userId: Self.syncTestUser)
         await manager.syncNow()
         #expect(data.createSmartTransactionCallCount == 0)
         #expect(try store.fetchAllSortedByCreatedAt().count == 1)
@@ -139,7 +208,7 @@ struct OfflineSyncManagerTests {
     @Test func whenPathBecomesSatisfiedHandlerDrainsQueue() async throws {
         let mock = MockDataService()
         let (manager, store, data, network) = try makeSUT(mock: mock, isOnline: false)
-        try manager.enqueue(try sampleRequest())
+        try manager.enqueue(try sampleRequest(), userId: Self.syncTestUser)
         network.setConnected(true)
         try await Task.sleep(nanoseconds: 300_000_000)
         #expect(
@@ -153,7 +222,7 @@ struct OfflineSyncManagerTests {
     @Test func invalidQueuedPayloadIsMarkedFailedWithoutPosting() async throws {
         let mock = MockDataService()
         let (manager, store, data, _) = try makeSUT(mock: mock, isOnline: true)
-        _ = try store.insert(requestData: Data("not json".utf8), status: .pending)
+        _ = try store.insert(requestData: Data("not json".utf8), userId: Self.syncTestUser, status: .pending)
         await manager.syncNow()
         #expect(data.createSmartTransactionCallCount == 0)
         let row = try #require(try store.fetchAllSortedByCreatedAt().first)
