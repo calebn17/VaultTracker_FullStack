@@ -2,7 +2,7 @@
 
 Entry screen shown when `AuthManager.authenticationState == .unauthenticated`.
 
-> **Navigation pattern, debug login details, styling:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Navigation pattern, debug login details, styling:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

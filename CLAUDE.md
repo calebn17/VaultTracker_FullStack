@@ -17,7 +17,7 @@ Each sub-project has its own `CLAUDE.md` with detailed context. Start there when
 ## Sub-Project Entry Points
 
 - **API:** `VaultTrackerAPI/CLAUDE.md` — commands, architecture, auth, DB options, iOS-API contract points
-- **iOS:** `VaultTrackerIOS/VaultTracker/CLAUDE.md` — architecture diagram, tab structure, refactor plan status
+- **iOS:** `VaultTrackerIOS/VaultTracker/CLAUDE.md` — commands and rules; **architecture / features / tests:** `VaultTrackerIOS/VaultTracker/Documentation/system_design.md`
 - **Web:** `VaultTrackerWeb/CLAUDE.md` — tech stack, project structure, household features
 - **System design (all clients):** [`Documentation/VaultTracker System Design.md`](Documentation/VaultTracker%20System%20Design.md) — product flows, backend model/API, iOS and Web sections
 

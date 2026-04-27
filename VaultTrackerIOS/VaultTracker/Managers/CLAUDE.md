@@ -2,7 +2,7 @@
 
 Application-layer services that ViewModels depend on. No SwiftUI code lives here.
 
-> **DataService protocol surface, AuthManager internals, responsibility split:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **DataService protocol surface, AuthManager internals, responsibility split:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

@@ -2,7 +2,7 @@
 
 App entry point and root navigation container.
 
-> **Auth state machine, tab structure, Firebase init:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Auth state machine, tab structure, Firebase init:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

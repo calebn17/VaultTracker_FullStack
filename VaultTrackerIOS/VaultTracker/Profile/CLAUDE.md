@@ -2,7 +2,7 @@
 
 Settings/account screen.
 
-> **Dependencies, extending guidance:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Dependencies, extending guidance:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

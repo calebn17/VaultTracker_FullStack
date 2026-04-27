@@ -2,7 +2,7 @@
 
 Stateless helpers and extensions used across the app.
 
-> **VTLogging phase details, Crashlytics setup, double-log rationale:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **VTLogging phase details, Crashlytics setup, double-log rationale:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

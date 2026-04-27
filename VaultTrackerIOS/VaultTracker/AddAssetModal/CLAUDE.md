@@ -2,7 +2,7 @@
 
 Sheet for recording a new transaction (buy or sell) for any asset category.
 
-> **Data flow, API string mappings, cash/real estate encoding, validation rules:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Data flow, API string mappings, cash/real estate encoding, validation rules:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 

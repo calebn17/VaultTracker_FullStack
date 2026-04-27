@@ -2,7 +2,7 @@
 
 Domain value types — the app's internal data representation. Distinct from API response types in `API/Models/`; mappers in `API/Mappers/` convert between the two.
 
-> **Type details, serialization contexts, backend mismatches:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Type details, serialization contexts, backend mismatches:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Types
 

@@ -2,7 +2,7 @@
 
 Second tab. Portfolio allocation by category and gain/loss performance from `GET /api/v1/analytics`.
 
-> **Data flow, API models, display specs:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Data flow, API models, display specs:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 
