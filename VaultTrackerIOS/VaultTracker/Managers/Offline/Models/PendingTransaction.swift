@@ -38,4 +38,7 @@ final class PendingTransaction {
         self.lastError = lastError
         self.statusRaw = status.rawValue
     }
+
+    /// Parsed `statusRaw`; invalid values are treated as `.pending` for forward compatibility.
+    var pendingStatus: PendingStatus { PendingStatus(rawValue: statusRaw) ?? .pending }
 }

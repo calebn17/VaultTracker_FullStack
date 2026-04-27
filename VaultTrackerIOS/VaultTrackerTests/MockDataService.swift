@@ -78,11 +78,17 @@ final class MockDataService: DataServiceProtocol {
     private(set) var createSmartTransactionCallCount = 0
     private(set) var lastSmartTransactionRequest: APISmartTransactionCreateRequest?
     var createSmartTransactionError: Error?
+    /// When set, runs (and may throw) for each call; `createSmartTransactionError` is only used if this is `nil`.
+    var createSmartTransactionHandler: ((APISmartTransactionCreateRequest) throws -> Void)?
 
     func createSmartTransaction(_ request: APISmartTransactionCreateRequest) async throws {
         createSmartTransactionCallCount += 1
         lastSmartTransactionRequest = request
-        if let error = createSmartTransactionError { throw error }
+        if let createSmartTransactionHandler {
+            try createSmartTransactionHandler(request)
+        } else if let error = createSmartTransactionError {
+            throw error
+        }
     }
 
     func deleteTransaction(id: String) async throws {}

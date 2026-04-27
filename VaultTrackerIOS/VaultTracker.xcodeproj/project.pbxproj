@@ -115,7 +115,13 @@
 		E504250104A2620100000006 /* CachedHouseholdDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000006 /* CachedHouseholdDashboard.swift */; };
 		E504250104A2620100000007 /* CachedNetWorthHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000007 /* CachedNetWorthHistory.swift */; };
 		E504250104A2620100000008 /* CachedTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000008 /* CachedTransaction.swift */; };
+		E504250104A2620100000010 /* NetworkMonitoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000010 /* NetworkMonitoring.swift */; };
+		E504250104A2620100000011 /* NWPathNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000011 /* NWPathNetworkMonitor.swift */; };
+		E504250104A2620100000012 /* OfflineSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000012 /* OfflineSyncManager.swift */; };
 		E504250104A2620200000003 /* OfflineStoresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000003 /* OfflineStoresTests.swift */; };
+		E504250104A2620200000010 /* OfflineSyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000010 /* OfflineSyncManage; sourceTree = "<group>"; };
+		E504250104A2610100000010 /* NetworkMonitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitoring.swift; sourceTree = "<group>"; };
+		E504250104A2610100000011 /* NWPathNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NWPathNetworkMonitorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -246,8 +252,10 @@
 		E504250104A2610100000005 /* CachedPersonalDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedPersonalDashboard.swift; sourceTree = "<group>"; };
 		E504250104A2610100000006 /* CachedHouseholdDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedHouseholdDashboard.swift; sourceTree = "<group>"; };
 		E504250104A2610100000007 /* CachedNetWorthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedNetWorthHistory.swift; sourceTree = "<group>"; };
-		E504250104A2610100000008 /* CachedTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedTransaction.swift; sourceTree = "<group>"; };
+		E504250104A2610100000008 /* CachedTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedTransaction.swiftr.swift; sourceTree = "<group>"; };
+		E504250104A2610100000012 /* OfflineSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncManager.swift; sourceTree = "<group>"; };
 		E504250104A2610200000003 /* OfflineStoresTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineStoresTests.swift; sourceTree = "<group>"; };
+		E504250104A2610200000010 /* OfflineSyncManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -399,6 +407,9 @@
 				E504250104A2610100000009 /* OfflineCacheKey.swift */,
 				E504250104A2610100000002 /* PendingTransactionStore.swift */,
 				E504250104A2610100000003 /* CachedDataStore.swift */,
+				E504250104A2610100000010 /* NetworkMonitoring.swift */,
+				E504250104A2610100000011 /* NWPathNetworkMonitor.swift */,
+				E504250104A2610100000012 /* OfflineSyncManager.swift */,
 				E504250104A2630100000002 /* Models */,
 			);
 			path = Offline;
@@ -440,6 +451,7 @@
 		AF4D44782F694B6D0055FF21 /* VaultTrackerTests */ = {
 			isa = PBXGroup;
 			children = (
+				E504250104A2610200000010 /* OfflineSyncManagerTests.swift */,
 				E504250104A2610200000003 /* OfflineStoresTests.swift */,
 				E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */,
 				AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */,
@@ -763,6 +775,9 @@
 				E504250104A2620100000009 /* OfflineCacheKey.swift in Sources */,
 				E504250104A2620100000002 /* PendingTransactionStore.swift in Sources */,
 				E504250104A2620100000003 /* CachedDataStore.swift in Sources */,
+				E504250104A2620100000010 /* NetworkMonitoring.swift in Sources */,
+				E504250104A2620100000011 /* NWPathNetworkMonitor.swift in Sources */,
+				E504250104A2620100000012 /* OfflineSyncManager.swift in Sources */,
 				E504250104A2620100000004 /* PendingTransaction.swift in Sources */,
 				E504250104A2620100000005 /* CachedPersonalDashboard.swift in Sources */,
 				E504250104A2620100000006 /* CachedHouseholdDashboard.swift in Sources */,
@@ -830,6 +845,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E504250104A2620200000003 /* OfflineStoresTests.swift in Sources */,
+				E504250104A2620200000010 /* OfflineSyncManagerTests.swift in Sources */,
 				AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */,
 				AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */,
 				C6CC04252E1B2006042500BB /* HouseholdMapperTests.swift in Sources */,
