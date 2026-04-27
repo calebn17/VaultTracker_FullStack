@@ -2,7 +2,7 @@
 
 Centralised networking layer. All backend communication flows through here; no other layer touches URLSession directly.
 
-> **Auth flow, debug bypass details, date decoding, environment switching:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Auth flow, debug bypass details, date decoding, environment switching:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Structure
 

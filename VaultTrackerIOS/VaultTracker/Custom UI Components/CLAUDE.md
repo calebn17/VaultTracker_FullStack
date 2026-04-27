@@ -2,7 +2,7 @@
 
 Reusable SwiftUI primitives shared across features.
 
-> **Component specs and defaults:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **Component specs and defaults:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Components
 

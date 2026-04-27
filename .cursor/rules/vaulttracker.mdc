@@ -1,5 +1,5 @@
 ---
-description: VaultTracker agent rules — permissions (search/tests/lint vs mutations), change communication, design for scale, security, plans/todos (checklist sync), pre-commit lint + Prettier (web), CLAUDE.md sync, Web/API pair-programming checkpoints
+description: VaultTracker agent rules — permissions (search/tests/lint vs mutations), change communication, design for scale, security, plans/todos (checklist sync), global + per-subproject system_design.md, pre-commit lint + Prettier (web), CLAUDE.md (commands/rules only), Web/API pair-programming checkpoints
 alwaysApply: true
 ---
 
@@ -84,8 +84,10 @@ When you **create or execute a plan** (including `TodoWrite` / task lists in cha
 
 ### Full-plan documentation sync
 
-- **Plan creation requirement** — Every newly created plan must include a **final todo item** to update `Documentation/VaultTracker System Design.md`.
-- **Scope of that final todo** — Capture architecture, data-flow, API contract, and behavior changes introduced by the plan so system-level documentation stays current.
+- **Plan creation requirement** — Every newly created plan must include a **final todo item** to update **system design** documentation at the right level:
+  - **Global (repository-wide):** `Documentation/VaultTracker System Design.md` — cross-cutting architecture, data flow, API contracts, and product behavior. Update `Documentation/system_design.md` when the plan changes content that file is responsible for (keep them consistent where both exist).
+  - **Per subproject (local):** Each stack maintains `Documentation/system_design.md` under its top-level app folder — `VaultTrackerAPI/Documentation/system_design.md`, `VaultTrackerWeb/Documentation/system_design.md`, and `VaultTrackerIOS/VaultTracker/Documentation/system_design.md`. Update the file for every subproject whose architecture or behavior the plan changes.
+- **Scope of that final todo** — Same facts as **Change communication** (architecture, data-flow, API contract, client behavior), placed in the global doc and in each touched subproject’s `system_design.md` so both the whole-system view and stack-specific detail stay current.
 
 This pairs with **Change communication** (what to summarize) and optional checkpoint modes in **Web implementation (pair programming)** below.
 
@@ -109,13 +111,13 @@ npx prettier --check .
 
 Use `--write` on specific paths instead of `.` when the change set is small. **Do not rely on ESLint alone** to catch formatting; unformatted Markdown and TS/TSX commonly fail CI with no type or lint error.
 
-1. **Update documentation in `CLAUDE.md`** so the next session stays accurate — commands, architecture notes, env vars, new scripts, or workflows you added or changed.
+1. **Update `CLAUDE.md`** so the next session stays accurate for **commands and rules only** — how to run, lint, and test; env vars; harness or agent conventions; short pointers to where detail lives. **Do not** add or keep long-form **system design**, architecture deep-dives, or feature specifications in `CLAUDE.md`; put those in `Documentation/VaultTracker System Design.md` and the relevant `Documentation/system_design.md` file (global and/or per subproject) per **Full-plan documentation sync** above.
 
 2. **Choose the file:**
    - Prefer the **local** `CLAUDE.md` for the subproject you touched, if it exists: `VaultTrackerAPI/CLAUDE.md`, `VaultTrackerWeb/CLAUDE.md`, `VaultTrackerIOS/VaultTracker/CLAUDE.md`.
    - If there is **no** `CLAUDE.md` in that subproject, update the **repository root** `CLAUDE.md`.
 
-3. **What to add** — Short, durable bullets: new files, new commands, behavior changes, how to verify. Do **not** paste full plans or duplicate long specs; point to existing docs when detail belongs elsewhere.
+3. **What to add** — Short, durable bullets: new commands, scripts, env vars, how to verify, and links to `system_design.md` / `VaultTracker System Design.md` when readers need architecture context. Do **not** paste full plans or duplicate specs that belong in system design docs.
 
 4. **Edge case** — Pure typo or formatting-only edits may omit `CLAUDE.md` unless the user asked for commits (then ensure the commit message still describes the change).
 
@@ -170,7 +172,7 @@ Summary labels:
 |-------|------|-------------------|
 | CP-B1/B2 | API | `PUT …/transactions/{id}/smart` + `smart_update` + tests |
 | CP-W1–W6 | Web | Scaffold → client/types → providers → shell → dashboard → transactions |
-| CP-D1 | Docs | Spec + System Design contract for smart PUT |
+| CP-D1 | Docs | Spec + global/local `system_design.md` + `VaultTracker System Design.md` for smart PUT |
 
 If the plan file differs from this rule, **follow the plan** and update this rule when the checkpoint scheme changes.
 
@@ -178,4 +180,4 @@ If the plan file differs from this rule, **follow the plan** and update this rul
 
 - [VaultTrackerWeb/Documentation/Web App Spec.md](VaultTrackerWeb/Documentation/Web%20App%20Spec.md)
 - [VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md](VaultTrackerAPI/Documentation/VaultTracker_Backend_2.0_Spec.md)
-- [Documentation/VaultTracker System Design.md](Documentation/VaultTracker%20System%20Design.md)
+- **System design (architecture — not for `CLAUDE.md`):** [Documentation/VaultTracker System Design.md](Documentation/VaultTracker%20System%20Design.md), [Documentation/system_design.md](Documentation/system_design.md), [VaultTrackerAPI/Documentation/system_design.md](VaultTrackerAPI/Documentation/system_design.md), [VaultTrackerWeb/Documentation/system_design.md](VaultTrackerWeb/Documentation/system_design.md), [VaultTrackerIOS/VaultTracker/Documentation/system_design.md](VaultTrackerIOS/VaultTracker/Documentation/system_design.md)

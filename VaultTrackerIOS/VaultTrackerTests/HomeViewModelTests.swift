@@ -305,4 +305,109 @@ struct HomeViewModelTests {
         #expect(mockService.fetchHouseholdCallCount == 2)
         #expect(mockService.fetchDashboardCallCount == 1)
     }
+
+    @Test func loadDataWithRepositoryUsesCachedHouseholdWhenHouseholdLookupFailsRetryably() async {
+        let repo = StubDataRepository()
+        repo.householdDashboardResult = (
+            APIHouseholdDashboardResponse(
+                householdId: "mock-household",
+                totalNetWorth: 123_456,
+                categoryTotals: APICategoryTotals(stocks: 123_456),
+                members: []
+            ),
+            true
+        )
+        repo.householdNetWorthResult = ([NetWorthSnapshot(date: Date(timeIntervalSince1970: 1), value: 123_456)], true)
+        mockService.fetchHouseholdError = APIError.networkError(URLError(.notConnectedToInternet))
+        let vm = HomeViewModel(dataService: mockService, dataRepository: repo)
+        vm.isInHousehold = true
+        vm.householdMode = true
+
+        await vm.loadData()
+
+        #expect(vm.viewState.errorMessage == nil)
+        #expect(vm.viewState.totalNetworthValue == 123_456)
+        #expect(vm.householdViewState != nil)
+        #expect(vm.snapshots.count == 1)
+        #expect(vm.lastLoadServedFromCache)
+        #expect(repo.fetchHouseholdDashboardCallCount == 1)
+        #expect(repo.fetchHouseholdNetWorthCallCount == 1)
+    }
+
+    @Test func loadDataWithRepositoryDoesNotUseCacheWhenHouseholdLookupFailsWithAuthError() async {
+        let repo = StubDataRepository()
+        mockService.fetchHouseholdError = APIError.unauthorized
+        let vm = HomeViewModel(dataService: mockService, dataRepository: repo)
+        vm.isInHousehold = true
+        vm.householdMode = true
+
+        await vm.loadData()
+
+        #expect(vm.viewState.errorMessage != nil)
+        #expect(repo.fetchHouseholdDashboardCallCount == 0)
+    }
+
+    @Test func clearDataClearsRepositoryLocalData() async {
+        let repo = StubDataRepository()
+        let vm = HomeViewModel(dataService: mockService, dataRepository: repo)
+
+        await vm.clearData()
+
+        #expect(repo.clearLocalDataCallCount == 1)
+        #expect(vm.viewState.errorMessage == nil)
+    }
+}
+
+@MainActor
+private final class StubDataRepository: DataRepositoryProtocol {
+    var personalDashboardResult: (APIDashboardResponse, isStale: Bool) = (
+        APIDashboardResponse(totalNetWorth: 0, categoryTotals: APICategoryTotals(), groupedHoldings: [:]),
+        false
+    )
+    var householdDashboardResult: (APIHouseholdDashboardResponse, isStale: Bool) = (
+        APIHouseholdDashboardResponse(
+            householdId: "household",
+            totalNetWorth: 0,
+            categoryTotals: APICategoryTotals(),
+            members: []
+        ),
+        false
+    )
+    var transactionsResult: ([Transaction], isStale: Bool) = ([], false)
+    var personalNetWorthResult: ([NetWorthSnapshot], isStale: Bool) = ([], false)
+    var householdNetWorthResult: ([NetWorthSnapshot], isStale: Bool) = ([], false)
+
+    private(set) var fetchHouseholdDashboardCallCount = 0
+    private(set) var fetchHouseholdNetWorthCallCount = 0
+    private(set) var clearLocalDataCallCount = 0
+
+    func createTransaction(_ request: APISmartTransactionCreateRequest) async throws {}
+
+    func fetchPersonalDashboard() async throws -> (APIDashboardResponse, isStale: Bool) {
+        personalDashboardResult
+    }
+
+    func fetchHouseholdDashboard() async throws -> (APIHouseholdDashboardResponse, isStale: Bool) {
+        fetchHouseholdDashboardCallCount += 1
+        return householdDashboardResult
+    }
+
+    func fetchTransactions() async throws -> ([Transaction], isStale: Bool) {
+        transactionsResult
+    }
+
+    func fetchPersonalNetWorthHistory(period: APINetWorthPeriod) async throws
+        -> ([NetWorthSnapshot], isStale: Bool) {
+        personalNetWorthResult
+    }
+
+    func fetchHouseholdNetWorthHistory(period: APINetWorthPeriod) async throws
+        -> ([NetWorthSnapshot], isStale: Bool) {
+        fetchHouseholdNetWorthCallCount += 1
+        return householdNetWorthResult
+    }
+
+    func clearLocalData() throws {
+        clearLocalDataCallCount += 1
+    }
 }

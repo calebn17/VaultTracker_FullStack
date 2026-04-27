@@ -12,8 +12,9 @@ import FirebaseCrashlytics
 
 @main
 struct VaultTrackerApp: App {
-    @StateObject var authManager = AuthManager()
-    
+    @StateObject private var authManager: AuthManager
+    @StateObject private var localDataStack: LocalDataStack
+
     init() {
         let isRunningTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         let shouldConfigureFirebase = !isRunningTests
@@ -28,6 +29,15 @@ struct VaultTrackerApp: App {
             Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
 #endif
         }
+        let auth = AuthManager()
+        _authManager = StateObject(wrappedValue: auth)
+        let stack: LocalDataStack
+        do {
+            stack = try LocalDataStack(currentUserId: { auth.user?.uid })
+        } catch {
+            fatalError("Local data stack failed: \(error)")
+        }
+        _localDataStack = StateObject(wrappedValue: stack)
         Self.configureLedgerChrome()
     }
     
@@ -39,6 +49,8 @@ struct VaultTrackerApp: App {
                     LoadingView()
                 case .authenticated:
                     mainView
+                        .environmentObject(localDataStack.networkMonitor)
+                        .environmentObject(localDataStack.syncManager)
                 case .unauthenticated:
                     LoginView()
                         .environmentObject(authManager)
@@ -49,9 +61,15 @@ struct VaultTrackerApp: App {
     }
     
     private var mainView: some View {
-        TabView {
+        VStack(spacing: 0) {
+            OfflineBanner(network: localDataStack.networkMonitor, sync: localDataStack.syncManager)
+            TabView {
             NavigationView {
-                HomeViewWrapper()
+                HomeViewWrapper(
+                    dataRepository: localDataStack.dataRepository {
+                        authManager.user?.uid
+                    }
+                )
             }
             .tabItem {
                 Image(systemName: "house")
@@ -81,6 +99,7 @@ struct VaultTrackerApp: App {
                 Image(systemName: "person.crop.circle")
                 Text("Profile")
             }
+        }
         }
         .tint(VTColors.primary)
         .environmentObject(authManager)

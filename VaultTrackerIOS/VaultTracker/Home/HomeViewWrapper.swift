@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct HomeViewWrapper: View {
+    var dataRepository: DataRepositoryProtocol?
+
     var body: some View {
-        HomeView()
+        HomeView(dataRepository: dataRepository)
     }
 }

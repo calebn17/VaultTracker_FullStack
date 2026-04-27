@@ -3,7 +3,7 @@ tags:
   - vaultTracker
   - systemDesign
 title: Vault Tracker - System Design
-date: 2026-04-18
+date: 2026-04-26
 ---
 
 # VaultTracker — System Design
@@ -39,7 +39,9 @@ VaultTracker is a personal net-worth tracker that lets users log financial trans
 │                             │     │                               │
 │  AuthManager (Firebase)     │     │  Auth Context (Firebase Web)  │
 │  DataService → APIService   │     │  TanStack React Query         │
-│  URLSession + JWT           │     │  Native fetch + JWT           │
+│  LocalDataStack (SwiftData) │     │  Native fetch + JWT           │
+│  + DataRepository (Home)    │     │  (no local portfolio cache)   │
+│  URLSession + JWT           │     │                               │
 └──────────────┬──────────────┘     └──────────────┬───────────────┘
                │  REST JSON /api/v1                 │
                └──────────────────┬─────────────────┘
@@ -577,7 +579,7 @@ Both are async (`httpx.AsyncClient`). Errors per-asset are captured and returned
 | Charts            | Swift Charts                   |
 | Networking        | URLSession + async/await       |
 | Auth              | Firebase Auth (Google Sign-In) |
-| Local persistence | None (all data is remote)      |
+| Local persistence | **SwiftData** (on-device cache + pending smart-transaction queue for **Home** only; see §4.2.1) |
 | Deployment        | TestFlight / App Store         |
 
 ### 4.2 Architecture
@@ -587,6 +589,13 @@ VaultTrackerApp (entry point)
 │
 ├── AuthManager (@MainActor, ObservableObject)
 │       Firebase auth state machine
+│
+├── LocalDataStack (authenticated shell — @StateObject)
+│       SwiftData ModelContainer, CachedDataStore, PendingTransactionStore
+│       NWPathNetworkMonitor, OfflineSyncManager
+│       └→ dataRepository { Firebase uid } — single shared DataRepository
+│
+├── OfflineBanner + environmentObject(networkMonitor, syncManager)
 │
 ├── DataService (@MainActor, DataServiceProtocol)
 │       Business facade — converts API types to domain models
@@ -615,6 +624,25 @@ VaultTrackerApp (entry point)
 ```
 
 Protocol-based dependency injection at every layer enables unit testing with mock implementations.
+
+#### 4.2.1 Local data stack, cache, and offline support (Home)
+
+iOS keeps **`DataService`** and **`APIService`** as the only HTTP layer; new types coordinate **around** them. Scope in v1: **Home** tab (dashboard, net worth history, smart transaction create). Analytics, FIRE, and Profile still require network except where they already use `DataService` only.
+
+| Component | Role |
+| --------- | ---- |
+| **`LocalDataStack`** | Owns one on-disk `ModelContainer`, `CachedDataStore`, `PendingTransactionStore`, `NWPathNetworkMonitor`, and `OfflineSyncManager`. Created when the user reaches the authenticated `mainView`. Exposes `dataRepository(dataService:api:currentUserId:)` that returns a **single** cached `DataRepository` (evaluates `currentUserId` on each read/write). |
+| **`DataRepository`** | Read-through: tries network via `DataService` / `APIService`; on success, persists encoded API payloads to SwiftData; on failure or offline, decodes last-known cache and sets **`isStale`**. **Writes:** online → `DataService.createSmartTransaction`; offline → enqueue for `OfflineSyncManager` (FIFO, single-flight, classified retries). Caches personal + household dashboards, net worth history per period and scope, and enriched transaction rows. |
+| **`HomeViewModel`** | Injects optional `DataRepositoryProtocol?` from the app. When **non-`nil`**, `loadData`, `rebuildHistoricalSnapshots`, and `onSave` use the repository; `fetchHousehold`, `refreshPrices`, and `clearData` remain on **`DataService`**. Publishes `lastLoadServedFromCache` for a user-visible “saved copy” hint. |
+| **`OfflineBanner`** | Binds to `NWPathNetworkMonitor` + `OfflineSyncManager` (pending/failed counts, **Sync now**). |
+
+**Errors:** `OfflineError` (`noCachedData`, `missingUserContext`) surfaces when there is no cache row or no signed-in UID.
+
+**Auth / sync:** Queued and online requests use the same Firebase JWT path as the rest of the app (no separate offline credential).
+
+**Design reference:** [VaultTrackerIOS/Documentation/Plans/2026-04-25-ios-offline-support-design.md](../VaultTrackerIOS/Documentation/Plans/2026-04-25-ios-offline-support-design.md).
+
+**Verification (iOS):** see `VaultTrackerIOS/VaultTracker/Documentation/system_design.md` — **Verification commands** (same commands as in `VaultTrackerIOS/VaultTracker/CLAUDE.md` for quick reference).
 
 ### 4.3 Authentication Flow
 
@@ -725,13 +753,13 @@ Delegates all I/O to `APIService`. Converts API response types (`APIXxxResponse`
 - `isInHousehold` — from `fetchHousehold()`; `householdMode` toggles **merged** (`GET /dashboard/household` + `GET /networth/history/household`) vs **Just me** (personal `GET /dashboard` + `GET /networth/history`) when the user is in a household
 - `householdViewState` — set when `isInHousehold && householdMode`; per-member data for `MemberSectionView`
 - `snapshots: [NetWorthSnapshot]` — data for the chart (switches with `householdMode`)
-- `loadData()` — fetches household membership, then merged or personal dashboard + matching net worth history
-- `onSave(transaction:)` — calls `dataService.createSmartTransaction()` → reloads dashboard
+- `loadData()` — fetches household membership, then merged or personal dashboard + matching net worth history (via **`DataRepository`** when injected, else **`DataService`** only)
+- `onSave(transaction:)` — when a repository is injected, `dataService.createSmartTransaction` **or** offline enqueue through **`DataRepository`**; otherwise unchanged
 - `refreshPrices()` — calls `dataService.refreshPrices()` → reloads dashboard
 - `selectFilter(category:)` — filters displayed holdings
 - `clearData()` — calls `DELETE /api/v1/users/me/data`
 
-**`HomeView`**: ScrollView with error banner, **mode picker** when the user is in a household, filter chip bar, `NetWorthChartView` (Swift Charts line + area, CatmullRom), net worth total, proportional category bar, expandable **member** or **category** sections (household mode uses `MemberSectionView` with stable accessibility ids for UI tests), toolbar ("+" add transaction, "Refresh Prices", "Clear Data").
+**`HomeView`**: Global **`OfflineBanner`** is composed in `VaultTrackerApp` above the `TabView`. ScrollView with error banner, optional **stale-data hint** when `lastLoadServedFromCache`, **mode picker** when the user is in a household, filter chip bar, `NetWorthChartView` (Swift Charts line + area, CatmullRom), net worth total, proportional category bar, expandable **member** or **category** sections (household mode uses `MemberSectionView` with stable accessibility ids for UI tests), toolbar ("+" add transaction, "Refresh Prices", "Clear Data").
 
 ### 4.8 Add Transaction Flow
 
@@ -1078,7 +1106,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 | Per-category trends       | Analytics returns overall net worth history only             | Add per-category snapshot table for category-level trend charts                                           |
 | CoinGecko symbol map      | Maintained manually in `price_service.py`                    | Use CoinGecko search endpoint to resolve symbols dynamically                                              |
 | Alpha Vantage rate limits | Free tier: 25 requests/day                                   | Add request queuing and per-symbol cache TTLs                                                             |
-| Offline mode              | No local persistence; app unusable without network           | Add SwiftData/IndexedDB read-only cache for last known state                                              |
+| Offline mode (Web)        | No local portfolio cache; needs network for dashboard           | Optional IndexedDB read-only cache for last known state                                                    |
+| Offline / cache (iOS)     | **Home** uses SwiftData + `DataRepository` (see §4.2.1)         | Extend cache to other tabs; resolve encoded API migration if DTOs drift                                   |
 | Account type validation   | Client-side only (iOS: `isAccountTypeValidForAssetCategory`) | Enforce server-side in smart transaction endpoint                                                         |
 | FIRE on iOS               | Personal projection + household shared inputs on **FIRE** tab; no household-wide projection  | Optional: parity with web-only FIRE chart tweaks                                                       |
 | Household on iOS          | **Implemented:** settings, Home merged mode, household FIRE inputs                         | Optional: `GET /analytics/household` on iOS if product wants household bento on mobile                 |

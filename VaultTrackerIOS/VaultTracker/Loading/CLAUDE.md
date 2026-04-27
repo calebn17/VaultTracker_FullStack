@@ -2,7 +2,7 @@
 
 Splash screen shown while Firebase resolves the initial auth state.
 
-> **When it appears, styling details:** [`Documentation/system_design.md`](Documentation/system_design.md)
+> **When it appears, styling details:** [`Documentation/system_design.md`](../Documentation/system_design.md)
 
 ## Files
 
