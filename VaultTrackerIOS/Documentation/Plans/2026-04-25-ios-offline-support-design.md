@@ -19,7 +19,7 @@ VaultTracker iOS currently requires an active network connection for all operati
 | Other tabs | **Global offline banner** on the authenticated shell; Analytics / FIRE / Profile unchanged unless a later plan adds cache. |
 | Reachability tests | **`NetworkMonitoring`** protocol + production `NWPathMonitor` wrapper; unit tests use a **fake**, not a mocked `NWPathMonitor`. |
 | Sync | **FIFO** queue, **single-flight** sync, **classified retries** (see [Sync contract](#sync-contract)). |
-| Cache writes | **`TransactionRepository`** persists to `CachedDataStore` after **successful** online fetches it owns (dashboards, transactions, **net worth history** per period + scope). |
+| Cache writes | **`DataRepository`** persists to `CachedDataStore` after **successful** online fetches it owns (dashboards, transactions, **net worth history** per period + scope). |
 | Root UI | **`VaultTrackerApp`** `mainView` — wrap `OfflineBanner` + existing `TabView` (no `MainTabView`). |
 
 ## Requirements
@@ -51,7 +51,7 @@ VaultTracker iOS currently requires an active network connection for all operati
               ┌───────────────┴───────────────┐
               ▼                               ▼
 ┌─────────────────────────┐     ┌─────────────────────────────────────┐
-│  TransactionRepository  │     │        OfflineSyncManager           │
+│      DataRepository      │     │        OfflineSyncManager           │
 │  (new - coordinates     │◄───►│  (new - FIFO queue, classified      │
 │   online/offline paths; │     │   retry, single-flight; publishes  │
 │   writes read cache)    │     │   syncStatus, pendingCount)         │
@@ -221,9 +221,9 @@ final class OfflineSyncManager: ObservableObject {
 
 Implements [Sync contract](#sync-contract) together with `PendingTransactionStore` and `DataService.createSmartTransaction`.
 
-### 4. TransactionRepository
+### 4. DataRepository
 
-**Location:** `Managers/Offline/TransactionRepository.swift`
+**Location:** `Managers/Offline/DataRepository.swift`
 
 **Responsibilities:**
 
@@ -233,7 +233,7 @@ Implements [Sync contract](#sync-contract) together with `PendingTransactionStor
 
 ```swift
 @MainActor
-final class TransactionRepository: ObservableObject {
+final class DataRepository: ObservableObject {
     init(
         dataService: DataServiceProtocol = DataService.shared,
         api: APIServiceProtocol = APIService.shared,  // net worth history raw responses for cache population
@@ -290,7 +290,7 @@ Start `NWPathNetworkMonitor` (or shared monitor) from app init or when entering 
 
 **HomeViewModel** (primary consumer in v1):
 
-- Inject **`TransactionRepository`** (or a narrow protocol) for **dashboard + transactions + net worth history + smart create** flows aligned with offline.
+- Inject **`DataRepository`** (or **`DataRepositoryProtocol`**) for **dashboard + transactions + net worth history + smart create** flows aligned with offline.
 - Remaining `DataService` usage (analytics, household CRUD, FIRE, profile, `clearAllData`, etc.) stays as today until scoped later.
 - Publish **`isStale`** and **`lastUpdated`** (or equivalent) for UI when reads fall back to SwiftData.
 - **`onSave`:** route smart transaction through repository.
@@ -312,7 +312,7 @@ VaultTrackerIOS/VaultTracker/
 │       ├── OfflineSyncManager.swift
 │       ├── PendingTransactionStore.swift
 │       ├── CachedDataStore.swift
-│       └── TransactionRepository.swift
+│       └── DataRepository.swift
 ├── Custom UI Components/
 │   └── OfflineBanner.swift
 ├── MainView/
@@ -331,7 +331,7 @@ VaultTrackerIOS/VaultTracker/
 | `NetworkMonitoring` fake | Used across tests | Toggle `isConnected` without `NWPathMonitor` |
 | `NWPathNetworkMonitor` | Optional integration / manual | Smoke only if needed |
 | `OfflineSyncManager` | `OfflineSyncManagerTests.swift` | FIFO, single-flight, classified retries, failure states |
-| `TransactionRepository` | `TransactionRepositoryTests.swift` | Online vs offline write, dual dashboard cache, net worth cache per period + scope, stale fallback |
+| `DataRepository` | `DataRepositoryTests.swift` | Online vs offline write, dual dashboard cache, net worth cache per period + scope, stale fallback |
 
 ### Integration / manual
 
@@ -354,7 +354,7 @@ cd VaultTrackerIOS && xcodebuild test \
 3. `CachedDataStore` + tests
 4. `NetworkMonitoring` + `NWPathNetworkMonitor` + fake + tests
 5. `OfflineSyncManager` + tests
-6. `TransactionRepository` + tests
+6. `DataRepository` + tests
 7. `OfflineBanner` + `VaultTrackerApp` wiring
 8. `HomeViewModel` integration + mock updates in `VaultTrackerTests`
 9. **Final:** update [`Documentation/VaultTracker System Design.md`](../../../Documentation/VaultTracker%20System%20Design.md) (and iOS `CLAUDE.md` as needed) — see [Updates required](#updates-required)

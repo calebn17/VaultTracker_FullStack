@@ -118,10 +118,13 @@
 		E504250104A2620100000010 /* NetworkMonitoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000010 /* NetworkMonitoring.swift */; };
 		E504250104A2620100000011 /* NWPathNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000011 /* NWPathNetworkMonitor.swift */; };
 		E504250104A2620100000012 /* OfflineSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000012 /* OfflineSyncManager.swift */; };
+		E504250104A2620100000013 /* DataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000013 /* DataRepository.swift */; };
+		E504250104A2620100000014 /* LocalDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000014 /* LocalDataStack.swift */; };
+		E504250104A2620100000015 /* OfflineBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610100000015 /* OfflineBanner.swift */; };
 		E504250104A2620200000003 /* OfflineStoresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000003 /* OfflineStoresTests.swift */; };
-		E504250104A2620200000010 /* OfflineSyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000010 /* OfflineSyncManage; sourceTree = "<group>"; };
-		E504250104A2610100000010 /* NetworkMonitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitoring.swift; sourceTree = "<group>"; };
-		E504250104A2610100000011 /* NWPathNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NWPathNetworkMonitorTests.swift */; };
+		E504250104A2620200000010 /* OfflineSyncManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000010 /* OfflineSyncManagerTests.swift */; };
+		E504250104A2620200000011 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000011 /* MockAPIService.swift */; };
+		E504250104A2620200000012 /* DataRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E504250104A2610200000012 /* DataRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -252,10 +255,17 @@
 		E504250104A2610100000005 /* CachedPersonalDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedPersonalDashboard.swift; sourceTree = "<group>"; };
 		E504250104A2610100000006 /* CachedHouseholdDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedHouseholdDashboard.swift; sourceTree = "<group>"; };
 		E504250104A2610100000007 /* CachedNetWorthHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedNetWorthHistory.swift; sourceTree = "<group>"; };
-		E504250104A2610100000008 /* CachedTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedTransaction.swiftr.swift; sourceTree = "<group>"; };
+		E504250104A2610100000008 /* CachedTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedTransaction.swift; sourceTree = "<group>"; };
+		E504250104A2610100000010 /* NetworkMonitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitoring.swift; sourceTree = "<group>"; };
+		E504250104A2610100000011 /* NWPathNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NWPathNetworkMonitor.swift; sourceTree = "<group>"; };
 		E504250104A2610100000012 /* OfflineSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncManager.swift; sourceTree = "<group>"; };
+		E504250104A2610100000013 /* DataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRepository.swift; sourceTree = "<group>"; };
+		E504250104A2610100000014 /* LocalDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataStack.swift; sourceTree = "<group>"; };
+		E504250104A2610100000015 /* OfflineBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineBanner.swift; sourceTree = "<group>"; };
 		E504250104A2610200000003 /* OfflineStoresTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineStoresTests.swift; sourceTree = "<group>"; };
 		E504250104A2610200000010 /* OfflineSyncManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncManagerTests.swift; sourceTree = "<group>"; };
+		E504250104A2610200000011 /* MockAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIService.swift; sourceTree = "<group>"; };
+		E504250104A2610200000012 /* DataRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -410,6 +420,8 @@
 				E504250104A2610100000010 /* NetworkMonitoring.swift */,
 				E504250104A2610100000011 /* NWPathNetworkMonitor.swift */,
 				E504250104A2610100000012 /* OfflineSyncManager.swift */,
+				E504250104A2610100000013 /* DataRepository.swift */,
+				E504250104A2610100000014 /* LocalDataStack.swift */,
 				E504250104A2630100000002 /* Models */,
 			);
 			path = Offline;
@@ -432,6 +444,7 @@
 			children = (
 				AF4336942E0E272100AFC1A0 /* CustomButtonView.swift */,
 				AF4336962E0E27FF00AFC1A0 /* CustomTextField.swift */,
+				E504250104A2610100000015 /* OfflineBanner.swift */,
 			);
 			path = "Custom UI Components";
 			sourceTree = "<group>";
@@ -452,6 +465,8 @@
 			isa = PBXGroup;
 			children = (
 				E504250104A2610200000010 /* OfflineSyncManagerTests.swift */,
+				E504250104A2610200000012 /* DataRepositoryTests.swift */,
+				E504250104A2610200000011 /* MockAPIService.swift */,
 				E504250104A2610200000003 /* OfflineStoresTests.swift */,
 				E2B301032F8E0001001E0001 /* AddAssetFormViewModelTests.swift */,
 				AF7FFD1C2F69651B008F1008 /* HomeViewModelIntegrationTests.swift */,
@@ -768,6 +783,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E504250104A2620100000015 /* OfflineBanner.swift in Sources */,
 				AF4336952E0E272100AFC1A0 /* CustomButtonView.swift in Sources */,
 				AF43368A2E0CE28A00AFC1A0 /* NetworkService.swift in Sources */,
 				AF07A2322E1E25EF005FFB77 /* DataService.swift in Sources */,
@@ -778,6 +794,8 @@
 				E504250104A2620100000010 /* NetworkMonitoring.swift in Sources */,
 				E504250104A2620100000011 /* NWPathNetworkMonitor.swift in Sources */,
 				E504250104A2620100000012 /* OfflineSyncManager.swift in Sources */,
+				E504250104A2620100000013 /* DataRepository.swift in Sources */,
+				E504250104A2620100000014 /* LocalDataStack.swift in Sources */,
 				E504250104A2620100000004 /* PendingTransaction.swift in Sources */,
 				E504250104A2620100000005 /* CachedPersonalDashboard.swift in Sources */,
 				E504250104A2620100000006 /* CachedHouseholdDashboard.swift in Sources */,
@@ -846,6 +864,8 @@
 			files = (
 				E504250104A2620200000003 /* OfflineStoresTests.swift in Sources */,
 				E504250104A2620200000010 /* OfflineSyncManagerTests.swift in Sources */,
+				E504250104A2620200000011 /* MockAPIService.swift in Sources */,
+				E504250104A2620200000012 /* DataRepositoryTests.swift in Sources */,
 				AF4D44792F694B6D0055FF21 /* HomeViewModelTests.swift in Sources */,
 				AF4D447A2F694B6D0055FF21 /* DashboardMapperTests.swift in Sources */,
 				C6CC04252E1B2006042500BB /* HouseholdMapperTests.swift in Sources */,

@@ -28,8 +28,16 @@ struct HomeView: View {
     @State private var expandedMemberUserIds: Set<String> = []
     @State private var showClearConfirmation = false
 
-    init() {
-        _viewModel = StateObject(wrappedValue: HomeViewModel())
+    init(
+        dataService: DataServiceProtocol = DataService.shared,
+        dataRepository: DataRepositoryProtocol? = nil
+    ) {
+        _viewModel = StateObject(
+            wrappedValue: HomeViewModel(
+                dataService: dataService,
+                dataRepository: dataRepository
+            )
+        )
     }
 
     private var useHouseholdMemberLayout: Bool {
@@ -99,6 +107,18 @@ struct HomeView: View {
                     .background(VTColors.error.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .accessibilityIdentifier("errorBanner")
+                }
+
+                if viewModel.lastLoadServedFromCache {
+                    HStack(spacing: 8) {
+                        Image(systemName: "ipad.and.iphone")
+                            .foregroundStyle(VTColors.textSubdued)
+                        Text("Some figures may be from a saved copy on this device.")
+                            .font(VTFonts.caption)
+                            .foregroundStyle(VTColors.textSubdued)
+                        Spacer(minLength: 0)
+                    }
+                    .accessibilityIdentifier("staleDataHint")
                 }
 
                 if !viewModel.isInHousehold || !viewModel.householdMode {

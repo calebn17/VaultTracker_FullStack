@@ -42,11 +42,18 @@ final class HomeViewModel: ObservableObject {
     @Published var shouldPresentSheet: Bool = false
     @Published var selectedPeriod: APINetWorthPeriod = .daily
     @Published var isRefreshingPrices: Bool = false
+    /// `true` when the latest dashboard and/or net-worth history was served from cache or a stale read.
+    @Published var lastLoadServedFromCache: Bool = false
 
     private var dataService: DataServiceProtocol
+    private var dataRepository: DataRepositoryProtocol?
 
-    init(dataService: DataServiceProtocol = DataService.shared) {
+    init(
+        dataService: DataServiceProtocol = DataService.shared,
+        dataRepository: DataRepositoryProtocol? = nil
+    ) {
         self.dataService = dataService
+        self.dataRepository = dataRepository
     }
 
     /// Toggles household vs personal dashboard and reloads. No-op if not in a household.
@@ -59,22 +66,40 @@ final class HomeViewModel: ObservableObject {
     func loadData() async {
         viewState.isLoading = true
         viewState.errorMessage = nil
+        lastLoadServedFromCache = false
         let selectedFilter = viewState.selectedFilter
         do {
             let household = try await dataService.fetchHousehold()
             isInHousehold = household != nil
-            if isInHousehold, householdMode {
-                let dashboard = try await dataService.fetchHouseholdDashboard()
-                let merged = HouseholdDashboardMapper.toViewState(dashboard)
-                householdViewState = merged
-                applyHouseholdAggregateToViewState(merged)
+            if let repo = dataRepository {
+                if isInHousehold, householdMode {
+                    let (dashboard, stale) = try await repo.fetchHouseholdDashboard()
+                    lastLoadServedFromCache = stale
+                    let merged = HouseholdDashboardMapper.toViewState(dashboard)
+                    householdViewState = merged
+                    applyHouseholdAggregateToViewState(merged)
+                } else {
+                    householdViewState = nil
+                    let (dashboard, stale) = try await repo.fetchPersonalDashboard()
+                    lastLoadServedFromCache = stale
+                    viewState = DashboardMapper.toViewState(dashboard)
+                }
             } else {
-                householdViewState = nil
-                let dashboard = try await dataService.fetchDashboard()
-                viewState = DashboardMapper.toViewState(dashboard)
+                if isInHousehold, householdMode {
+                    let dashboard = try await dataService.fetchHouseholdDashboard()
+                    let merged = HouseholdDashboardMapper.toViewState(dashboard)
+                    householdViewState = merged
+                    applyHouseholdAggregateToViewState(merged)
+                } else {
+                    householdViewState = nil
+                    let dashboard = try await dataService.fetchDashboard()
+                    viewState = DashboardMapper.toViewState(dashboard)
+                }
             }
             selectFilter(category: selectedFilter)
             await rebuildHistoricalSnapshots()
+        } catch let err as OfflineError {
+            viewState.errorMessage = err.errorDescription
         } catch let error as APIError {
             viewState.errorMessage = error.errorDescription
         } catch {
@@ -111,6 +136,7 @@ final class HomeViewModel: ObservableObject {
             isInHousehold = false
             householdViewState = nil
             householdMode = true
+            lastLoadServedFromCache = false
         } catch let error as APIError {
             viewState.errorMessage = error.errorDescription
         } catch {
@@ -122,8 +148,14 @@ final class HomeViewModel: ObservableObject {
     @MainActor
     func onSave(smartRequest: APISmartTransactionCreateRequest) async {
         do {
-            try await dataService.createSmartTransaction(smartRequest)
+            if let repo = dataRepository {
+                try await repo.createTransaction(smartRequest)
+            } else {
+                try await dataService.createSmartTransaction(smartRequest)
+            }
             await loadData()
+        } catch let err as OfflineError {
+            viewState.errorMessage = err.errorDescription
         } catch let error as APIError {
             viewState.errorMessage = error.errorDescription
         } catch {
@@ -169,11 +201,26 @@ final class HomeViewModel: ObservableObject {
 
     private func rebuildHistoricalSnapshots() async {
         do {
-            if isInHousehold, householdMode {
-                snapshots = try await dataService.fetchHouseholdNetWorthHistory(period: selectedPeriod)
+            if let repo = dataRepository {
+                if isInHousehold, householdMode {
+                    let (snaps, stale) = try await repo.fetchHouseholdNetWorthHistory(period: selectedPeriod)
+                    snapshots = snaps
+                    if stale { lastLoadServedFromCache = true }
+                } else {
+                    let (snaps, stale) = try await repo.fetchPersonalNetWorthHistory(period: selectedPeriod)
+                    snapshots = snaps
+                    if stale { lastLoadServedFromCache = true }
+                }
             } else {
-                snapshots = try await dataService.fetchNetWorthHistory(period: selectedPeriod)
+                if isInHousehold, householdMode {
+                    snapshots = try await dataService.fetchHouseholdNetWorthHistory(period: selectedPeriod)
+                } else {
+                    snapshots = try await dataService.fetchNetWorthHistory(period: selectedPeriod)
+                }
             }
+        } catch let err as OfflineError {
+            viewState.errorMessage = err.errorDescription
+            snapshots = []
         } catch {
             VTLog.shared.error("Error fetching net worth history", error: error, category: .ui)
             snapshots = []

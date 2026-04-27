@@ -49,7 +49,7 @@ swiftlint --fix   # autocorrect before committing
 | New API endpoint        | `API/APIConfiguration.swift`, `API/APIServiceProtocol.swift`, `API/APIService.swift`                               |
 | New screen / tab        | Create `FeatureName/FeatureView.swift` + `FeatureNameViewModel.swift`, add tab in `MainView/VaultTrackerApp.swift` |
 | New data operation      | `Managers/DataServiceProtocol.swift`, `Managers/DataService.swift`, test mock                                      |
-| Offline cache / queue   | `Managers/Offline/` (`OfflinePersistence`, stores, `@Model` types in `Offline/Models/`); unit tests: `VaultTrackerTests/OfflineStoresTests.swift` |
+| Offline cache / queue   | `Managers/Offline/` (`OfflinePersistence`, `LocalDataStack`, `CachedDataStore`, `PendingTransactionStore`, `OfflineSyncManager`, `DataRepository` + `NetworkMonitoring` / `NWPathNetworkMonitor`); tests: `OfflineStoresTests`, `OfflineSyncManagerTests`, `DataRepositoryTests`, `MockAPIService` |
 | New domain type         | `Models/`                                                                                                          |
 | New API model           | `API/Models/`                                                                                                      |
 | New UI test             | Add page object in `VaultTrackerUITests/PageObjects/`; subclass `BaseTestCase`. Household flows: `HouseholdSettingsPage`, `HouseholdFlowUITests`. |
