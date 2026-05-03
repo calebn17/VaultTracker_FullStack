@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-VaultTracker is a personal portfolio tracker with three sub-projects sharing the same Firebase Auth project and backend:
+VaultTracker is a personal portfolio tracker with three deployed clients (API, iOS, Web) sharing the same Firebase Auth project and backend, plus a **maintainer-only** scanner package for local CSV ingest:
 
 | Directory          | Stack                              | Purpose                          |
 | ------------------ | ---------------------------------- | -------------------------------- |
 | `VaultTrackerAPI/` | FastAPI + SQLAlchemy (Python)      | REST backend, deployed on Render |
 | `VaultTrackerIOS/` | SwiftUI + Firebase SDK (Swift)     | iOS client                       |
 | `VaultTrackerWeb/` | Next.js 15 + Tailwind (TypeScript) | Web client                       |
+| `VaultTrackerScanner/` | Python package (Pydantic, stdlib HTTP) | Maintainer-only CSV → smart API ingest + `processed/` archives |
 
 Each sub-project has its own `CLAUDE.md` with detailed context. Start there when working within a single sub-project.
 
@@ -19,6 +20,7 @@ Each sub-project has its own `CLAUDE.md` with detailed context. Start there when
 - **API:** `VaultTrackerAPI/CLAUDE.md` — commands, architecture, auth, DB options, iOS-API contract points
 - **iOS:** `VaultTrackerIOS/VaultTracker/CLAUDE.md` — commands and rules; **architecture / features / tests:** `VaultTrackerIOS/VaultTracker/Documentation/system_design.md`
 - **Web:** `VaultTrackerWeb/CLAUDE.md` — tech stack, project structure, household features
+- **Scanner (local ingest):** `VaultTrackerScanner/README.md` — CLI (`python -m vaulttracker_scanner`), tests (`pytest` / `ruff` from that folder); agent workflow `VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md`; skill `.cursor/skills/vaulttracker-scan/SKILL.md`
 - **System design (all clients):** [`Documentation/VaultTracker System Design.md`](Documentation/VaultTracker%20System%20Design.md) — product flows, backend model/API, iOS and Web sections
 
 ## System Architecture
@@ -89,6 +91,20 @@ npm test       # Vitest
 npm run lint   # ESLint
 npx prettier --check .  # Format check
 ```
+
+### VaultTrackerScanner (from `VaultTrackerScanner/`)
+
+Requires Python 3.11+ (or dev venv with `pydantic` / `pytest` / `ruff`). Not part of CI path filters yet.
+
+```bash
+cd VaultTrackerScanner
+../VaultTrackerAPI/venv/bin/python -m pytest tests/ -v   # or local .venv
+../VaultTrackerAPI/venv/bin/ruff format . && ../VaultTrackerAPI/venv/bin/ruff check --select E,F,I,W .
+python -m vaulttracker_scanner --root .                 # preview inbox CSVs
+python -m vaulttracker_scanner --root . --apply        # POST + archive (API up, debug auth)
+```
+
+Details: `VaultTrackerScanner/README.md`; agent steps: `VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md`.
 
 ## Best Practices
 
