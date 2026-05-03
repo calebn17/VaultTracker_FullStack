@@ -1,0 +1,4 @@
+Timestamp,Transaction Type,Asset,Quantity Transacted,USD Spot Price at Transaction,USD Subtotal,USD Total (inclusive of fees),USD Fees,Notes
+2024-01-15T10:30:00Z,Buy,BTC,0.5,50000,25000,25100,100,
+2024-02-01T12:00:00Z,Sell,BTC,0.1,48000,4800,4700,100,
+2024-03-01T00:00:00Z,Receive,ETH,1,3000,3000,3000,0,

@@ -8,6 +8,8 @@ Personal, local tool to discover broker/CSV exports (and later images/PDFs), nor
 - `processed/` — timestamped archives after a successful run (contents git-ignored).
 - `src/vaulttracker_scanner/` — package source (pipeline stages added incrementally).
 - **Contract:** `SmartTransactionPayload` and `validate_smart_payloads()` mirror `SmartTransactionCreate` in the API.
+- **Discover:** `discover_manifest(dir)` groups `csv` / `pdf` / `image` paths (non-recursive).
+- **CSV:** `parse_csv(path)` auto-detects Coinbase retail and Binance spot exports; pass `column_map={...}` for other layouts.
 
 ## Setup (one-time)
 
