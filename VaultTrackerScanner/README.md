@@ -10,6 +10,8 @@ Personal, local tool to discover broker/CSV exports (and later images/PDFs), nor
 - **Contract:** `SmartTransactionPayload` and `validate_smart_payloads()` mirror `SmartTransactionCreate` in the API.
 - **Discover:** `discover_manifest(dir)` groups `csv` / `pdf` / `image` paths (non-recursive).
 - **CSV:** `parse_csv(path)` auto-detects Coinbase retail and Binance spot exports; pass `column_map={...}` for other layouts.
+- **Normalize:** `normalize_raw_row` / `normalize_raw_rows` map `RawParsedRow` → smart payload dicts (category aliases, cash/real-estate $ encoding, dates).
+- **Preview:** `format_preview_table(normalized, validation_errors)` for a markdown-style table + error list.
 
 ## Setup (one-time)
 
