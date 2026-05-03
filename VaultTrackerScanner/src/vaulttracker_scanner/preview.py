@@ -32,6 +32,11 @@ def _fmt_date(payload: Mapping[str, Any]) -> str:
     return text[:10] if len(text) >= 10 else text
 
 
+def _fmt_cell(value: Any) -> str:
+    text = "" if value is None else str(value)
+    return text.replace("|", "\\|").replace("\n", " ").replace("\r", " ").strip()
+
+
 def format_preview_table(
     normalized: list[Mapping[str, Any]],
     validation_errors: list[ValidationErrorDetail],
@@ -49,13 +54,13 @@ def format_preview_table(
         lines.append(
             row_fmt.format(
                 idx=i + 1,
-                asset=payload.get("asset_name", ""),
-                sym=sym,
+                asset=_fmt_cell(payload.get("asset_name", "")),
+                sym=_fmt_cell(sym),
                 qty=_fmt_num(payload.get("quantity")),
                 price=_fmt_num(payload.get("price_per_unit")),
-                acct=payload.get("account_name", ""),
-                typ=payload.get("transaction_type", ""),
-                dt=_fmt_date(payload),
+                acct=_fmt_cell(payload.get("account_name", "")),
+                typ=_fmt_cell(payload.get("transaction_type", "")),
+                dt=_fmt_cell(_fmt_date(payload)),
             ),
         )
 

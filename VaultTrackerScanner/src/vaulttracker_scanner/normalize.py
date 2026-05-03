@@ -51,6 +51,15 @@ _CATEGORY_ALIASES: dict[str, AssetCategory] = {
     "roth": "retirement",
 }
 
+_TRANSACTION_TYPE_ALIASES: dict[str, str] = {
+    "buy": "buy",
+    "purchase": "buy",
+    "market buy": "buy",
+    "sell": "sell",
+    "sale": "sell",
+    "market sell": "sell",
+}
+
 
 class NormalizeError(ValueError):
     """Inputs cannot be coerced into a smart payload shape."""
@@ -64,7 +73,7 @@ def _slug_key(s: str) -> str:
 
 def _normalize_category(raw: str | None) -> AssetCategory:
     if raw is None or not str(raw).strip():
-        return "crypto"
+        raise NormalizeError("category is required")
     key = _slug_key(str(raw))
     if key in _CATEGORY_ALIASES:
         return _CATEGORY_ALIASES[key]
@@ -73,7 +82,7 @@ def _normalize_category(raw: str | None) -> AssetCategory:
 
 def _normalize_account_type(raw: str | None) -> str:
     if raw is None or not str(raw).strip():
-        return "other"
+        raise NormalizeError("account_type is required")
     key = _slug_key(str(raw))
     if key in _ACCOUNT_TYPE_ALIASES:
         return _ACCOUNT_TYPE_ALIASES[key]
@@ -91,13 +100,9 @@ def _normalize_account_type(raw: str | None) -> str:
 def _normalize_transaction_type(raw: str | None) -> str:
     if raw is None or not str(raw).strip():
         raise NormalizeError("transaction_type is required")
-    t = str(raw).strip().lower()
-    if t in ("buy", "sell"):
-        return t
-    if "sell" in t:
-        return "sell"
-    if "buy" in t:
-        return "buy"
+    t = _slug_key(str(raw))
+    if t in _TRANSACTION_TYPE_ALIASES:
+        return _TRANSACTION_TYPE_ALIASES[t]
     raise NormalizeError(f"transaction_type must be buy/sell, got {raw!r}")
 
 

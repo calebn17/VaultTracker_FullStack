@@ -117,6 +117,71 @@ def test_unknown_category_raises() -> None:
         normalize_raw_row(row)
 
 
+def test_missing_category_raises() -> None:
+    row = RawParsedRow(
+        asset_name="Bitcoin",
+        symbol="BTC",
+        category=None,
+        quantity=1,
+        price_per_unit=10,
+        transaction_type="buy",
+        account_name="A",
+        account_type="cryptoExchange",
+    )
+    with pytest.raises(NormalizeError, match="category is required"):
+        normalize_raw_row(row)
+
+
+def test_missing_account_type_raises() -> None:
+    row = RawParsedRow(
+        asset_name="Bitcoin",
+        symbol="BTC",
+        category="crypto",
+        quantity=1,
+        price_per_unit=10,
+        transaction_type="buy",
+        account_name="A",
+        account_type=None,
+    )
+    with pytest.raises(NormalizeError, match="account_type is required"):
+        normalize_raw_row(row)
+
+
+def test_ambiguous_transaction_text_rejected() -> None:
+    row = RawParsedRow(
+        asset_name="Bitcoin",
+        symbol="BTC",
+        category="crypto",
+        quantity=1,
+        price_per_unit=10,
+        transaction_type="buyback-adjustment",
+        account_name="A",
+        account_type="cryptoExchange",
+    )
+    with pytest.raises(NormalizeError, match="transaction_type must be buy/sell"):
+        normalize_raw_row(row)
+
+
+def test_preview_escapes_markdown_delimiters_and_newlines() -> None:
+    preview = format_preview_table(
+        [
+            {
+                "asset_name": "ACME | Class A\nSeries",
+                "symbol": "AC|ME",
+                "quantity": 1,
+                "price_per_unit": 2,
+                "account_name": "Broker\nDesk",
+                "transaction_type": "buy",
+                "date": "2024-01-15T00:00:00Z",
+            }
+        ],
+        [],
+    )
+    assert "ACME \\| Class A Series" in preview
+    assert "AC\\|ME" in preview
+    assert "Broker Desk" in preview
+
+
 def test_normalize_then_validate_mixed_preview() -> None:
     good = RawParsedRow(
         asset_name="Bitcoin",

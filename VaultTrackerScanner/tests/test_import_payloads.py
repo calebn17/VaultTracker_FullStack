@@ -110,6 +110,17 @@ def test_network_urlerror() -> None:
     assert "network error" in result.failed[0].error.lower()
 
 
+def test_network_runtime_error_is_captured() -> None:
+    def post_fn(url, body, headers, timeout_sec):
+        raise RuntimeError("socket unexpectedly closed")
+
+    result = import_smart_payloads([_minimal_crypto_payload()], post_fn=post_fn)
+    assert result.inserted == []
+    assert len(result.failed) == 1
+    assert "network error" in result.failed[0].error.lower()
+    assert "socket unexpectedly closed" in result.failed[0].error
+
+
 def test_201_invalid_json_fails() -> None:
     def post_fn(url, body, headers, timeout_sec):
         return 201, b"not-json"

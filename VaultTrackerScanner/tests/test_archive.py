@@ -115,6 +115,74 @@ def test_duplicate_basenames_get_unique_destinations(tmp_path) -> None:
     }
 
 
+def test_payload_names_unique_when_stems_match_different_extensions(tmp_path) -> None:
+    processed = tmp_path / "processed"
+    csv_src = tmp_path / "report.csv"
+    png_src = tmp_path / "report.png"
+    csv_src.write_text("csv", encoding="utf-8")
+    png_src.write_text("png", encoding="utf-8")
+
+    payload = [
+        {
+            "transaction_type": "buy",
+            "category": "crypto",
+            "asset_name": "BTC",
+            "symbol": "BTC",
+            "quantity": 1,
+            "price_per_unit": 1,
+            "account_name": "X",
+            "account_type": "cryptoExchange",
+        },
+    ]
+
+    archive_path = write_archive(
+        processed,
+        [
+            SourceArchiveEntry(csv_src, "csv_fmt", payload, ["id1"]),
+            SourceArchiveEntry(png_src, "img_fmt", payload, ["id2"]),
+        ],
+        timestamp=datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+    )
+
+    manifest = read_manifest(archive_path)
+    payload_paths = [entry.payload for entry in manifest.files]
+    assert len(set(payload_paths)) == 2
+    assert set(payload_paths) == {"payloads/report.json", "payloads/report_1.json"}
+
+
+def test_write_archive_cleans_temp_dir_on_invalid_later_entry(tmp_path) -> None:
+    processed = tmp_path / "processed"
+    good = tmp_path / "good.csv"
+    missing = tmp_path / "missing.csv"
+    good.write_text("ok", encoding="utf-8")
+
+    payload = [
+        {
+            "transaction_type": "buy",
+            "category": "crypto",
+            "asset_name": "BTC",
+            "symbol": "BTC",
+            "quantity": 1,
+            "price_per_unit": 1,
+            "account_name": "X",
+            "account_type": "cryptoExchange",
+        },
+    ]
+
+    with pytest.raises(ArchiveError, match="source is not a file"):
+        write_archive(
+            processed,
+            [
+                SourceArchiveEntry(good, "fmt", payload, ["id1"]),
+                SourceArchiveEntry(missing, "fmt", payload, ["id2"]),
+            ],
+            timestamp=datetime(2026, 2, 2, 0, 0, 0, tzinfo=timezone.utc),
+        )
+
+    assert not (processed / "2026-02-02T00-00-00").exists()
+    assert not (processed / ".2026-02-02T00-00-00.tmp").exists()
+
+
 def test_load_flat_payloads_matches_written(tmp_path) -> None:
     processed = tmp_path / "processed"
     s1 = tmp_path / "one.csv"

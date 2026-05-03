@@ -69,49 +69,69 @@ def write_archive(
     if archive_path.exists():
         raise ArchiveError(f"archive path already exists: {archive_path}")
 
-    sources_dir = archive_path / "sources"
-    payloads_dir = archive_path / "payloads"
-    sources_dir.mkdir(parents=True)
-    payloads_dir.mkdir(parents=True)
-
-    used_basenames: set[str] = set()
-    manifest_files: list[ArchiveManifestEntry] = []
-
+    resolved_sources: list[Path] = []
     for entry in entries:
         src = entry.source_path.expanduser().resolve()
         if not src.is_file():
             raise ArchiveError(f"source is not a file: {src}")
+        resolved_sources.append(src)
 
-        dest_base = _allocate_unique_basename(used_basenames, src.name)
-        rel_source = f"sources/{dest_base}"
-        shutil.copy2(src, archive_path / rel_source)
+    temp_archive_path = archive_path.parent / f".{archive_path.name}.tmp"
+    if temp_archive_path.exists():
+        raise ArchiveError(
+            f"temporary archive path already exists: {temp_archive_path}"
+        )
 
-        stem = Path(dest_base).stem
-        payload_name = f"{stem}.json"
-        rel_payload = f"payloads/{payload_name}"
-        payload_path = archive_path / rel_payload
-        payload_path.write_text(
-            json.dumps(entry.payloads, indent=2, default=str, ensure_ascii=False)
-            + "\n",
+    try:
+        sources_dir = temp_archive_path / "sources"
+        payloads_dir = temp_archive_path / "payloads"
+        sources_dir.mkdir(parents=True)
+        payloads_dir.mkdir(parents=True)
+
+        used_source_basenames: set[str] = set()
+        used_payload_basenames: set[str] = set()
+        manifest_files: list[ArchiveManifestEntry] = []
+
+        for entry, src in zip(entries, resolved_sources, strict=True):
+            dest_source_name = _allocate_unique_basename(
+                used_source_basenames, src.name
+            )
+            rel_source = f"sources/{dest_source_name}"
+            shutil.copy2(src, temp_archive_path / rel_source)
+
+            payload_base = f"{Path(src.name).stem}.json"
+            dest_payload_name = _allocate_unique_basename(
+                used_payload_basenames,
+                payload_base,
+            )
+            rel_payload = f"payloads/{dest_payload_name}"
+            payload_path = temp_archive_path / rel_payload
+            payload_path.write_text(
+                json.dumps(entry.payloads, indent=2, default=str, ensure_ascii=False)
+                + "\n",
+                encoding="utf-8",
+            )
+
+            manifest_files.append(
+                ArchiveManifestEntry(
+                    source=rel_source,
+                    payload=rel_payload,
+                    format=entry.format_name,
+                    transactions_inserted=len(entry.record_ids),
+                    record_ids=list(entry.record_ids),
+                ),
+            )
+
+        manifest = ArchiveManifest(timestamp=when, files=manifest_files)
+        (temp_archive_path / "manifest.json").write_text(
+            json.dumps(manifest.model_dump(mode="json"), indent=2) + "\n",
             encoding="utf-8",
         )
-
-        manifest_files.append(
-            ArchiveManifestEntry(
-                source=rel_source,
-                payload=rel_payload,
-                format=entry.format_name,
-                transactions_inserted=len(entry.record_ids),
-                record_ids=list(entry.record_ids),
-            ),
-        )
-
-    manifest = ArchiveManifest(timestamp=when, files=manifest_files)
-    (archive_path / "manifest.json").write_text(
-        json.dumps(manifest.model_dump(mode="json"), indent=2) + "\n",
-        encoding="utf-8",
-    )
-    return archive_path
+        temp_archive_path.rename(archive_path)
+        return archive_path
+    except Exception:
+        shutil.rmtree(temp_archive_path, ignore_errors=True)
+        raise
 
 
 def read_manifest(archive_dir: Path) -> ArchiveManifest:

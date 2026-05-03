@@ -97,7 +97,7 @@ def import_smart_payloads(
         body = _serialize_payload(payload)
         try:
             status, raw = poster(url, body, headers, timeout_sec)
-        except URLError as exc:
+        except (URLError, TimeoutError, OSError, RuntimeError) as exc:
             failed.append(
                 ImportFailed(payload_index=index, error=f"network error: {exc}"),
             )
