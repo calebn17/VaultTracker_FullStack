@@ -7,6 +7,7 @@ Personal, local tool to discover broker/CSV exports (and later images/PDFs), nor
 - `inbox/` — default drop zone for files to import (contents are git-ignored; only `.gitkeep` is tracked).
 - `processed/` — timestamped archives after a successful run (contents git-ignored).
 - `src/vaulttracker_scanner/` — package source (pipeline stages added incrementally).
+- **Contract:** `SmartTransactionPayload` and `validate_smart_payloads()` mirror `SmartTransactionCreate` in the API.
 
 ## Setup (one-time)
 
