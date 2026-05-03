@@ -151,6 +151,12 @@ The `/scan` skill:
 6. On confirm: runs `import.py` then `archive.py`
 7. Reports summary: N transactions inserted, N failed, archive location
 
+### Implemented (2026)
+
+- **Cursor (project skill):** [`.cursor/skills/vaulttracker-scan/SKILL.md`](../../.cursor/skills/vaulttracker-scan/SKILL.md) — agent checklist, hard gates before `--apply`, CSV vs vision phases.
+- **Operator + vision snippet:** [`VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md`](../../VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md) — CLI table, JSON handoff for PDFs/images, recovery pointers.
+- **Deterministic runner:** `python -m vaulttracker_scanner` from `VaultTrackerScanner/` (see that folder’s `README.md`) implements discover → parse → normalize → validate → preview → import → archive in one process (replacing separate `import.py` / `archive.py` script names from this sketch).
+
 ## Data Flow Example
 
 **Input**: `coinbase_export.csv` in inbox with Coinbase trade history

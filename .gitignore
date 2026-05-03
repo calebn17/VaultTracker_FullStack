@@ -21,8 +21,9 @@ dist/
 !.cursor/rules/
 !.cursor/rules/**
 !.cursor/hooks.json
-!.cursor/hooks/
-!.cursor/hooks/**
+!.cursor/skills/
+!.cursor/skills/vaulttracker-scan/
+!.cursor/skills/vaulttracker-scan/**
 
 # Web (Next.js) — source is tracked; ignore deps and build output
 VaultTrackerWeb/node_modules/

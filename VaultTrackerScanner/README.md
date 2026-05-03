@@ -50,3 +50,10 @@ python3 -m venv .venv
 - Debug auth header: `Authorization: Bearer vaulttracker-debug-user` with `DEBUG_AUTH_ENABLED=true` on the API.
 
 See [`Documentation/Plans/2026-05-02-scanner-design.md`](../Documentation/Plans/2026-05-02-scanner-design.md) for the full pipeline design.
+
+## Agent workflow (`/scan`)
+
+- **Cursor skill (project):** [`.cursor/skills/vaulttracker-scan/SKILL.md`](../.cursor/skills/vaulttracker-scan/SKILL.md) — when to run, confirmation gates, CSV vs vision phases.
+- **Full operator doc + vision JSON snippets:** [`Documentation/Scan_Agent_Workflow.md`](Documentation/Scan_Agent_Workflow.md).
+
+Personal use: drop files in `inbox/`, run `python -m vaulttracker_scanner --root .` for preview; use the skill or workflow doc before any `--apply`.
