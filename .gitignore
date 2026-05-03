@@ -46,3 +46,9 @@ venv/
 # iOS Firebase client config (real file is untracked; copy from *.example)
 VaultTrackerIOS/VaultTracker/GoogleService-info.plist
 VaultTrackerIOS/VaultTracker/GoogleService-Info.plist
+
+# VaultTrackerScanner — user drops and archives (placeholders only)
+VaultTrackerScanner/inbox/*
+!VaultTrackerScanner/inbox/.gitkeep
+VaultTrackerScanner/processed/*
+!VaultTrackerScanner/processed/.gitkeep
