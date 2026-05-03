@@ -13,6 +13,7 @@ Personal, local tool to discover broker/CSV exports (and later images/PDFs), nor
 - **Normalize:** `normalize_raw_row` / `normalize_raw_rows` map `RawParsedRow` → smart payload dicts (category aliases, cash/real-estate $ encoding, dates).
 - **Preview:** `format_preview_table(normalized, validation_errors)` for a markdown-style table + error list.
 - **Import:** `import_smart_payloads(payloads, base_url=..., bearer_token=..., dry_run=...)` POSTs each item to `/api/v1/transactions/smart` (stdlib HTTP); inject `post_fn` in tests.
+- **Archive:** `write_archive(processed_root, entries, timestamp=...)` writes `sources/`, `payloads/*.json`, `manifest.json`. Use `load_flat_payloads_for_reimport(archive_dir)` to reload payload arrays in manifest order.
 
 ## Setup (one-time)
 
