@@ -130,6 +130,34 @@ def test_asset_name_max_length() -> None:
         SmartTransactionPayload.model_validate(raw)
 
 
+def test_retirement_requires_symbol() -> None:
+    raw = {
+        "transaction_type": "buy",
+        "category": "retirement",
+        "asset_name": "Vanguard 401k",
+        "quantity": 10.0,
+        "price_per_unit": 100.0,
+        "account_name": "Fidelity",
+        "account_type": "retirement",
+    }
+    with pytest.raises(ValidationError):
+        SmartTransactionPayload.model_validate(raw)
+
+
+def test_real_estate_allows_missing_symbol() -> None:
+    raw = {
+        "transaction_type": "buy",
+        "category": "realEstate",
+        "asset_name": "123 Main St",
+        "quantity": 1.0,
+        "price_per_unit": 500_000.0,
+        "account_name": "Property",
+        "account_type": "other",
+    }
+    m = SmartTransactionPayload.model_validate(raw)
+    assert m.symbol is None
+
+
 def test_validate_smart_payloads_mixed_batch() -> None:
     good = _minimal_crypto_buy()
     bad = dict(good)

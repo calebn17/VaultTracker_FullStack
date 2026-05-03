@@ -108,6 +108,17 @@ def test_parse_utf8_bom_coinbase(tmp_path) -> None:
     assert len(result.rows) == 1
 
 
+def test_parse_header_only_csv_returns_empty(tmp_path) -> None:
+    path = tmp_path / "empty.csv"
+    path.write_text(
+        "Timestamp,Transaction Type,Asset,Quantity Transacted,"
+        "USD Spot Price at Transaction\n"
+    )
+    result = parse_csv(path)
+    assert result.format_name == "coinbase"
+    assert result.rows == []
+
+
 def test_iter_csv_paths_from_manifest(tmp_path) -> None:
     (tmp_path / "x.csv").write_text("a")
     m = discover_manifest(tmp_path)

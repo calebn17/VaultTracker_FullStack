@@ -15,6 +15,22 @@ from vaulttracker_scanner.models import RawParsedRow
 
 FormatName = Literal["coinbase", "binance", "generic"]
 
+_CATEGORY_LOWER_MAP: dict[str, str] = {
+    "crypto": "crypto",
+    "stocks": "stocks",
+    "cash": "cash",
+    "realestate": "realEstate",
+    "retirement": "retirement",
+}
+
+_ACCOUNT_TYPE_LOWER_MAP: dict[str, str] = {
+    "cryptoexchange": "cryptoExchange",
+    "brokerage": "brokerage",
+    "bank": "bank",
+    "retirement": "retirement",
+    "other": "other",
+}
+
 
 class CsvParseError(ValueError):
     """Unknown format, missing columns, or unreadable file."""
@@ -112,22 +128,15 @@ def _parse_generic_row(
     if not asset_name:
         return None
 
-    category = (get_logical("category") or "crypto").lower()
-    if category not in {"crypto", "stocks", "cash", "realEstate", "retirement"}:
-        category = "crypto"
+    category = _CATEGORY_LOWER_MAP.get(
+        (get_logical("category") or "crypto").lower(), "crypto"
+    )
 
     account_name = get_logical("account_name") or "Imported"
-    at_raw = (get_logical("account_type") or "cryptoExchange").strip()
-    if at_raw not in {
+    account_type = _ACCOUNT_TYPE_LOWER_MAP.get(
+        (get_logical("account_type") or "cryptoExchange").strip().lower(),
         "cryptoExchange",
-        "brokerage",
-        "bank",
-        "retirement",
-        "other",
-    }:
-        account_type = "cryptoExchange"
-    else:
-        account_type = at_raw
+    )
 
     date: str | datetime | None = get_logical("date") or None
     if date:
