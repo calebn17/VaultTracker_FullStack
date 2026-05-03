@@ -123,7 +123,9 @@ def main(argv: list[str] | None = None) -> int:
     inbox = (args.inbox or (root / "inbox")).expanduser().resolve()
     processed_root = (args.processed or (root / "processed")).expanduser().resolve()
     vision_json = (
-        args.vision_json.expanduser().resolve() if args.vision_json is not None else None
+        args.vision_json.expanduser().resolve()
+        if args.vision_json is not None
+        else None
     )
 
     try:
