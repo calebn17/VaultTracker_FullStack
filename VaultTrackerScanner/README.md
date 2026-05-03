@@ -35,9 +35,13 @@ python3 -m venv .venv
 ./.venv/bin/ruff check --select E,F,I .
 ./.venv/bin/python -m pytest tests/ -v
 
-# Stub CLI (full pipeline in a later plan step)
-./.venv/bin/vaulttracker-scan
-./.venv/bin/python -m vaulttracker_scanner
+# Pipeline CLI (expects ./inbox under cwd or pass --root)
+./.venv/bin/python -m vaulttracker_scanner --root .
+# Preview only (no HTTP). With API:
+./.venv/bin/python -m vaulttracker_scanner --root . --apply
+./.venv/bin/python -m vaulttracker_scanner --root . --apply --import-dry-run
+./.venv/bin/python -m vaulttracker_scanner --root . --apply --no-archive
+./.venv/bin/vaulttracker-scan --root .
 ```
 
 ## API expectations

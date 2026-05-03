@@ -16,7 +16,7 @@ dependencies = ["pydantic>=2.10.0"]
 dev = ["pytest>=7", "ruff>=0.8,<1"]
 
 [project.scripts]
-vaulttracker-scan = "vaulttracker_scanner.cli:main"
+vaulttracker-scan = "vaulttracker_scanner.cli:run"
 
 [tool.setuptools.packages.find]
 where = ["src"]
