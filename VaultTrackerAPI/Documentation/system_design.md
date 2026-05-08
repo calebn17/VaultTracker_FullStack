@@ -44,6 +44,8 @@ Every protected route injects `Depends(get_current_user)` ([app/dependencies.py]
 | `PUT`    | `/transactions/{id}/smart` | Smart update; reverses on old asset, re-resolves from payload          |
 | `DELETE` | `/transactions/{id}`       | Reverses asset effect and deletes row                                  |
 
+**Local ingest:** The maintainer-only [`VaultTrackerScanner/`](../../VaultTrackerScanner/README.md) package batches rows through **`POST /api/v1/transactions/smart`** using the same debug Bearer contract as iOS/Web dev (see **Authentication**). Runs on the developer machine against localhost, not on Render.
+
 ## Transaction → Asset → Snapshot Chain
 
 The core invariant: **any write to `transactions` must keep the parent `Asset` and a `NetWorthSnapshot` in sync** (helpers in [app/services/asset_sync.py](../app/services/asset_sync.py)):

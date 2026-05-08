@@ -21,8 +21,9 @@ dist/
 !.cursor/rules/
 !.cursor/rules/**
 !.cursor/hooks.json
-!.cursor/hooks/
-!.cursor/hooks/**
+!.cursor/skills/
+!.cursor/skills/vaulttracker-scan/
+!.cursor/skills/vaulttracker-scan/**
 
 # Web (Next.js) — source is tracked; ignore deps and build output
 VaultTrackerWeb/node_modules/
@@ -46,3 +47,9 @@ venv/
 # iOS Firebase client config (real file is untracked; copy from *.example)
 VaultTrackerIOS/VaultTracker/GoogleService-info.plist
 VaultTrackerIOS/VaultTracker/GoogleService-Info.plist
+
+# VaultTrackerScanner — user drops and archives (placeholders only)
+VaultTrackerScanner/inbox/*
+!VaultTrackerScanner/inbox/.gitkeep
+VaultTrackerScanner/processed/*
+!VaultTrackerScanner/processed/.gitkeep

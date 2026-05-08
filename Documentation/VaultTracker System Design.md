@@ -14,7 +14,7 @@ date: 2026-04-26
 
 ## 1. Product Overview
 
-VaultTracker is a personal net-worth tracker that lets users log financial transactions (buy/sell) across five asset categories — **Crypto, Stocks/ETFs, Cash, Real Estate, Retirement** — and view a live net-worth total with a historical chart. The system consists of three clients (iOS app, web app) sharing a single backend and identity provider.
+VaultTracker is a personal net-worth tracker that lets users log financial transactions (buy/sell) across five asset categories — **Crypto, Stocks/ETFs, Cash, Real Estate, Retirement** — and view a live net-worth total with a historical chart. The system consists of three clients (iOS app, web app) sharing a single backend and identity provider. A **maintainer-only** Python package [`VaultTrackerScanner/`](../VaultTrackerScanner/README.md) can bootstrap historical rows into the same API via `POST /api/v1/transactions/smart` (local use; see **§6.5**).
 
 ### Core User Flows
 
@@ -1059,6 +1059,14 @@ Category strings are camelCase and must match exactly across all clients and the
 3. **Cash/Real Estate:** `quantity = dollar_amount`, `price_per_unit = 1.0`. This convention is required for the mark-to-market formula to produce the correct dollar value.
 4. **Snapshot append-only:** Never delete or modify snapshot rows — they are the historical record for charts.
 5. **Asset identity:** Crypto/stocks/retirement deduplicated by symbol. Cash/real estate deduplicated by (name, category). This prevents duplicate asset rows for repeated buys of the same holding.
+
+### 6.5 VaultTrackerScanner (local CSV ingest)
+
+A **fourth repo folder** — [`VaultTrackerScanner/`](../VaultTrackerScanner/README.md) — is maintainer-only tooling (not an end-user app). It mirrors **§6.2** category literals and **§3** smart-transaction rules when building payloads, then posts them through **`POST /api/v1/transactions/smart`** with the **§6.1** debug Bearer path for local bootstrap.
+
+- **Inputs / outputs:** `inbox/` (drops) → CLI pipeline → `processed/<timestamp>/` (`sources/`, `payloads/*.json`, `manifest.json`) for recovery without re-parsing originals.
+- **Vision (PDF/HEIC/PNG):** Not parsed by the CLI; the agent uses Read + JSON handoff per [`VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md`](../VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md) and project skill [`.cursor/skills/vaulttracker-scan/SKILL.md`](../.cursor/skills/vaulttracker-scan/SKILL.md).
+- **Spec:** [`Documentation/Plans/2026-05-02-scanner-design.md`](../Documentation/Plans/2026-05-02-scanner-design.md).
 
 ---
 

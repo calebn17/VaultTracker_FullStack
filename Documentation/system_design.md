@@ -49,6 +49,15 @@ DB rows persist across restarts because the backend always uses the same fixed `
 
 **Real device:** Set `API_HOST = 192.168.x.x:8000` in Xcode scheme environment variables (same Wi-Fi required).
 
+## VaultTrackerScanner (personal ingest)
+
+Not a deployed client — a **Python package** in `VaultTrackerScanner/` for bootstrapping history from CSV (and optional vision-assisted JSON) into the same API the apps use.
+
+- **Flow:** `inbox/` → discover → parse → normalize → validate → preview → optional `POST /api/v1/transactions/smart` → `processed/` archive with `manifest.json` + payload JSON for recovery.
+- **Auth:** Uses the same **debug Bearer** contract as iOS/Web dev (`vaulttracker-debug-user` → `debug-user` on the API). Typical target: `http://localhost:8000`.
+- **Docs:** [`VaultTrackerScanner/README.md`](../VaultTrackerScanner/README.md), agent workflow [`VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md`](../VaultTrackerScanner/Documentation/Scan_Agent_Workflow.md), Cursor skill [`.cursor/skills/vaulttracker-scan/SKILL.md`](../.cursor/skills/vaulttracker-scan/SKILL.md), plan [`Documentation/Plans/2026-05-02-scanner-design.md`](Plans/2026-05-02-scanner-design.md).
+- **CI:** Not on the `api`/`ios`/`web` path filter today; scanner tests run locally (`pytest` / `ruff` from `VaultTrackerScanner/`).
+
 ## GitHub Actions CI
 
 Workflow: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
